@@ -9,8 +9,7 @@ module.exports = function (app) {
     value: {
       type: DataTypes.TEXT,
       allowNull: false
-    }
-    // ,
+    }// ,
     // test: {
     //   type: DataTypes.BOOLEAN,
     //   allowNull: false,

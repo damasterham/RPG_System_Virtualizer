@@ -1,9 +1,10 @@
-import VuetifyLoaderPlugin from "vuetify-loader/lib/plugin"
+import VuetifyLoaderPlugin from 'vuetify-loader/lib/plugin'
 
 export default {
+  mode: 'universal',
   env: {
-    REST: process.env.REST || 'localhost:3030',
-    SOCKET: process.env.SOCKET || 'localhost:3030'
+    REST: process.env.REST || 'http://localhost:3030',
+    SOCKET: process.env.SOCKET || 'http://localhost:3030'
   },
   build: {
     transpile: [
