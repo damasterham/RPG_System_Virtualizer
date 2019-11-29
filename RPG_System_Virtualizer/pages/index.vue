@@ -1,9 +1,11 @@
 <template>
-<v-app dark>
+  <v-app dark>
     <h1>System Designer</h1>
 
-    <v-btn color="success" @click="onClick" >{{text}}!</v-btn>
-</v-app>
+    <v-btn color="success" @click="onClick">
+      {{ text }}!
+    </v-btn>
+  </v-app>
 </template>
 
 <script>
@@ -14,8 +16,7 @@ export default {
     }
   },
   methods: {
-    onClick ()
-    {
+    onClick () {
       this.text += 'Woop'
     }
   }
