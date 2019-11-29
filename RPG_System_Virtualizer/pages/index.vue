@@ -1,23 +1,21 @@
 <template>
-<v-app dark>
+  <v-app dark>
     <h1>System Designer</h1>
 
-    <v-btn color="success" @click="onClick" >{{text}}!</v-btn>
+    <v-btn color="success" @click="onClick">
+      {{ text }}!
+    </v-btn>
 
     <v-list>
-      <v-list-tile avatar v-for="(item, index) in tests" :key="index">
-        {{item.value}} | {{item.id}}
+      <v-list-tile v-for="(item, index) in list" :key="index">
+        {{ item.value }} | {{ item.id }}
       </v-list-tile>
     </v-list>
-</v-app>
+  </v-app>
 </template>
 
 <script>
-// import G from '~/plugins/globalvariables'
-import { mapGetters } from 'vuex'
-import client from '~/plugins/feathers-client'
-
-const test = 'test' // G.services.test;
+import service from '~/plugins/feathers-service'
 
 export default {
   data () {
@@ -26,18 +24,29 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(test, {
-      tests: 'list'
-    })
+    list () {
+      return []
+    }
   },
   created () {
-    // console.log(client)
-    client.service(test) // (this.$store)
+    console.log('created started')
+    service('test')(this.$store)
+    console.log('created finished')
+  },
+  mounted () {
+    console.log('mounted started')
+    // client.service('test')(this.$store)
+    console.log('mounted finished')
   },
   methods: {
-    onClick () {
+    async onClick () {
       this.text += 'Create new test'
-      this.$store.dispatch(test + '/create', { value: 'new test' })
+      console.log(await this.$store.dispatch('test/find', {
+        query: {
+          $limit: -1
+        }
+      }))
+      // this.$store.dispatch('test/create', { value: 'new test' })
     }
   }
 }
