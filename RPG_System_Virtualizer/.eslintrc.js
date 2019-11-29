@@ -16,6 +16,7 @@ module.exports = {
     plugins: ['vue'],
     rules:
     {
-        "no-console": "off"
+        "no-console": "off",
+        "eol-last": "off"
     }
 }
