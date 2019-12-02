@@ -6,9 +6,21 @@ const DataTypes = Sequelize.DataTypes;
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
   const domains = sequelizeClient.define('domains', {
-    text: {
-      type: DataTypes.STRING,
+    system_id: {
+      type: DataTypes.INTEGER,
       allowNull: false
+    },
+    name: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    shorthand: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    parent_domain_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     hooks: {
