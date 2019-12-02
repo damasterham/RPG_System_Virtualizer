@@ -28,7 +28,8 @@ module.exports = function (app) {
       allowNull: false
     },
     function_type: {
-      type: DataTypes.ENUM('equation','lookup','string_formatter')
+      type: DataTypes.ENUM('equation','lookup','string_formatter'),
+      allowNull: false
     },
     version: {
       type: DataTypes.TEXT,

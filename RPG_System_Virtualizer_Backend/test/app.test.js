@@ -4,7 +4,7 @@ const url = require('url');
 const app = require('../src/app');
 
 const hostname= app.get('host') || 'localhost';
-const port = app.get('port') || 8998;
+const port = app.get('port') || 3030;
 const getUrl = pathname => url.format({
   protocol: 'http',
   hostname,
@@ -24,11 +24,13 @@ describe('Feathers application tests', () => {
     server.close(done);
   });
 
+  /*
   it('starts and shows the index page', async () => {
     const { data } = await axios.get(getUrl());
 
     assert.ok(data.indexOf('<html lang="en">') !== -1);
   });
+  */
 
   describe('404', function() {
     it('shows a 404 HTML page', async () => {

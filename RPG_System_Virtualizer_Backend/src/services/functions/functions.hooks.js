@@ -11,7 +11,7 @@ module.exports = {
     get: [],
     create: [],
     update: [],
-    patch: [],
+    patch: [incrementMinor()],
     remove: []
   },
 
@@ -21,7 +21,7 @@ module.exports = {
     get: [],
     create: [],
     update: [],
-    patch: [incrementMinor()],
+    patch: [],
     remove: [incrementMajor()]
   },
 
