@@ -1,5 +1,7 @@
 
 
+const incrementMajor = require('../../hooks/increment-major');
+
 module.exports = {
   before: {
     all: [],
@@ -18,7 +20,7 @@ module.exports = {
     create: [],
     update: [],
     patch: [],
-    remove: []
+    remove: [incrementMajor()]
   },
 
   error: {
