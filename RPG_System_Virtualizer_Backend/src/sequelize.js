@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 
 module.exports = function (app) {
   const postgresConfig = app.get('postgres');
-  const DB_DEV = app.get('env').state === 'dev'; // True if modifications are being made to db
+  const DB_DEV = app.get('env').state === 'db_dev'; // True if modifications are being made to db
   const oldSetup = app.setup;
 
   // Enumerate each connectionString
@@ -46,7 +46,4 @@ module.exports = function (app) {
       return result;
     };
   });
-
-
-
 };
