@@ -36,14 +36,12 @@ module.exports = function (app) {
 
       if (DB_DEV === true)
       {
-        options.alter = true; // Will make db update table to fit model
+        // options.alter = true; // Will make db update table to fit model - NB: Causes problem with ENUMS
         options.force = true; // Will make db drop all tables before creating new ones
       }
 
       // Sets reference to Sync to the database
       app.set('sequelizeSync', sequelize.sync(options)); // with force will drop then create
-
-
 
       return result;
     };

@@ -29,6 +29,11 @@ module.exports = function (app) {
     },
     function_type: {
       type: DataTypes.ENUM('equation','lookup','string_formatter')
+    },
+    version: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: '0.0'
     }
   }, {
     hooks: {

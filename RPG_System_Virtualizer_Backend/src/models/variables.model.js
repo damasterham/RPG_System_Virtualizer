@@ -30,7 +30,7 @@ module.exports = function (app) {
     reference_type: {
       type: DataTypes.ENUM('function, property'),
       allowNull: false
-    },
+    }
   }, {
     hooks: {
       beforeCount(options) {

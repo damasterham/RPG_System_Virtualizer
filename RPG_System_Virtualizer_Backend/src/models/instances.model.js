@@ -6,9 +6,22 @@ const DataTypes = Sequelize.DataTypes;
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
   const instances = sequelizeClient.define('instances', {
-    text: {
-      type: DataTypes.STRING,
+    domain_id: {
+      type: DataTypes.INTEGER,
       allowNull: false
+    },
+    system_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    obj: {
+      type: DataTypes.JSONB,
+      allowNull: false
+    },
+    version: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: '0.0'
     }
   }, {
     hooks: {

@@ -38,6 +38,11 @@ module.exports = function (app) {
     reference_type: {
       type: DataTypes.ENUM('function', 'property', 'raw_value'),
       allowNull: false
+    },
+    version: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: '0.0'
     }
   }, {
     hooks: {

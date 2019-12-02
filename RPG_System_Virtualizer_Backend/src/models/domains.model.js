@@ -21,6 +21,11 @@ module.exports = function (app) {
     parent_domain_id: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    version: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: '0.0'
     }
   }, {
     hooks: {

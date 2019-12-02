@@ -13,6 +13,11 @@ module.exports = function (app) {
     shorthand: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    version: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: '0.0'
     }
   }, {
     timestamps: false,
