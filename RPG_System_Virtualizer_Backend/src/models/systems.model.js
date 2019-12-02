@@ -5,7 +5,7 @@ const DataTypes = Sequelize.DataTypes;
 
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
-  const system = sequelizeClient.define('system', {
+  const systems = sequelizeClient.define('systems', {
     name: {
       type: DataTypes.TEXT,
       allowNull: false,
@@ -24,10 +24,10 @@ module.exports = function (app) {
   });
 
   // eslint-disable-next-line no-unused-vars
-  system.associate = function (models) {
+  systems.associate = function (models) {
     // Define associations here
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
   };
 
-  return system;
+  return systems;
 };
