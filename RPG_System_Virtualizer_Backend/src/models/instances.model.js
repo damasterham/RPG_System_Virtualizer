@@ -24,6 +24,7 @@ module.exports = function (app) {
       defaultValue: '0.0'
     }
   }, {
+    underscored: true,
     hooks: {
       beforeCount(options) {
         options.raw = true;
@@ -35,6 +36,10 @@ module.exports = function (app) {
   instances.associate = function (models) {
     // Define associations here
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
+
+    // How do we handle relations?
+    // Do we at all?
+    // Perhaps just a cartesian product of the different tables that make sense?
   };
 
   return instances;

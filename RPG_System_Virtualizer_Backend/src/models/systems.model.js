@@ -20,6 +20,7 @@ module.exports = function (app) {
       defaultValue: '0.0'
     }
   }, {
+    underscored: true,
     timestamps: false,
     hooks: {
       beforeCount(options) {
@@ -28,11 +29,11 @@ module.exports = function (app) {
     }
   });
 
-  // eslint-disable-next-line no-unused-vars
-  systems.associate = function (models) {
-    // Define associations here
-    // See http://docs.sequelizejs.com/en/latest/docs/associations/
-  };
+  // // eslint-disable-next-line no-unused-vars
+  // systems.associate = function (models) {
+  //   // Define associations here
+  //   // See http://docs.sequelizejs.com/en/latest/docs/associations/
+  // };
 
   return systems;
 };

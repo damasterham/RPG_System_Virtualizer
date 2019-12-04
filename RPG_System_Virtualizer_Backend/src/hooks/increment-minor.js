@@ -4,6 +4,7 @@
 // eslint-disable-next-line no-unused-vars
 module.exports = (options = {}) => {
   return async context => {
+    // Updates the minor version of model, unless keepVersion flag not present
     if (!context.params.$keepVersion) {
       let record = await context.service.get(context.id);
       const version = record.version.split('.');

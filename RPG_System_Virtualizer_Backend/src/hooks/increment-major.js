@@ -6,6 +6,7 @@ module.exports = (options = {}) => {
   return async context => {
     let service;
     let id;
+    // Determines the specific parent to progoate change to
     if (context.result.function_id) {
       service = context.app.service('functions');
       id = context.result.function_id;
@@ -16,6 +17,7 @@ module.exports = (options = {}) => {
       service = context.app.service('systems');
       id = context.result.system_id;
     }
+    // Updates parents major version number
     const res = await service.get(id);
     const version = res.version.split('.');
     version[0] = parseInt(version[0]);

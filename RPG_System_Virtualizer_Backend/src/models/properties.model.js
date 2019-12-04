@@ -11,10 +11,10 @@ module.exports = function (app) {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    system_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
+    // system_id: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false
+    // },
     name: {
       type: DataTypes.TEXT,
       allowNull: false
@@ -23,7 +23,7 @@ module.exports = function (app) {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    default_value: {
+    defaultValue: {
       type: DataTypes.TEXT,
       allowNull: true
     },
@@ -45,6 +45,7 @@ module.exports = function (app) {
       defaultValue: '0.0'
     }
   }, {
+    underscored: true,
     hooks: {
       beforeCount(options) {
         options.raw = true;
@@ -56,6 +57,25 @@ module.exports = function (app) {
   properties.associate = function (models) {
     // Define associations here
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
+
+    // Properties.system_id => Systems.id
+    properties.belongsTo(models.systems);
+    // Properties.domain_id => Domains.id
+    properties.belongsTo(models.domains);
+
+
+    // Reference belongsTo eithers a raw value (itself) (null), properties or funtions
+    // Probably need custom definitions for this, if we want constraints
+
+    // We could make a many many table for 
+    // properties <- direct_reference -> properties
+    // properties <- property_functioins -> functions
+    // so instead of having reference being in the properties table, it is on it own
+
+    // or
+
+    // Model inheritance by having a base table that properties and functions
+
   };
 
   return properties;

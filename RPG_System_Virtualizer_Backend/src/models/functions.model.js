@@ -7,14 +7,14 @@ const primitives = require('./primitives');
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
   const functions = sequelizeClient.define('functions', {
-    domain_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    system_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
+    // domain_id: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false
+    // },
+    // system_id: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false
+    // },
     name: {
       type: DataTypes.TEXT,
       allowNull: false
@@ -37,6 +37,7 @@ module.exports = function (app) {
       defaultValue: '0.0'
     }
   }, {
+    underscored: true,
     hooks: {
       beforeCount(options) {
         options.raw = true;
@@ -48,6 +49,11 @@ module.exports = function (app) {
   functions.associate = function (models) {
     // Define associations here
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
+
+    // Functions.system_id => Systems.id
+    functions.belongsTo(models.systems);
+    // Functions.domain_id => Domains.id
+    functions.belongsTo(models.domains);
   };
 
   return functions;
