@@ -45,8 +45,11 @@ module.exports = function (app) {
     // TODO: Check if searching/sorting on system.id localy in a table is faster than through associations
     // Properties.system_id => Systems.id
     properties.belongsTo(models.systems);
+
+    // Domain owner of properties
     // Properties.domain_id => Domains.id
     properties.belongsTo(models.domains);
+
 
     // Reference belongsTo eithers a raw value (itself) (null), properties or funtions
     // Probably need custom definitions for this, if we want constraints

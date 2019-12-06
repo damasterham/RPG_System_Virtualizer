@@ -44,6 +44,8 @@ module.exports = function (app) {
 
     // Functions.system_id => Systems.id
     functions.belongsTo(models.systems);
+
+    // Domain owner of functions
     // Functions.domain_id => Domains.id
     functions.belongsTo(models.domains);
 

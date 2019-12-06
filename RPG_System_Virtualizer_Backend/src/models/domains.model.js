@@ -51,6 +51,27 @@ module.exports = function (app) {
       }
       // constraint: false,
     });
+
+
+    // Domain associations used as glorified enum
+    domains.belongsTo(models.properties, {
+      as: 'PropertyDomainEnum',
+      through: 'property_domain_enums',
+      otherKey: {
+        name: 'property_id',
+        unique: true,
+      }
+    });
+
+    domains.belongsTo(models.variables, {
+      as: 'VariableDomainEnum',
+      through: 'variable_domain_enums',
+      otherKey: {
+        name: 'variable_id',
+        unique: true,
+      }
+    });
+
   };
 
   return domains;
