@@ -54,7 +54,7 @@ module.exports = function (app) {
 
 
     // Domain associations used as glorified enum
-    domains.belongsTo(models.properties, {
+    domains.belongsToMany(models.properties, {
       as: 'PropertyDomainEnum',
       through: 'property_domain_enums',
       otherKey: {
@@ -63,7 +63,7 @@ module.exports = function (app) {
       }
     });
 
-    domains.belongsTo(models.variables, {
+    domains.belongsToMany(models.variables, {
       as: 'VariableDomainEnum',
       through: 'variable_domain_enums',
       otherKey: {
