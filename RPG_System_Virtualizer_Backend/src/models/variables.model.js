@@ -2,41 +2,29 @@
 // for more of what you can do here.
 const Sequelize = require('sequelize');
 const DataTypes = Sequelize.DataTypes;
-const primitives = require('./primitives');
+const Primitives = require('./primitives');
 
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
   const variables = sequelizeClient.define('variables', {
-    // domain_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false,
-    // },
-    // system_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false
-    // },
-    // function_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false
-    // },
     name: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    reference: {
-      type: DataTypes.INTEGER,
+    dataType: {
+      type: Primitives,
       allowNull: false
     },
-    data_type: {
-      type: primitives,
-      allowNull: false
-    },
-    reference_type: {
+    referenceType: {
       type: DataTypes.ENUM('function, property'),
       allowNull: false
+    },
+    version: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: '0.0'
     }
   }, {
-    underscored: true,
     hooks: {
       beforeCount(options) {
         options.raw = true;
@@ -53,10 +41,11 @@ module.exports = function (app) {
     variables.belongsTo(models.systems);
     // Variables.domain_id => Domains.id
     variables.belongsTo(models.domains);
-    // Variables.domain_id => Function.id
+
+    // Variables.function_id => Functions.id
+    // corresponds to parameters of function
     variables.belongsTo(models.functions);
 
-    // We have another either or reference here, but i cannot remember why
   };
 
   return variables;

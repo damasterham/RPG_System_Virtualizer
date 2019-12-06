@@ -2,19 +2,11 @@
 // for more of what you can do here.
 const Sequelize = require('sequelize');
 const DataTypes = Sequelize.DataTypes;
-const primitives = require('./primitives');
+const Primitives = require('./primitives');
 
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
   const functions = sequelizeClient.define('functions', {
-    // domain_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false
-    // },
-    // system_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false
-    // },
     name: {
       type: DataTypes.TEXT,
       allowNull: false
@@ -23,11 +15,11 @@ module.exports = function (app) {
       type: DataTypes.TEXT,
       allowNull: false
     },
-    data_type: {
-      type: primitives,
+    dataType: {
+      type: Primitives,
       allowNull: false
     },
-    function_type: {
+    functionType: {
       type: DataTypes.ENUM('equation','lookup','string_formatter'),
       allowNull: false
     },
@@ -37,7 +29,7 @@ module.exports = function (app) {
       defaultValue: '0.0'
     }
   }, {
-    underscored: true,
+
     hooks: {
       beforeCount(options) {
         options.raw = true;
@@ -54,6 +46,27 @@ module.exports = function (app) {
     functions.belongsTo(models.systems);
     // Functions.domain_id => Domains.id
     functions.belongsTo(models.domains);
+
+    // Property with reference to a function
+    functions.belongsToMany(models.properties, {
+      as: 'PropertyFunction',
+      through: 'properties_functions',
+      otherKey: {
+        name: 'property_id',
+        unique: true
+      }
+    });
+
+    // Variable with reference to a function
+    functions.belongsToMany(models.variables, {
+      as: 'VariableFunction',
+      through: 'variables_functions',
+      otherKey: {
+        name: 'variable_id',
+        unique: true,
+      }
+    });
+
   };
 
   return functions;

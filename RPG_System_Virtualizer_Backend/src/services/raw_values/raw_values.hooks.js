@@ -1,6 +1,4 @@
 
-const incrementMinor = require('../../hooks/increment-minor');
-const incrementMajor = require('../../hooks/increment-major');
 
 module.exports = {
   before: {
@@ -9,7 +7,7 @@ module.exports = {
     get: [],
     create: [],
     update: [],
-    patch: [incrementMinor()],
+    patch: [],
     remove: []
   },
 
@@ -20,7 +18,7 @@ module.exports = {
     create: [],
     update: [],
     patch: [],
-    remove: [incrementMajor()]
+    remove: []
   },
 
   error: {

@@ -1,6 +1,5 @@
 const Sequelize = require('sequelize');
 
-
 module.exports = function (app) {
   const postgresConfig = app.get('postgres');
   const DB_DEV = app.get('env').state === 'db_dev'; // True if modifications are being made to db
@@ -12,8 +11,11 @@ module.exports = function (app) {
     const sequelize = new Sequelize(connectionString, {
       dialect: 'postgres',
       logging: false,
+      // Global options and columns
       define: {
-        freezeTableName: true
+        freezeTableName: true,
+        timestamps: false,
+        underscored: true,
       }
     });
 

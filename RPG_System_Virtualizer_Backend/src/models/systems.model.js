@@ -20,8 +20,6 @@ module.exports = function (app) {
       defaultValue: '0.0'
     }
   }, {
-    underscored: true,
-    timestamps: false,
     hooks: {
       beforeCount(options) {
         options.raw = true;
