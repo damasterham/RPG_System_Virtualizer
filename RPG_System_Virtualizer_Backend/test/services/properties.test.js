@@ -6,8 +6,11 @@ describe('\'properties\' service', () => {
   let domain;
   let service;
   let domainService;
-  let id_rawValue;
-  let newEntry_rawValue;
+  let rawValueService;
+  let idRawValue;
+  let newPropertyRawValue;
+  let newPropertyDirectLookup;
+  let newPropertyFunction;
   // let patchedEntry_rawValue;
 
   before(async () => {
@@ -22,9 +25,12 @@ describe('\'properties\' service', () => {
     // Create Domain
     domainService = app.service('domains');
     domain = await domainService.create({
-      system_id: system.id,
+      systemId: system.id,
       name: 'test'
     });
+
+    // Raw values
+    rawValueService = app.service('raw-values');
   });
 
   it('registered the service', () => {
@@ -32,19 +38,62 @@ describe('\'properties\' service', () => {
   });
 
   // Raw value
-  it('created an entry of ref type raw_value', async () => {
-    newEntry_rawValue = await service.create({
-      system_id: system.id,
-      domain_id: domain.id,
+  it('created an entry of ref type raw_value with default value', async () => { 
+    newPropertyRawValue = await service.create({
+      systemId: system.id,
+      domainId: domain.id,
       name: 'testProperty',
-      default_value: '1',
-      data_type: 'int',
-      reference_type: 'raw_value'
+      dataType: 'int',
+      referenceType: 'raw_value',
+      // Passed as data for raw values for hook, not to be peristed in properties
+      defaultValue: '1'
     });
-    id_rawValue = newEntry_rawValue.id;
-    console.log('new entry:', newEntry_rawValue);
 
-    assert.ok(newEntry_rawValue.id, 'Did not create an entry');
+    // Should probably be made in one call
+    // Though seems feathers is not made for large single calls
+    // "Hooks are commonly used to handle things like validation, logging, populating related entities,"
+    // So i guess could be done by hooks 
+    // const rawVal = await raw_valueService.create({
+    //   propertyId: newEntry_rawValue.id,
+    //   defaultValue: '1'
+    // });
+    idRawValue = newPropertyRawValue.id;
+    console.log('new entry:', newPropertyRawValue);
+    const rawVal = await rawValueService.get(newPropertyRawValue.id);
+    assert.ok(newPropertyRawValue.id, 'Did not create an entry');
+    assert.ok(rawVal.propertyId, 'Did not create a raw value for entry');
+    console.log('Defaultvalue: ', rawVal.defaultValue);
+    assert.ok(rawVal.defaultValue === '1', 'Default value for raw value was not as expecteds');
+
+  });
+
+  // Raw value
+  it('created an entry of ref type raw_value without default value', async () => { 
+    newPropertyRawValue = await service.create({
+      systemId: system.id,
+      domainId: domain.id,
+      name: 'testProperty',
+      dataType: 'int',
+      referenceType: 'raw_value',
+      // Passed as data for raw values for hook, not to be peristed in properties
+    });
+
+    // Should probably be made in one call
+    // Though seems feathers is not made for large single calls
+    // "Hooks are commonly used to handle things like validation, logging, populating related entities,"
+    // So i guess could be done by hooks 
+    // const rawVal = await raw_valueService.create({
+    //   propertyId: newEntry_rawValue.id,
+    //   defaultValue: '1'
+    // });
+    idRawValue = newPropertyRawValue.id;
+    console.log('new entry:', newPropertyRawValue);
+    const rawVal = await rawValueService.get(newPropertyRawValue.id);
+    assert.ok(newPropertyRawValue.id, 'Did not create an entry');
+    assert.ok(rawVal.propertyId, 'Did not create a raw value for entry');
+    console.log('Defaultvalue: ', rawVal.defaultValue);
+    assert.ok(rawVal.defaultValue === null, 'Default value was not empty');
+
   });
 
   // it('patched an entry of ref type raw_value', async () => {
@@ -66,17 +115,16 @@ describe('\'properties\' service', () => {
 
   // Property ref
   it('created an entry of ref type property (direct lookup)', async () => {
-    newEntry_rawValue = await service.create({
+    newPropertyDirectLookup = await service.create({
       system_id: system.id,
       domain_id: domain.id,
       name: 'testProperty',
-      data_type: 'int',
-      reference_type: 'property',
-      reference: id_rawValue
+      dataType: 'int',
+      referenceType: 'property',
     });
-    console.log('new entry:', newEntry_rawValue);
+    console.log('new entry:', newPropertyRawValue);
 
-    assert.ok(newEntry_rawValue.id, 'Did not create an entry');
+    assert.ok(newPropertyRawValue.id, 'Did not create an entry');
   });
 
   // it('read referenced entry of entry ref type property (direct lookup)', async () => {

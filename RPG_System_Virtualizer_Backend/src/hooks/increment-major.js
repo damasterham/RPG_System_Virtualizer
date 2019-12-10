@@ -7,15 +7,15 @@ module.exports = (options = {}) => {
     let service;
     let id;
     // Determines the specific parent to progoate change to
-    if (context.result.function_id) {
+    if (context.result.functionId) {
       service = context.app.service('functions');
-      id = context.result.function_id;
-    } else if (context.result.domain_id) {
+      id = context.result.functionId;
+    } else if (context.result.domainId) {
       service = context.app.service('domains');
-      id = context.result.domain_id;
-    } else if (context.result.system_id) {
+      id = context.result.domainId;
+    } else if (context.result.systemId) {
       service = context.app.service('systems');
-      id = context.result.system_id;
+      id = context.result.systemId;
     }
     // Updates parents major version number
     const res = await service.get(id);

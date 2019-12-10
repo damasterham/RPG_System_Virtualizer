@@ -19,7 +19,7 @@ module.exports = function (app) {
       type: Primitives,
       allowNull: false
     },
-    reference_type: {
+    referenceType: {
       type: DataTypes.ENUM('function', 'property', 'raw_value'),
       allowNull: false
     },

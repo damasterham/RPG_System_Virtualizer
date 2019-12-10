@@ -13,7 +13,7 @@ module.exports = function (app) {
     },
     defaultValue: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     }
   }, {
 

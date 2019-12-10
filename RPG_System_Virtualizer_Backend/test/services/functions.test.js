@@ -14,14 +14,14 @@ describe('\'functions\' service', () => {
     // Create System
     const systemService = app.service('systems');
     system = await systemService.create({
-      name: 'test'
+      name: 'FunctionTests-System'
     });
 
     // Create Domain
     domainService = app.service('domains');
     domain = await domainService.create({
       system_id: system.id,
-      name: 'test'
+      name: 'FunctionTests-Domain'
     });
   });
 
@@ -31,12 +31,12 @@ describe('\'functions\' service', () => {
 
   it('created an entry', async () => {
     newEntry = await service.create({
-      system_id: system.id,
-      domain_id: domain.id,
+      systemId: system.id,
+      domainId: domain.id,
       name: 'testFunction',
       definition: '6 / 2',
-      data_type: 'int',
-      function_type: 'equation'
+      dataType: 'int',
+      functionType: 'equation'
     });
     console.log('new entry:', newEntry);
 
