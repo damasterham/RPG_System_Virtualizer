@@ -14,6 +14,14 @@ module.exports = function (app) {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    imagelink: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     version: {
       type: DataTypes.TEXT,
       allowNull: false,
