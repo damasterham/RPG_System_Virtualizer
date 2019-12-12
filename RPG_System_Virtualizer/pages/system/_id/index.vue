@@ -9,7 +9,7 @@
       <v-row>
         <v-col v-for="item in systems" :key="item.id" cols="3">
           <v-card raised height="100%" width="100%" @click="selectSystem(item)">
-            <v-img v-if="!item.addNew" v-show="item.imagelink.length > 0" height="200px" :src="item.imagelink" />
+            <v-img v-if="!item.addNew" v-show="item.imagelink.length > 0" contain height="200px" :src="item.imagelink" />
             <v-img v-else height="200px" src="https://cdn.iview.abc.net.au/thumbs/1200/ck/CK1714V_59a4b949bbec1_1280.jpg" />
             <v-card-title>{{ item.name }}</v-card-title>
             <v-card-subtitle>{{ item.shorthand }}</v-card-subtitle>
@@ -20,60 +20,71 @@
     </v-container>
 
     <!-------------------------------------------------------------- Create new System -->
-    <v-dialog v-model="createDialog" height="800px" width="50%">
-      <v-card height="100%">
-        <v-container fill-height style="padding-right: 25px; padding-left: 25px">
-          <v-layout row wrap>
-            <v-flex xs12>
-              <v-text-field v-model="newSystemName" label="Name" />
-              <v-text-field v-model="newSystemShorthand" label="Shorthand" />
-              <v-textarea v-model="newSystemDescription" label="Description" />
-              <v-text-field v-model="newSystemImage" label="Image Link" />
-              <v-img v-show="newSystemImage.length > 0" height="200px" :src="newSystemImage" />
-            </v-flex>
-            <v-spacer />
-            <v-flex xs12>
-              <SaveCancelButtons
-                :commit-button-text="'Create'"
-                :disable-commit="newSystemName.length <= 0"
-                @commit="create()"
-                @cancel="toggleCreateDialog()"
-              />
-            </v-flex>
-          </v-layout>
-        </v-container>
-      </v-card>
-    </v-dialog>
+    <FillOutDialog :toggle="createDialog" :height="'800px'" :width="'50%'">
+      <template v-slot:toolbar>
+        <v-toolbar>
+          Creating New System
+        </v-toolbar>
+      </template>
+      <template v-slot:content>
+        <v-text-field v-model="newSystemName" label="Name" />
+        <v-text-field v-model="newSystemShorthand" label="Shorthand" />
+        <v-textarea v-model="newSystemDescription" label="Description" />
+        <v-divider mb-2 />
+        <v-text-field v-model="newSystemImage" label="Image Link" />
+        <v-img :src="newSystemImage" contain height="200px" />
+      </template>
+      <template v-slot:buttons>
+        <SaveCancelButtons
+          :commit-button-text="'Create'"
+          :disable-commit="newSystemName.length <= 0"
+          @commit="create()"
+          @cancel="emptyNewSystem()"
+        />
+      </template>
+    </FillOutDialog>
 
     <!-------------------------------------------------------------- Inspect System -->
-    <v-dialog v-model="inspectDialog">
-      <v-card height="100%">
-        <v-container fill-height style="padding-right: 25px; padding-left: 25px">
-          <v-layout row wrap>
-            <v-flex xs12>
-              <v-text-field :value="systemName" label="Name" @change="systemName = $event" />
-              <v-text-field :value="systemShorthand" label="Shorthand" @change="systemShorthand = $event" />
-              <v-text-field :value="systemImage" label="Image Link" @change="systemImage = $event" />
-              <v-textarea :value="systemDescription" label="Description" @change="systemDescription = $event" />
-            </v-flex>
-            <v-spacer />
-            <v-flex xs12>
-              <!-- Buttons to access the different components of the system (System Designer, Layout Designer, Element Creator, System Utilizer) -->
-            </v-flex>
-          </v-layout>
-        </v-container>
-      </v-card>
-    </v-dialog>
+    <FillOutDialog :toggle="inspectDialog" :height="'800px'" :width="'50%'">
+      <template v-slot:toolbar>
+        <v-toolbar>
+          <v-btn text color="Primary">
+            System Designer
+          </v-btn>
+          <v-btn text color="Primary">
+            Layout Designer
+          </v-btn>
+          <v-btn text color="Primary">
+            Element Creator
+          </v-btn>
+        </v-toolbar>
+      </template>
+      <template v-slot:content>
+        <v-text-field :value="systemName" label="Name" @change="systemName = $event" />
+        <v-text-field :value="systemShorthand" label="Shorthand" @change="systemShorthand = $event" />
+        <v-textarea :value="systemDescription" label="Description" @change="systemDescription = $event" />
+        <v-divider mb-2 />
+        <v-text-field :value="systemImage" label="Image Link" @change="systemImage = $event" />
+        <v-img :src="systemImage" contain height="200px" />
+      </template>
+      <template v-slot:buttons>
+        <v-btn color="Primary" outlined @click="inspectDialog = false">
+          Cancel
+        </v-btn>
+      </template>
+    </FillOutDialog>
   </v-app>
 </template>
 
 <script>
 import SaveCancelButtons from '~/components/save-cancel-buttons.vue'
+import FillOutDialog from '~/components/fill-out-dialog.vue'
 
 import service from '~/plugins/feathers-service.js'
 export default {
   components: {
-    SaveCancelButtons
+    SaveCancelButtons,
+    FillOutDialog
   },
   data () {
     return {
@@ -108,7 +119,7 @@ export default {
     },
     systemImage: {
       get () {
-        return this.system.imagelink
+        return this.system.imagelink || ''
       },
       set (value) {
         this.system.imagelink = value
@@ -145,15 +156,12 @@ export default {
   methods: {
     selectSystem (system) {
       if (system.addNew) {
-        this.toggleCreateDialog()
+        this.createDialog = true
       } else {
         console.log('system selected:', system)
         this.system = { ...system }
         this.inspectDialog = true
       }
-    },
-    toggleCreateDialog () {
-      this.createDialog = !this.createDialog
     },
     create () {
       this.$store.dispatch('systems/create', {
@@ -162,7 +170,10 @@ export default {
         imagelink: this.newSystemImage,
         description: this.newSystemDescription
       })
-      this.toggleCreateDialog()
+      this.emptyNewSystem()
+    },
+    emptyNewSystem () {
+      this.createDialog = false
       this.newSystemName = ''
       this.newSystemShorthand = ''
       this.newSystemDescription = ''
