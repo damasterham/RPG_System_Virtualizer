@@ -1,0 +1,3 @@
+Warning!
+When running tests, set configs evn.state to something other than "db_dev"
+otherwise it will seemingly tear down the database upon completion
