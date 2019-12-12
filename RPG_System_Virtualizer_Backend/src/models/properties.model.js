@@ -5,7 +5,7 @@ const DataTypes = Sequelize.DataTypes;
 const Primitives = require('./primitives');
 
 module.exports = function (app) {
-  const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
+  const sequelizeClient = app.get('sequelize');
   const properties = sequelizeClient.define('properties', {
     name: {
       type: DataTypes.TEXT,

@@ -4,7 +4,7 @@ const Sequelize = require('sequelize');
 const DataTypes = Sequelize.DataTypes;
 
 module.exports = function (app) {
-  const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
+  const sequelizeClient = app.get('sequelize');
   const rawValueInstances = sequelizeClient.define('raw_value_instances', {
     text: {
       type: DataTypes.STRING,
