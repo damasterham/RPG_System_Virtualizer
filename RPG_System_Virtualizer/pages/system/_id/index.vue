@@ -48,7 +48,7 @@
     <FillOutDialog :toggle="inspectDialog" :height="'800px'" :width="'50%'">
       <template v-slot:toolbar>
         <v-toolbar>
-          <v-btn text color="Primary">
+          <v-btn text nuxt color="Primary" to="/system/id/system-designer">
             System Designer
           </v-btn>
           <v-btn text color="Primary">
@@ -151,14 +151,12 @@ export default {
   mounted () {
     this.$store.commit('systems/clear')
     this.$store.dispatch('systems/find', { query: { id: { $gte: 0 } } })
-    console.log(this.$store)
   },
   methods: {
     selectSystem (system) {
       if (system.addNew) {
         this.createDialog = true
       } else {
-        console.log('system selected:', system)
         this.system = { ...system }
         this.inspectDialog = true
       }
@@ -178,9 +176,6 @@ export default {
       this.newSystemShorthand = ''
       this.newSystemDescription = ''
       this.newSystemImage = ''
-    },
-    logIt (x) {
-      console.log(x)
     }
   }
 }
