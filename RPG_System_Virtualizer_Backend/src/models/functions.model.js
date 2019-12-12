@@ -4,6 +4,7 @@ const Sequelize = require('sequelize');
 const DataTypes = Sequelize.DataTypes;
 const Primitives = require('./primitives');
 
+// TODO unique (domain.id, function.name)
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelize');
   const functions = sequelizeClient.define('functions', {
@@ -51,20 +52,23 @@ module.exports = function (app) {
 
     // Property with reference to a function
     functions.belongsToMany(models.properties, {
-      as: 'PropertyFunction',
+      as: 'propertyFunction',
       through: 'properties_functions',
       otherKey: {
-        name: 'property_id',
+        name: 'propertyId',
         unique: true
+      },
+      foreignKey: {
+        name: 'functionId'
       }
     });
 
     // Variable with reference to a function
     functions.belongsToMany(models.variables, {
-      as: 'VariableFunction',
+      as: 'variableFunction',
       through: 'variables_functions',
       otherKey: {
-        name: 'variable_id',
+        name: 'variableId',
         unique: true,
       }
     });
