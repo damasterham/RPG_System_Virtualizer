@@ -4,7 +4,7 @@ const Sequelize = require('sequelize');
 const DataTypes = Sequelize.DataTypes;
 
 module.exports = function (app) {
-  const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
+  const sequelizeClient = app.get('sequelize');
   const domains = sequelizeClient.define('domains', {
     name: {
       type: DataTypes.TEXT,
@@ -36,9 +36,6 @@ module.exports = function (app) {
     // of model that other models are dependant on. It just just sets null on column
     // used as the foreign key
 
-    // TODO: Model out how domain inheritance should be checked
-    // sketch a graph of it
-
     // Systems.id <= Domains.system_id
     domains.belongsTo(models.systems);
     // models.systems.hasMany(domains);
@@ -52,13 +49,22 @@ module.exports = function (app) {
       // constraint: false,
     });
 
+    // Domain dependencies
+    domains.belongsToMany(domains, {
+      as: 'domainDependencies',
+      through: 'domain_dependencies',
+      foreignKey: {
+        name: 'domainId',
+      }
+    });
+
 
     // Domain associations used as glorified enum
     domains.belongsToMany(models.properties, {
-      as: 'PropertyDomainEnum',
+      as: 'propertyDomainEnum',
       through: 'property_domain_enums',
       otherKey: {
-        name: 'property_id',
+        name: 'propertyId',
         unique: true,
       }
     });

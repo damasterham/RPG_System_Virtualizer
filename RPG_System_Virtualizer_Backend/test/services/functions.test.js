@@ -38,14 +38,13 @@ describe('\'functions\' service', () => {
       dataType: 'int',
       functionType: 'equation'
     });
-    console.log('new entry:', newEntry);
 
     assert.ok(newEntry.id, 'Did not create an entry');
   });
 
   it('patched an entry', async () => {
     patchedEntry = await service.patch(newEntry.id, { name: 'newName' });
-    console.log('Patched Entry:', patchedEntry);
+    ('Patched Entry:', patchedEntry);
 
     assert.ok(patchedEntry.name === 'newName', 'Did not patch an entry');
     assert.ok(patchedEntry.version === '0.1', 'Did not increment minor version number');
@@ -53,10 +52,8 @@ describe('\'functions\' service', () => {
 
   it('removed an entry', async () => {
     const res = await service.remove(patchedEntry.id);
-    console.log('removed entry:', res);
     assert.ok(res.id, 'entry was not removed');
     const domain = await domainService.get(res.domain_id);
-    console.log('major version increment domain:', domain);
     assert.ok(domain.version === '1.0');
   });
 });

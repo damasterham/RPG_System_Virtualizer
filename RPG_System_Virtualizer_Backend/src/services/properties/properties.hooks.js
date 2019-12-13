@@ -2,8 +2,6 @@ const incrementMinor = require('../../hooks/increment-minor');
 
 const incrementMajor = require('../../hooks/increment-major');
 
-const createRawValue = require('../../hooks/create-raw-value');
-
 const setPropertyReferenceType = require('../../hooks/set-property-reference-type');
 
 module.exports = {
@@ -21,9 +19,9 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [createRawValue(), setPropertyReferenceType()],
+    create: [setPropertyReferenceType()],
     update: [],
-    patch: [createRawValue(), setPropertyReferenceType()],
+    patch: [setPropertyReferenceType()],
     remove: [incrementMajor()]
   },
 
