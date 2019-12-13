@@ -48,7 +48,7 @@
     <FillOutDialog :toggle="inspectDialog" :height="'800px'" :width="'50%'">
       <template v-slot:toolbar>
         <v-toolbar>
-          <v-btn text nuxt color="Primary" to="/system/id/system-designer">
+          <v-btn text color="Primary" @click="openSystemDesigner()">
             System Designer
           </v-btn>
           <v-btn text color="Primary">
@@ -160,6 +160,10 @@ export default {
         this.system = { ...system }
         this.inspectDialog = true
       }
+    },
+    openSystemDesigner () {
+      this.$store.commit('selectSystem', this.system)
+      this.$router.push({ name: 'system-id-systemDesigner', params: { id: this.system.id } })
     },
     create () {
       this.$store.dispatch('systems/create', {
