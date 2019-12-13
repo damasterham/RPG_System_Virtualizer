@@ -10,7 +10,8 @@ module.exports = function (app) {
   const functions = sequelizeClient.define('functions', {
     name: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
+      unique: 'domainFunctionUnique'
     },
     definition: {
       type: DataTypes.TEXT,
@@ -48,7 +49,11 @@ module.exports = function (app) {
 
     // Domain owner of functions
     // Functions.domain_id => Domains.id
-    functions.belongsTo(models.domains);
+    functions.belongsTo(models.domains,{
+      foreignKey: {
+        unique: 'domainFunctionUnique'
+      }
+    });
 
     // Property with reference to a function
     functions.belongsToMany(models.properties, {

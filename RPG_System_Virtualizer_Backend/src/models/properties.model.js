@@ -9,7 +9,8 @@ module.exports = function (app) {
   const properties = sequelizeClient.define('properties', {
     name: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
+      unique: 'domainPropertyUnique'
     },
     shorthand: {
       type: DataTypes.TEXT,
@@ -48,7 +49,11 @@ module.exports = function (app) {
 
     // Domain owner of properties
     // Properties.domain_id => Domains.id
-    properties.belongsTo(models.domains);
+    properties.belongsTo(models.domains,{
+      foreignKey: {
+        unique: 'domainPropertyUnique'
+      }
+    });
 
 
     // Reference belongsTo eithers a raw value (itself) (null), properties or funtions

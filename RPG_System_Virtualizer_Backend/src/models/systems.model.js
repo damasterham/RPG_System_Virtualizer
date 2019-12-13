@@ -9,6 +9,7 @@ module.exports = function (app) {
     name: {
       type: DataTypes.TEXT,
       allowNull: false,
+      // Possibly make unique or make composite unique of user.id & system.name
     },
     shorthand: {
       type: DataTypes.TEXT,
