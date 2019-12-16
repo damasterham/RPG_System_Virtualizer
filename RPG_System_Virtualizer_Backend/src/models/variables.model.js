@@ -9,7 +9,8 @@ module.exports = function (app) {
   const variables = sequelizeClient.define('variables', {
     name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      unique: 'functionVariableUnique'
     },
     dataType: {
       type: Primitives,
@@ -44,7 +45,11 @@ module.exports = function (app) {
 
     // Variables.function_id => Functions.id
     // corresponds to parameters of function
-    variables.belongsTo(models.functions);
+    variables.belongsTo(models.functions, {
+      foreignKey: {
+        unique: 'functionVariableUnique'
+      }
+    });
 
   };
 

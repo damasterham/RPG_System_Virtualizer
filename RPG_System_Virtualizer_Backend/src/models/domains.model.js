@@ -8,7 +8,8 @@ module.exports = function (app) {
   const domains = sequelizeClient.define('domains', {
     name: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
+      unique: 'systemDomainUnique'
     },
     shorthand: {
       type: DataTypes.TEXT,
@@ -37,13 +38,17 @@ module.exports = function (app) {
     // used as the foreign key
 
     // Systems.id <= Domains.system_id
-    domains.belongsTo(models.systems);
+    domains.belongsTo(models.systems, {
+      foreignKey: {
+        unique: 'systemDomainUnique'
+      }
+    });
     // models.systems.hasMany(domains);
 
     // Domains.id <= Domains.parent_domain_id
     domains.hasOne(domains, {
       foreignKey:  {
-        name: 'parent_domain_id',
+        name: 'parentDomainId',
         allowNull: true
       }
       // constraint: false,

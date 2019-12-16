@@ -30,7 +30,7 @@ module.exports = function (app) {
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
     rawValues.belongsTo(models.properties, {
       foreignkey:{
-        name: 'property_id',
+        name: 'propertyId',
         // primaryKey: true,
         // allowNull: false
       }
