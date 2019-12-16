@@ -4,7 +4,8 @@ const app = require('../../src/app');
 describe('\'properties\' service', () => {
   let sequelize;
   let system;
-  let domain;
+  let domainSome;
+  let domainOther;
   let propertiesService;
   let domainsService;
   let functionsService;
@@ -29,9 +30,13 @@ describe('\'properties\' service', () => {
 
     // Create Domain
     domainsService = app.service('domains');
-    domain = await domainsService.create({
+    domainSome = await domainsService.create({
       systemId: system.id,
-      name: 'test'
+      name: 'PropertyTest-DomainSome'
+    });
+    domainOther = await domainsService.create({
+      systemId: system.id,
+      name: 'PropertyTest-DomainOther'
     });
 
     // Functions service
@@ -49,13 +54,14 @@ describe('\'properties\' service', () => {
   it('created an entry of ref type raw_value with default value', async () => {
     newPropertyRawValue = await propertiesService.create({
       systemId: system.id,
-      domainId: domain.id,
-      name: 'testProperty',
+      domainId: domainSome.id,
+      name: 'PropertyTest-RawValue',
       dataType: 'int',
       referenceType: 'raw_value',
       // Passed as data for raw values for hook, not to be peristed in properties
       defaultValue: '1'
     });
+
 
     // Should probably be made in one call
     // Though seems feathers is not made for large single calls
@@ -73,12 +79,27 @@ describe('\'properties\' service', () => {
 
   });
 
+  it('did not create property with same name', () => {
+    assert.rejects(propertiesService.create({
+      systemId: system.id,
+      domainId: domainSome.id,
+      name: 'PropertyTest-RawValue',
+      dataType: 'int',
+      referenceType: 'raw_value',
+      defaultValue: '1'
+    }),
+    { name: 'BadRequest'},
+    'Did not throw a BadRequest error on duplicate names');
+
+    // Also check reference not made???
+  });
+
   // Raw value without default val
   it('created an entry of ref type raw_value without default value', async () => {
     newPropertyRawValue = await propertiesService.create({
       systemId: system.id,
-      domainId: domain.id,
-      name: 'testProperty',
+      domainId: domainSome.id,
+      name: 'PropertyTest-RawValue-NoDefault',
       dataType: 'int',
       referenceType: 'raw_value',
       // Passed as data for raw values for hook, not to be peristed in properties
@@ -121,7 +142,7 @@ describe('\'properties\' service', () => {
   it('created an entry of ref type property (direct lookup)', async () => {
     newPropertyDirectLookup = await propertiesService.create({
       systemId: system.id,
-      domainId: domain.id,
+      domainId: domainSome.id,
       name: 'testProperty',
       dataType: 'int',
       referenceType: 'property',
@@ -142,7 +163,7 @@ describe('\'properties\' service', () => {
   it('created an entry of ref type function with reference', async () => {
     const newFunction = await functionsService.create({
       systemId: system.id,
-      domainId: domain.id,
+      domainId: domainSome.id,
       name: 'PropertyTest-Function',
       dataType: 'int',
       functionType: 'equation',
@@ -151,7 +172,7 @@ describe('\'properties\' service', () => {
 
     const newPropertyFunction = await propertiesService.create({
       systemId: system.id,
-      domainId: domain.id,
+      domainId: domainSome.id,
       name: 'PropertyTest-PropertyFunction',
       dataType: 'int',
       referenceType: 'function',
@@ -169,47 +190,54 @@ describe('\'properties\' service', () => {
     assert.ok(propertyFunctionReference.functionId === newFunction.id, 'Did not create a reference between property and function');
   });
 
-  it('failed when attempting to create an entry of ref type domains, without domain dependency', async () => {
-    const newDomain = await domainsService.create({
-      systemId: system.id,
-      name: 'otherDomain'
-    });
+  it('should fail when attempting to create an entry of ref type domains, without domain dependency', async () => {
+    let newPropertyDomain;
 
-    const newPropertyDomain = await propertiesService.create({
+    assert.rejects(propertiesService.create({
       systemId: system.id,
-      domainId: domain.id,
-      name: 'PropertyTest-PropertyDomain',
+      domainId: domainSome.id,
+      name: 'PropertyTest-PropertyDomain-NoDepndency',
       dataType: 'int',
       referenceType: 'domain',
-      propertyReference: newDomain.id
-    });
+      propertyReference: domainOther.id
+    }).then((newPropertyDomain) => {
+      sequelize.models.property_domain_enums.findOne({
+        where: {
+          propertyId: newPropertyDomain.id
+        }
+      }).then((propertyDomainReference) => {
+        assert.ok(propertyDomainReference.propertyId === null, 'Created a reference between property and domain, when there should no be one');
+      });
+    }),
+    { name: 'BadRequest' },
+    // { name: 'BadReferenceError'},
+    'Created a property domain reference, even when the domain was not in the properties domain dependencies'
+    );
 
-    const propertyDomainReference = await sequelize.models.property_domain_enums.findOne({
-      where: {
-        propertyId: newPropertyDomain.id
-      }
-    });
-
-    assert.ok(propertyDomainReference.propertyId === null, 'Created a reference between property and domain, when there should no be one');
+    // if (newPropertyDomain)
+    // {
+    //   const propertyDomainReference = await sequelize.models.property_domain_enums.findOne({
+    //     where: {
+    //       propertyId: newPropertyDomain.id
+    //     }
+    //   });
+    //   assert.ok(propertyDomainReference.propertyId === null, 'Created a reference between property and domain, when there should no be one');
+    // }
     // assert.ok(propertyDomainReference.domainId === newDomain.id, 'Did not create a reference between property and domain');
   });
 
-  it('created an entry of ref type domains', async () => {
-    const newDomain = await domainsService.create({
-      systemId: system.id,
-      name: 'otherDomain'
-    });
 
+  it('created an entry of ref type domains', async () => {
     // Adds newDomain as dependency to domain
-    domainsService.addDependency(domain, newDomain);
+    domainsService.addDependency(domainSome, domainOther);
 
     const newPropertyDomain = await propertiesService.create({
       systemId: system.id,
-      domainId: domain.id,
+      domainId: domainSome.id,
       name: 'PropertyTest-PropertyDomain',
       dataType: 'int',
       referenceType: 'domain',
-      propertyReference: newDomain.id
+      propertyReference: domainOther.id
     });
 
     const propertyDomainReference = await sequelize.models.property_domain_enums.findOne({
@@ -219,7 +247,7 @@ describe('\'properties\' service', () => {
     });
 
     assert.ok(propertyDomainReference.propertyId, 'Did not create a reference between property and domain');
-    assert.ok(propertyDomainReference.domainId === newDomain.id, 'Did not create a reference between property and domain');
+    assert.ok(propertyDomainReference.domainId === domainOther.id, 'Did not create a reference between property and domain');
   });
 
 

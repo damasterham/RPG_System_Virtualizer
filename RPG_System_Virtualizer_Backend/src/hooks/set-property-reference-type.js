@@ -52,12 +52,49 @@ module.exports = (options = {}) => {
 
     // TODO make domain dependencies check, to ensure no circular dependencies
     case 'domain': {
-      const propertyDomainEnums = sequelize.models.property_domain_enums;
+      // Check if in domain dependencies
+      const domainDependencies = sequelize.models.domain_dependencies;
 
-      await propertyDomainEnums.create({
-        propertyId: context.result.id,
-        domainId: context.data.propertyReference
+      const dependencies = await domainDependencies.findOne({
+        where: {
+          domainId: context.data.domainId,
+          domainDependencyId: context.data.propertyReference
+        }
       });
+
+      if (dependencies)
+      {
+        // Create domain reference
+        const propertyDomainEnums = sequelize.models.property_domain_enums;
+        await propertyDomainEnums.create({
+          propertyId: context.result.id,
+          domainId: context.data.propertyReference
+        });
+      }
+      else
+      {
+        // Throw error about trying to use a domain for a property
+        // Without a dependency to that domain
+        return Promise.reject({
+          name: 'BadReferenceError',
+          message: `BadReferenceError: You are attempting to use a domain as a property reference
+          that is not a dependency on the properties domain. Add the desired domain for the property reference domain
+          to the properties domain dependencies before adding it as a property reference domain.`
+        });
+
+        /*
+        throw ({
+          name: 'BadReferenceError',
+          message: `You are attempting to use a domain as a property reference
+          that is not a dependency on the properties domain. Add the desired domain for the property reference domain
+          to the properties domain dependencies before adding it as a property reference domain.`
+        });
+        */
+
+
+      }
+
+
     }
       break;
 
