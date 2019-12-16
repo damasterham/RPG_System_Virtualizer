@@ -2,7 +2,7 @@
   <v-app>
     <v-navigation-drawer v-model="domainDrawer" app>
       <!-- List of all domains, add new / rename / delete domain functionality -->
-      <v-list shaped>
+      <v-list dense shaped>
         <v-list-item @click="newDomain()">
           <v-list-item-title>
             Add Domain
@@ -50,42 +50,92 @@
         </v-app-bar-nav-icon>
         <v-toolbar-title>System Designer{{ system.name ? ' - ' : '' }}{{ system.name }}</v-toolbar-title>
       </v-app-bar>
-      <v-container fill-height>
-        <v-row>
+      <v-container fluid fill-height>
+        <v-row dense style="height: 100%">
           <v-col id="Domain Overview" cols="3">
+            <domainOverview
+              :domain="domain"
+              @newProperty="newProperty()"
+              @newFunction="newFunction($event)"
+            />
             <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
           </v-col>
           <v-divider vertical />
           <v-col id="Domain Family Settings" cols="3">
+            <domainInheritance :domain="domain" />
             <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
           </v-col>
           <v-divider vertical />
           <v-col id="Property/Function Settings" cols="6">
             <v-row>
               <v-col id="Property Settings">
+                <propertySettings :domain="domain" />
                 <!-- Property overview & settings -->
               </v-col>
             </v-row>
             <v-row>
               <v-col id="Function Settings">
+                <functionSettings :domain="domain" />
                 <!-- function overview & settings -->
               </v-col>
             </v-row>
           </v-col>
         </v-row>
       </v-container>
+      <!-- New property Dialog -->
+      <fillOutDialog :toggle="newPropDialog">
+        <template v-slot:content>
+          <v-text-field v-model="newPropName" />
+        </template>
+      </fillOutDialog>
+      <!-- New Function Dialog -->
+      <fillOutDialog :toggle="newFuncDialog">
+        <template v-slot:content>
+          <v-text-field readonly :value="newFuncType | capitalizeFirstLetter" />
+          <v-text-field v-model="newFuncName" />
+        </template>
+      </fillOutDialog>
     </v-content>
   </v-app>
 </template>
 
 <script>
+import domainInheritance from '~/components/domain-inheritance.vue'
+import domainOverview from '~/components/domain-overview.vue'
+import propertySettings from '~/components/property-settings.vue'
+import functionSettings from '~/components/function-settings.vue'
+import fillOutDialog from '~/components/fill-out-dialog.vue'
+
 import service from '~/plugins/feathers-service.js'
 
 export default {
+  components: {
+    domainInheritance,
+    domainOverview,
+    propertySettings,
+    functionSettings,
+    fillOutDialog
+  },
+  filters: {
+    capitalizeFirstLetter (val) {
+      return val.charAt(0).toUpperCase() + val.substring(1)
+    }
+  },
   data () {
     return {
       domainDrawer: false,
-      domainNameEdit: 0
+      domainNameEdit: 0,
+
+      // New property
+      newPropDialog: false,
+      newProp: {},
+      newPropName: '',
+
+      // New Function
+      newFuncDialog: false,
+      newFunc: {},
+      newFuncName: '',
+      newFuncType: ''
     }
   },
   computed: {
@@ -149,6 +199,13 @@ export default {
     },
     deleteDomain (domain) {
       this.$store.dispatch('domains/remove', domain.id)
+    },
+    newProperty () {
+      this.newPropDialog = true
+    },
+    newFunction (ev) {
+      this.newFuncDialog = true
+      this.newFuncType = ev.type
     }
   }
 }
