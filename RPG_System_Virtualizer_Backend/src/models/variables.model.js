@@ -47,7 +47,8 @@ module.exports = function (app) {
     // corresponds to parameters of function
     variables.belongsTo(models.functions, {
       foreignKey: {
-        unique: 'functionVariableUnique'
+        unique: 'functionVariableUnique',
+        allowNull: false
       }
     });
 

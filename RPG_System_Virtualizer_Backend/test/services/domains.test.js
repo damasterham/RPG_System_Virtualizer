@@ -28,13 +28,26 @@ describe('\'domains\' service', () => {
     assert.ok(service, 'Registered the service');
   });
 
-  it('created a domain entry', async () => {
+  it('created a domain entry, with name property', async () => {
     newEntry = await service.create({
       systemId: system.id,
       name: 'DomainsTest-Domain',
       shorthand: 'DT-D'
     });
     assert.ok(newEntry.id, 'Did not create entry');
+    const nameProp = newEntry.properties[0];
+    assert.ok(nameProp.id, 'Did not pass name property to domain.properties[]');
+    assert.ok(nameProp.name === 'Name', 'Did not pass name property to domain.properties[]');
+
+    const nameProperty = await sequelize.models.properties.findOne({
+      where: {
+        domainId: newEntry.id,
+        name: 'Name'
+      }
+    });
+    assert.ok(nameProperty.id, 'Did not create name property as default for new domain');
+    assert.ok(nameProperty.name === 'Name', 'Did not create name property as default for new domain');
+    assert.ok(nameProperty.dataType === 'string', 'Did not create name property as default for new domain');
   });
 
   it('did not create domain with same name', () => {

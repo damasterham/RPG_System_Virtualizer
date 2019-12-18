@@ -25,32 +25,33 @@ module.exports = (options = {}) => {
       // context.app.service('properties')
       // Needs to be able to create entry in junction table properties_properties
       // const sequelizeClient = app.get('sequelize');
-      const propertyReference = sequelize.models.properties_properties;
+      const propertyDirectReference = sequelize.models.properties_properties;
 
       // Adds property reference to properties_properties
 
       // using though in .belongsToMany() should supposedly create new add* methods to contextual models, but doesn't seem to work
       // properties.addPropertyReference({
 
-      await propertyReference.create({
+      // Could be used to get relevant property if wanted
+      await propertyDirectReference.create({
         propertyId: context.result.id,
-        // property_reference_id: context.data.propertyReference,
-        propertyReferenceId: context.data.propertyReference,
+        propertyReferenceId: context.data.propertyReference.propertyId,
       });
     }
       break;
     case 'function': {
       // Needs to be able to create entry in junction table propertys_fuctions
       const propertyFunctions = sequelize.models.properties_functions;
-
+      // Could be used to get relevant function if wanted
       await propertyFunctions.create({
         propertyId: context.result.id,
-        functionId: context.data.propertyReference
+        functionId: context.data.propertyReference.functionId
       });
     }
       break;
 
     // TODO make domain dependencies check, to ensure no circular dependencies
+    // Partially completed?? with hook: validate-is-valid-property-reference.js
     case 'domain': {
       // Check if in domain dependencies
       const domainDependencies = sequelize.models.domain_dependencies;
@@ -58,7 +59,7 @@ module.exports = (options = {}) => {
       const dependencies = await domainDependencies.findOne({
         where: {
           domainId: context.data.domainId,
-          domainDependencyId: context.data.propertyReference
+          domainDependencyId: context.data.propertyReference.domainId
         }
       });
 
@@ -66,9 +67,10 @@ module.exports = (options = {}) => {
       {
         // Create domain reference
         const propertyDomainEnums = sequelize.models.property_domain_enums;
+        // Could be used to get relevant domain if wanted
         await propertyDomainEnums.create({
           propertyId: context.result.id,
-          domainId: context.data.propertyReference
+          domainId: context.data.propertyReference.domainId
         });
       }
       else
@@ -90,21 +92,13 @@ module.exports = (options = {}) => {
           to the properties domain dependencies before adding it as a property reference domain.`
         });
         */
-
-
       }
-
-
     }
       break;
-
     default:
       // throw exception
       break;
     }
-
-
-
     return context;
   };
 };
