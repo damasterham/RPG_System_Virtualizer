@@ -15,7 +15,7 @@ module.exports = function (app) {
     },
     definition: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
     },
     dataType: {
       type: Primitives,
