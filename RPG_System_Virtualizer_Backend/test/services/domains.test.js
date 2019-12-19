@@ -6,7 +6,7 @@ describe('\'domains\' service', () => {
   let sequelize;
   let systemService;
   let system;
-  let service;
+  let domainService;
 
   let newEntry;
   let patchedEntry; // Parent
@@ -24,12 +24,12 @@ describe('\'domains\' service', () => {
   });
 
   it('registered "domains" service', async () => {
-    service = await app.service('domains');
-    assert.ok(service, 'Registered the service');
+    domainService = await app.service('domains');
+    assert.ok(domainService, 'Registered the service');
   });
 
   it('created a domain entry, with name property', async () => {
-    newEntry = await service.create({
+    newEntry = await domainService.create({
       systemId: system.id,
       name: 'DomainsTest-Domain',
       shorthand: 'DT-D'
@@ -51,7 +51,7 @@ describe('\'domains\' service', () => {
   });
 
   it('did not create domain with same name', () => {
-    assert.rejects(service.create({
+    assert.rejects(domainService.create({
       systemId: system.id,
       name: 'DomainsTest-Domain',
       shorthand: 'DT-D'
@@ -60,8 +60,8 @@ describe('\'domains\' service', () => {
     'Did not throw a BadRequest error on duplicate names');
   });
 
-  it('patched an entry', async () => {
-    patchedEntry = await service.patch(newEntry.id, { name: 'newName' });
+  it('patched an entry with new name', async () => {
+    patchedEntry = await domainService.patch(newEntry.id, { name: 'newName' });
 
     assert.ok(patchedEntry.name === 'newName', 'Did not patch an entry');
     assert.ok(patchedEntry.version === '0.1', 'Did not increment minor version number');
@@ -70,69 +70,122 @@ describe('\'domains\' service', () => {
     assert.ok(sys.version === '0.0', 'Incremented major version number for parent');
   });
 
-  it('added parent domain to entry', async () => {
-    entryWithParent = await service.create({
-      systemId: system.id,
-      name: 'DomainsTest-DomainWithParent',
-      shorthand: 'DT-DWP',
-      parentDomainId: patchedEntry.id
+  context('domain with inheritance', () => {
+    let entryWithoutParent;
+
+    it('created entry', async () =>{
+      entryWithoutParent = await domainService.create({
+        systemId: system.id,
+        name: 'DomainsTest-DomainWithParent',
+        shorthand: 'DT-DWP',
+        // parentDomainId: patchedEntry.id
+      });
+      assert.ok(entryWithoutParent.id, 'did not create an entry (with parent)');
     });
 
-    assert.ok(entryWithParent.id, 'Did not create new entry with parent domain');
-    assert.ok(entryWithParent.parentDomainId === patchedEntry.id, 'Did not create new entry with parent domain');
+    it('added parent domain to entry', async () => {
+      entryWithParent = await domainService.addParent(entryWithoutParent.id, patchedEntry.id);
+      assert.ok(entryWithParent.id === entryWithoutParent.id, 'did not patch an entry with parent');
+      assert.ok(entryWithParent.parentDomainId === patchedEntry.id, 'did not patch an entry with the correct parent');
+
+      assert.ok(entryWithParent.id, 'Did not create new entry with parent domain');
+      assert.ok(entryWithParent.parentDomainId === patchedEntry.id, 'Did not create new entry with parent domain');
+    });
   });
 
-  it('added a dependency to entry', async () => {
-    entryWithDependency = await service.create({
-      systemId: system.id,
-      name: 'DomainTest-DomainWithDependency',
-      shorthand: 'DT-DWD'
+  context('domain with dependencies', () => {
+    let otherDomainDependency;
+
+    it('created entry and added a dependency to entry', async () => {
+      entryWithDependency = await domainService.create({
+        systemId: system.id,
+        name: 'DomainTest-DomainWithDependency',
+        shorthand: 'DT-DWD'
+      });
+      assert.ok(entryWithDependency.id, 'did not create entry');
+
+      const dependecy = await domainService.addDependency(entryWithDependency.id, entryWithParent.id);
+      assert.ok(dependecy.domainId === entryWithDependency.id, 'dependency does not have correct domain id');
+      assert.ok(dependecy.domainDependencyId === entryWithParent.id, 'dependency does not have correct dependency id');
+      // const domain = await sequelize.models.domains.findByPk(entryWithDependency.id);
+      // const dependencies = await domain.getDomainDependencies();
+
+      // assert.ok(domain.id === entryWithDependency.id, 'Did not find the domain with dependecy');
+      // assert.ok(dependencies[0].id === entryWithParent.id, 'Dependency added to domain was not present');
     });
 
-    await service.addDependency(entryWithDependency, entryWithParent);
+    it('found all dependency ids of entry', async () => {
+      otherDomainDependency = await domainService.create({
+        systemId: system.id,
+        name: 'DomainTest-SomeDomainDependency',
+      });
+      assert.ok(otherDomainDependency.id, 'did not create entry');
 
-    // Attempt at making a large include statement, that makes domain dependencies be nested within a domain
-    // const entryAndDependencies = await sequelize.models.domains.findAll({
-    //   where: {
-    //     id: entryWithDependency.id
-    //   },
-    //   include: [{
-    //     // model: 'domains',
-    //     // as: 'domainDependencies',
-    //     association: 'domainDependencies',
-    //     through: {
-    //       where: {
-    //         domainId: entryWithDependency.id
-    //       }
-    //     }
-    //   }]
-    // });
-    // let dom;
+      const dependecy = await domainService.addDependency(entryWithDependency.id, otherDomainDependency.id);
+      assert.ok(dependecy.domainId === entryWithDependency.id, 'dependency does not have correct domain id');
+      assert.ok(dependecy.domainDependencyId === otherDomainDependency.id, 'dependency does not have correct dependency id');
 
-    // dom = await sequelize.models.domains.findByPk(entryWithDependency.id).then(domain => {
-    //   console.log('Domain',domain);
-    //   domain.getDomainDependencies().then(dependencies =>{
-    //     console.log('Dependencies', dependencies);
-    //   });
-    // });
+      const dependencies = await domainService.findAllDependencyIds(entryWithDependency.id);
+      assert.ok(dependencies.length === 2, 'there was not the expected amount of dependencies');
+      assert.ok(dependencies[0].domainId === entryWithDependency.id, 'dependency does not have correct domain id');
+      assert.ok(dependencies[0].domainDependencyId === entryWithParent.id, 'dependency does not have correct domain id');
+      assert.ok(dependencies[1].domainDependencyId === otherDomainDependency.id, 'dependency does not have correct domain id');
 
-    const domain = await sequelize.models.domains.findByPk(entryWithDependency.id);
-    const dependencies = await domain.getDomainDependencies();
-
-    assert.ok(domain.id === entryWithDependency.id, 'Did not find the domain with dependecy');
-    assert.ok(dependencies[0].id === entryWithParent.id, 'Dependency added to domain was not present');
-
-    // console.log('Domain DONE', domm);
-    // console.log('Dependencies DONE', depend);
-    // .then(() => {
-    //   console.log('DEPENDENCIES', entryAndDependencies);
-    // });
-
-    // entryAndDependencies.done();
-
-    // assert.ok(entryAndDependencies.id, 'Did not find entry with dependencies');
+    });
 
   });
+
+  // it('added parent domain to entry', async () => {
+  //   entryWithParent = await service.create({
+  //     systemId: system.id,
+  //     name: 'DomainsTest-DomainWithParent',
+  //     shorthand: 'DT-DWP',
+  //     parentDomainId: patchedEntry.id
+  //   });
+
+  //   assert.ok(entryWithParent.id, 'Did not create new entry with parent domain');
+  //   assert.ok(entryWithParent.parentDomainId === patchedEntry.id, 'Did not create new entry with parent domain');
+  // });
+
+
+
+  // Attempt at making a large include statement, that makes domain dependencies be nested within a domain
+  // const entryAndDependencies = await sequelize.models.domains.findAll({
+  //   where: {
+  //     id: entryWithDependency.id
+  //   },
+  //   include: [{
+  //     // model: 'domains',
+  //     // as: 'domainDependencies',
+  //     association: 'domainDependencies',
+  //     through: {
+  //       where: {
+  //         domainId: entryWithDependency.id
+  //       }
+  //     }
+  //   }]
+  // });
+  // let dom;
+
+  // dom = await sequelize.models.domains.findByPk(entryWithDependency.id).then(domain => {
+  //   console.log('Domain',domain);
+  //   domain.getDomainDependencies().then(dependencies =>{
+  //     console.log('Dependencies', dependencies);
+  //   });
+  // });
+
+
+
+  // console.log('Domain DONE', domm);
+  // console.log('Dependencies DONE', depend);
+  // .then(() => {
+  //   console.log('DEPENDENCIES', entryAndDependencies);
+  // });
+
+  // entryAndDependencies.done();
+
+  // assert.ok(entryAndDependencies.id, 'Did not find entry with dependencies');
+
 
   // TODO
 
@@ -188,7 +241,7 @@ describe('\'domains\' service', () => {
   context('independant domain with 1 dependency and no parent', () =>
   {
     it('was removed', async () => {
-      const res = await service.remove(patchedEntry.id);
+      const res = await domainService.remove(patchedEntry.id);
       assert.ok(res.id, 'entry was not removed');
       const sys = await systemService.get(patchedEntry.systemId);
       assert.ok(sys.version === '1.0', 'Did not increment major version number for parent');
