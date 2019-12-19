@@ -29,6 +29,7 @@ describe('\'functions\' service', () => {
     assert.ok(service, 'Did not register the service');
   });
 
+  // Should be invalid, as fucton must take at least 1 parameter
   it('created an entry', async () => {
     newEntry = await service.create({
       systemId: system.id,

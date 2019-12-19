@@ -4,14 +4,16 @@ const incrementMajor = require('../../hooks/increment-major');
 
 const setPropertyReferenceType = require('../../hooks/set-property-reference-type');
 
+const validateIsValidPropertyReference = require('../../hooks/validate-is-valid-property-reference');
+
 module.exports = {
   before: {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [validateIsValidPropertyReference()],
     update: [],
-    patch: [incrementMinor()],
+    patch: [incrementMinor(), validateIsValidPropertyReference()],
     remove: []
   },
 

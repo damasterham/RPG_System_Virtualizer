@@ -9,8 +9,9 @@ describe('\'domains\' service', () => {
   let service;
 
   let newEntry;
-  let patchedEntry;
-  let entryWithParent;
+  let patchedEntry; // Parent
+  let entryWithParent; // Dependency
+  let entryWithDependency;
 
   before(async () => {
     sequelize = app.get('sequelize');
@@ -24,17 +25,39 @@ describe('\'domains\' service', () => {
 
   it('registered "domains" service', async () => {
     service = await app.service('domains');
-
     assert.ok(service, 'Registered the service');
   });
 
-  it('created a domain entry', async () => {
+  it('created a domain entry, with name property', async () => {
     newEntry = await service.create({
       systemId: system.id,
       name: 'DomainsTest-Domain',
       shorthand: 'DT-D'
     });
+    assert.ok(newEntry.id, 'Did not create entry');
+    const nameProp = newEntry.properties[0];
+    assert.ok(nameProp.id, 'Did not pass name property to domain.properties[]');
+    assert.ok(nameProp.name === 'Name', 'Did not pass name property to domain.properties[]');
 
+    const nameProperty = await sequelize.models.properties.findOne({
+      where: {
+        domainId: newEntry.id,
+        name: 'Name'
+      }
+    });
+    assert.ok(nameProperty.id, 'Did not create name property as default for new domain');
+    assert.ok(nameProperty.name === 'Name', 'Did not create name property as default for new domain');
+    assert.ok(nameProperty.dataType === 'string', 'Did not create name property as default for new domain');
+  });
+
+  it('did not create domain with same name', () => {
+    assert.rejects(service.create({
+      systemId: system.id,
+      name: 'DomainsTest-Domain',
+      shorthand: 'DT-D'
+    }),
+    { name: 'BadRequest'},
+    'Did not throw a BadRequest error on duplicate names');
   });
 
   it('patched an entry', async () => {
@@ -60,7 +83,7 @@ describe('\'domains\' service', () => {
   });
 
   it('added a dependency to entry', async () => {
-    const entryWithDependency = await service.create({
+    entryWithDependency = await service.create({
       systemId: system.id,
       name: 'DomainTest-DomainWithDependency',
       shorthand: 'DT-DWD'
@@ -119,18 +142,57 @@ describe('\'domains\' service', () => {
   // Remove parent domain, check if in use/cascade zerosetting?
   // Should removing a parent domain increment major verison??? probably
 
-  // Add dependency
+  // X Add dependency
   // Remove dependency, check if dependency is in use/casade zero setting (change to raw val) of properties using dependency
   // Prompts changes of wherever a property/variable has been in use
   // Should probably increment major version
 
+  context('domain that is a parent of other', () =>
+  {
+    it('was not able to be removed without other alterations', () =>
+    {
+      assert.ok(false, 'TODO');
+    });
 
-  it('removed an entry', async () => {
-    const res = await service.remove(patchedEntry.id);
+    it('compiled a list of needed changes for safe removal', () =>
+    {
+      assert.ok(false, 'TODO');
+    });
 
-    assert.ok(res.id, 'entry was not removed');
-    const sys = await systemService.get(patchedEntry.systemId);
-    assert.ok(sys.version === '1.0', 'Did not increment major version number for parent');
+    it('was able to be removed after alterations were done', () =>
+    {
+      assert.ok(false, 'TODO');
+    });
+
+  });
+
+  context('domain that other domains depened upon', () =>
+  {
+    it('was not able to be removed without other alterations', () =>
+    {
+      assert.ok(false, 'TODO');
+    });
+
+    it('compiled a list of needed changes for safe removal', () =>
+    {
+      assert.ok(false, 'TODO');
+    });
+
+    it('was able to be removed after alterations were done', () =>
+    {
+      assert.ok(false, 'TODO');
+    });
+
+  });
+
+  context('independant domain with 1 dependency and no parent', () =>
+  {
+    it('was removed', async () => {
+      const res = await service.remove(patchedEntry.id);
+      assert.ok(res.id, 'entry was not removed');
+      const sys = await systemService.get(patchedEntry.systemId);
+      assert.ok(sys.version === '1.0', 'Did not increment major version number for parent');
+    });
   });
 
   // eslint-disable-next-line no-constant-condition

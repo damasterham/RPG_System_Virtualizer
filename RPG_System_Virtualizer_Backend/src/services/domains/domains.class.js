@@ -5,9 +5,9 @@ exports.Domains = class Domains extends Service {
     this.app = app;
   }
 
-  addDependency(domain, depdency) {
+  async addDependency(domain, depdency) {
     const domainDepdencies = this.app.get('sequelize').models.domain_dependencies;
-    domainDepdencies.create({
+    return domainDepdencies.create({
       domainId: domain.id,
       domainDependencyId: depdency.id
     });

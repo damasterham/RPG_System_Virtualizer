@@ -51,7 +51,8 @@ module.exports = function (app) {
     // Functions.domain_id => Domains.id
     functions.belongsTo(models.domains,{
       foreignKey: {
-        unique: 'domainFunctionUnique'
+        unique: 'domainFunctionUnique',
+        allowNull: false
       }
     });
 
