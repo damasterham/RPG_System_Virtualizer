@@ -1,16 +1,29 @@
 const { Service } = require('feathers-sequelize');
 
 exports.Domains = class Domains extends Service {
-  setup(app) {
-    this.app = app;
+  async setup(app) {
+    this.app = await app;
+    this.dependencies = await this.app.get('sequelize').models.domain_dependencies;
   }
 
-  async addDependency(domain, depdency) {
-    const domainDepdencies = this.app.get('sequelize').models.domain_dependencies;
-    return domainDepdencies.create({
-      domainId: domain.id,
-      domainDependencyId: depdency.id
+  async findAllDependencyIds(domainId){
+    return this.dependencies.findAll({
+      where: {
+        domainId: domainId
+      }
     });
+  }
 
+  async addDependency(domainId, depdencyId) {
+    return this.dependencies.create({
+      domainId: domainId,
+      domainDependencyId: depdencyId
+    });
+  }
+
+  async addParent(domainId, parentId) {
+    return this.patch(domainId, {
+      parentDomainId: parentId
+    });
   }
 };
