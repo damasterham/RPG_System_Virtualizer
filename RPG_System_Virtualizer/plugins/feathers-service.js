@@ -74,8 +74,10 @@ export default function createService (namespace, options = {}) {
     actions: {
       async find ({ state, commit }, params) {
         try {
-          const res = await service.find(params)
-          if (res.data) {
+          const clear = params.$clear === true
+          delete params.$clear
+          let res = await service.find(params)
+          if (res.data && !clear) {
             let progress = Math.round((100 * (res.skip + res.limit)) / res.total)
             if (progress > 100) {
               progress = 100
@@ -90,6 +92,7 @@ export default function createService (namespace, options = {}) {
             commit('addItems', res.data)
             return res.data
           } else {
+            if (res.data) { res = res.data }
             commit('clear')
             commit('addItems', res)
             return res

@@ -13,10 +13,10 @@
         </v-list-item>
         <v-divider />
         <template v-for="item in domains">
-          <v-list-item :key="item.id" @click="selectDomain(item)">
+          <v-list-item :key="item.id" :input-value="domain && item.id === domain.id" color="blue-grey lighten-1" @click="selectDomain(item)">
             <v-tooltip v-if="domainNameEdit !== item.id" right>
               <template v-slot:activator="{ on }">
-                <v-list-item-title v-on="on">
+                <v-list-item-title style="cursor: pointer" v-on="on">
                   {{ item.name }}
                 </v-list-item-title>
               </template>
@@ -24,7 +24,6 @@
             </v-tooltip>
             <v-text-field
               v-else
-              ref="domainNameEditField"
               autofocus
               :value="domainNameEditValue"
               label="Domain Name"
@@ -32,10 +31,10 @@
               @blur="domainNameEdit = 0"
             />
             <v-spacer />
-            <v-btn icon @click="editDomainName(item.id)">
+            <v-btn icon @click.stop="editDomainName(item.id)">
               <v-icon>edit</v-icon>
             </v-btn>
-            <v-btn icon @click="deleteDomain(item)">
+            <v-btn icon @click.stop="deleteDomain(item)">
               <v-icon>delete</v-icon>
             </v-btn>
           </v-list-item>
@@ -53,46 +52,78 @@
       <v-container fluid fill-height>
         <v-row dense style="height: 100%">
           <v-col id="Domain Overview" cols="3">
+            <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
             <domainOverview
+              v-if="domain !== null"
+              ref="domainOverview"
               :domain="domain"
               @newProperty="newProperty()"
               @newFunction="newFunction($event)"
             />
-            <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
           </v-col>
           <v-divider vertical />
           <v-col id="Domain Family Settings" cols="3">
-            <domainInheritance :domain="domain" />
             <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
+            <domainInheritance v-if="domain !== null" :domain="domain" />
           </v-col>
           <v-divider vertical />
           <v-col id="Property/Function Settings" cols="6">
-            <v-row>
+            <v-row v-if="property !== null">
               <v-col id="Property Settings">
-                <propertySettings :domain="domain" />
                 <!-- Property overview & settings -->
+                <propertySettings :domain="domain" />
               </v-col>
             </v-row>
-            <v-row>
+            <v-row v-if="func !== null">
               <v-col id="Function Settings">
-                <functionSettings :domain="domain" />
                 <!-- function overview & settings -->
+                <functionSettings :domain="domain" />
               </v-col>
             </v-row>
           </v-col>
         </v-row>
       </v-container>
+
+      <!-------------------------------------------------------------- Dialogs -->
       <!-- New property Dialog -->
       <fillOutDialog :toggle="newPropDialog">
         <template v-slot:content>
-          <v-text-field v-model="newPropName" />
+          <v-form ref="newPropForm" v-model="newPropValid">
+            <v-text-field v-model="newPropName" :rules="rules" label="Property Name" @change="logIt(newPropName)" />
+            <v-autocomplete v-model="newPropType" :rules="rules" :items="dataTypes" label="Property Data Type" @change="logIt(newPropType)" />
+            <v-autocomplete v-model="newPropValue" :rules="rules" :items="valueTypes" label="Property Value Source" @change="logIt(newPropValue)" />
+          </v-form>
+        </template>
+        <template v-slot:buttons>
+          <v-spacer />
+          <SaveCancelButtons
+            cancel-button-text="Cancel"
+            commit-button-text="Create"
+            :disable-commit="!newPropValid"
+            @cancel="closeNewPropDialog()"
+            @commit="createNewProperty()"
+          />
         </template>
       </fillOutDialog>
+
       <!-- New Function Dialog -->
       <fillOutDialog :toggle="newFuncDialog">
         <template v-slot:content>
-          <v-text-field readonly :value="newFuncType | capitalizeFirstLetter" />
-          <v-text-field v-model="newFuncName" />
+          <v-form ref="newFuncForm" v-model="newFuncValid">
+            <v-text-field v-model="newFuncName" :rules="rules" label="Function Name" />
+            <v-text-field readonly :value="newFuncType | capitalizeFirstLetter" />
+            <v-autocomplete v-model="newFuncDataType" :rules="rules" :items="dataTypes" label="Function Data Type" />
+          </v-form>
+        </template>
+        <template v-slot:buttons>
+          <v-spacer />
+          <SaveCancelButtons
+            cancel-button-text="Cancel"
+            commit-button-text="Create"
+            :disable-commit="!newFuncValid"
+            @cancel="closeNewFuncDialog()"
+            @commit="createNewFunction()"
+          />
         </template>
       </fillOutDialog>
     </v-content>
@@ -105,6 +136,7 @@ import domainOverview from '~/components/domain-overview.vue'
 import propertySettings from '~/components/property-settings.vue'
 import functionSettings from '~/components/function-settings.vue'
 import fillOutDialog from '~/components/fill-out-dialog.vue'
+import SaveCancelButtons from '~/components/save-cancel-buttons.vue'
 
 import service from '~/plugins/feathers-service.js'
 
@@ -112,9 +144,10 @@ export default {
   components: {
     domainInheritance,
     domainOverview,
-    propertySettings,
+    fillOutDialog,
     functionSettings,
-    fillOutDialog
+    propertySettings,
+    SaveCancelButtons
   },
   filters: {
     capitalizeFirstLetter (val) {
@@ -123,19 +156,41 @@ export default {
   },
   data () {
     return {
-      domainDrawer: false,
+      domainDrawer: true,
       domainNameEdit: 0,
+      dataTypes: [
+        { text: 'Decimal', value: 'float' },
+        { text: 'Number', value: 'int' },
+        { text: 'Text', value: 'string' },
+        { text: 'True/False', value: 'boolean' }
+      ],
+      valueTypes: [
+        { text: 'Function', value: 'function' },
+        { text: 'Property', value: 'property' },
+        { text: 'User Input', value: 'raw_value' },
+        { text: 'Domain', value: 'domain' }
+      ],
+
+      // Rules
+      rules: [
+        v => !!v || 'Field is Required'
+      ],
 
       // New property
       newPropDialog: false,
+      newPropValid: false,
       newProp: {},
       newPropName: '',
+      newPropType: '',
+      newPropValue: '',
 
       // New Function
       newFuncDialog: false,
+      newFuncValid: false,
       newFunc: {},
       newFuncName: '',
-      newFuncType: ''
+      newFuncType: '',
+      newFuncDataType: ''
     }
   },
   computed: {
@@ -144,7 +199,17 @@ export default {
       if (system !== null) { return system }
       return {}
     },
+    domain () {
+      return this.$store.getters.getDomain()
+    },
+    property () {
+      return this.$store.getters.getProperty()
+    },
+    func () {
+      return this.$store.getters.getFunction()
+    },
     domains () {
+      /*
       const domains = [...this.$store.getters['domains/list']]
       domains.sort((a, b) => {
         if (a.name.toLowerCase() < b.name.toLowerCase()) {
@@ -154,9 +219,17 @@ export default {
         } else { return 0 }
       })
       return domains
+      */
+      return this.$store.getters['domains/list']
     },
-    domain () {
-      return this.$store.getters.domain
+    propertyMinFill () {
+      return this.newPropName && this.newPropName !== null && this.newPropName !== '' &&
+        this.newPropType && this.newPropType !== null && this.newPropType !== '' &&
+        this.newPropValue && this.newPropValue !== null && this.newPropValue !== ''
+    },
+    functionMinFill () {
+      return this.newFuncName && this.newFuncName !== null && this.newFuncName !== '' &&
+        this.newFuncDataType && this.newFuncDataType !== null && this.newFuncDataType !== ''
     },
     domainNameEditValue: {
       get () {
@@ -170,23 +243,26 @@ export default {
       }
     }
   },
-  created () {
-    if (!this.$store.state.system) { service('systems')(this.$store) }
+  async created () {
     service('domains')(this.$store)
     service('properties')(this.$store)
     service('functions')(this.$store)
+    if (!this.$store.state.system) {
+      service('systems')(this.$store)
+      const system = await this.$store.dispatch('systems/get', this.$route.params.id)
+      this.$store.commit('selectSystem', system)
+    }
   },
   async mounted () {
-    const system = await this.$store.dispatch('systems/get', this.$route.params.id)
-    this.$store.commit('selectSystem', system)
     await this.$store.dispatch('domains/find', { query: {
-      systemId: this.system.id
+      systemId: this.system.id, $sort: { name: 1 }
     } })
   },
   methods: {
+    // Domains
     async newDomain () {
       const res = await this.$store.dispatch('domains/create', {
-        name: 'Domain ' + this.domains.length,
+        name: 'Domain ' + (this.domains.length + 1),
         systemId: this.system.id
       })
       this.$nextTick(() => this.editDomainName(res.id))
@@ -196,16 +272,62 @@ export default {
     },
     selectDomain (domain) {
       this.$store.commit('selectDomain', domain)
+      this.$nextTick(() => this.$refs.domainOverview.fetchPropertiesAndFunctions())
     },
     deleteDomain (domain) {
       this.$store.dispatch('domains/remove', domain.id)
     },
+
+    // Properties
     newProperty () {
+      this.newProp.systemId = this.system.id
+      this.newProp.domainId = this.domain.id
       this.newPropDialog = true
     },
+    closeNewPropDialog () {
+      this.newPropType = this.newPropValue = this.newPropName = ''
+      this.newProp = {}
+      this.newPropDialog = false
+    },
+    createNewProperty () {
+      this.newProp.name = this.newPropName
+      this.newProp.dataType = this.newPropType
+      this.newProp.referenceType = this.newPropValue
+      const res = this.$store.dispatch('properties/create', this.newProp)
+      this.$store.commit('selectProperty', res)
+      this.closeNewPropDialog()
+    },
+
+    // Functions
     newFunction (ev) {
-      this.newFuncDialog = true
+      this.newFunc.systemId = this.system.id
+      this.newFunc.domainId = this.domain.id
       this.newFuncType = ev.type
+      this.newFuncDialog = true
+    },
+    closeNewFuncDialog () {
+      this.newFuncType = this.newFuncName = this.newFuncDataType = ''
+      this.newFunc = {}
+      this.newFuncDialog = false
+    },
+    createNewFunction () {
+      this.newFunc.name = this.newFuncName
+      this.newFunc.functionType = this.newFuncType
+      this.newFunc.dataType = this.newFuncDataType
+      const res = this.$store.dispatch('functions/create', this.newFunc)
+      this.$store.commit('selectFunction', res)
+      this.closeNewFuncDialog()
+    },
+
+    // Utility
+    logIt (x) {
+      console.log(x)
+    },
+    logArray (x) {
+      x.forEach(item => console.log(item))
+    },
+    logKeyValue (x) {
+      Object.keys(x).forEach(key => console.log(`${key}: ${x[key]}`))
     }
   }
 }

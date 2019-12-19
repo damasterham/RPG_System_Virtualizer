@@ -1,51 +1,5 @@
 <template>
   <v-list dense shaped>
-    <!--
-    <ListHeaderWithIconButton
-      icon="add"
-      title="Properties"
-      tooltip-text="Add New Property"
-      @clicked="null"
-    />
-    <v-divider />
-    <template v-for="item in properties">
-      <v-list-item :key="item.id" />
-      <v-divider :key="'divider-' + item.id" />
-    </template>
-    <ListHeaderWithIconButton
-      icon="add"
-      title="Equations"
-      tooltip-text="Add New Equation"
-      @clicked="null"
-    />
-    <v-divider />
-    <template v-for="item in equations">
-      <v-list-item :key="item.id" />
-      <v-divider :key="'divider-' + item.id" />
-    </template>
-    <ListHeaderWithIconButton
-      icon="add"
-      title="Table Lookups"
-      tooltip-text="Add New Table Lookup"
-      @clicked="null"
-    />
-    <v-divider />
-    <template v-for="item in lookups">
-      <v-list-item :key="item.id" />
-      <v-divider :key="'divider-' + item.id" />
-    </template>
-    <ListHeaderWithIconButton
-      :condition="stringFormatters.length > 0"
-      icon="add"
-      title="Text Formatters"
-      tooltip-text="Add New Text Formatter"
-      @clicked="null"
-    />
-    <template v-for="(item, index) in stringFormatters">
-      <v-list-item :key="item.id" />
-      <v-divider v-if="index !== stringFormatters.length - 1" :key="'divider-' + item.id" />
-    </template>
-    -->
     <template v-for="subList in list">
       <ListHeaderWithIconButton
         :key="'header-' + subList.order"
@@ -61,20 +15,43 @@
           </v-btn>
         </template>
       </ListHeaderWithIconButton>
-      <template v-for="item in subList.list" v-show="subList.listValue">
-        <v-list-item :key="'item-' + item.id">
-          <v-list-item-title>
-            {{ item.name }}
-          </v-list-item-title>
+      <template
+        v-for="field in subList.functionType
+          ? $store.getters[subList.list + '/list'].filter(func => func.functionType === subList.functionType)
+          : $store.getters[subList.list + '/list']"
+      >
+        <v-list-item v-show="subList.listValue === true" :key="subList.list + '-item-' + field.id" @click="selectField(list, field)">
+          <v-tooltip v-if="fieldNameEdit !== subList.list + '-' + field.id" right>
+            <template v-slot:activator="{ on }">
+              <v-list-item-title style="cursor: pointer" v-on="on">
+                <v-icon small>
+                  fiber_manual_record
+                </v-icon>
+                {{ field.name }}
+              </v-list-item-title>
+            </template>
+            <span>{{ field.name }}</span>
+          </v-tooltip>
+          <v-text-field
+            v-else
+            autofocus
+            hide-details
+            :value="fieldNameEditValue"
+            :label="subList.title === 'Properties'
+              ? 'Property Name'
+              : subList.title.substring(0, subList.title.length - 1) + ' Name'"
+            @change="fieldNameEditValue = $event"
+            @blur="fieldNameEdit = ''"
+          />
           <v-spacer />
-          <v-btn icon @click="editDomainName(item.id)">
+          <v-btn icon @click.stop="editDomainFieldName(subList, field)">
             <v-icon>edit</v-icon>
           </v-btn>
-          <v-btn icon @click="deleteDomain(item)">
+          <v-btn icon @click.stop="deleteField(subList, field)">
             <v-icon>delete</v-icon>
           </v-btn>
         </v-list-item>
-        <v-divider :key="'divider-' + item.id" />
+        <v-divider v-show="subList.listValue === true" :key="'divider-' + field.id" />
       </template>
     </template>
   </v-list>
@@ -82,8 +59,6 @@
 
 <script>
 import ListHeaderWithIconButton from '~/components/list-header-with-icon-button.vue'
-
-import service from '~/plugins/feathers-service.js'
 
 export default {
   components: {
@@ -97,6 +72,7 @@ export default {
   },
   data () {
     return {
+      fieldNameEdit: '',
       propertiesList: true,
       equationsList: true,
       lookupsList: true,
@@ -108,8 +84,8 @@ export default {
           title: 'Properties',
           icon: 'add',
           tooltipText: 'Add New Property',
-          list: this.properties,
-          listValue: this.showListOfProperties,
+          list: 'properties',
+          listValue: true,
           onClick: () => this.toggleNewPropertyDialog()
         },
         {
@@ -118,8 +94,9 @@ export default {
           title: 'Equations',
           icon: 'add',
           tooltipText: 'Add New Equation',
-          list: this.equations,
-          listValue: this.showListOfEquations,
+          list: 'functions',
+          functionType: 'equation',
+          listValue: true,
           onClick: () => this.toggleNewFunctionDialog('equation')
         },
         {
@@ -128,8 +105,9 @@ export default {
           title: 'Table Lookups',
           icon: 'add',
           tooltipText: 'Add New Table Lookup',
-          list: this.lookups,
-          listValue: this.showListOfLookups,
+          list: 'functions',
+          functionType: 'lookup',
+          listValue: true,
           onClick: () => this.toggleNewFunctionDialog('lookup')
         },
         {
@@ -137,8 +115,9 @@ export default {
           title: 'Text Formatters',
           icon: 'add',
           tooltipText: 'Add New Text Formatter',
-          list: this.stringFormatters,
-          listValue: this.showListOfTextFormatters,
+          list: 'functions',
+          functionType: 'string_formatter',
+          listValue: true,
           onClick: () => this.toggleNewFunctionDialog('string_formatter')
         }
       ]
@@ -192,32 +171,50 @@ export default {
     },
     stringFormatters () {
       return this.$store.getters['functions/list'].filter(item => item.functionType === 'string_formatter')
+    },
+    fieldNameEditValue: {
+      get () {
+        const params = this.fieldNameEdit.split('-')
+        const obj = this.$store.getters[params[0] + '/list'].find(item => item.id === parseInt(params[1]))
+        if (obj) { return obj.name }
+        return ''
+      },
+      set (value) {
+        const params = this.fieldNameEdit.split('-')
+        this.$store.dispatch(params[0] + '/patch', [params[1], { name: value }])
+        this.fieldNameEdit = ''
+      }
     }
   },
-  created () {
-    if (!this.$store.state.properties) { service('properties')(this.$store) }
-    if (!this.$store.state.functions) { service('functions')(this.$store) }
-  },
-  async mounted () {
-    await this.$store.dispatch('properties/find', { query: {
-      domainId: this.domain.id
-    } })
-    await this.$store.dispatch('functions/find', { query: {
-      domainId: this.domain.id
-    } })
-  },
   methods: {
+    async fetchPropertiesAndFunctions () {
+      await this.$store.dispatch('properties/find', { query: {
+        domainId: this.domain.id
+      },
+      $clear: true })
+      await this.$store.dispatch('functions/find', { query: {
+        domainId: this.domain.id
+      },
+      $clear: true })
+    },
     toggleNewPropertyDialog () {
       console.log('adding property')
       this.$emit('newProperty')
-    },
-    addNewProperty () {
     },
     toggleNewFunctionDialog (functionType) {
       console.log('adding function of type: ' + functionType)
       this.$emit('newFunction', { type: functionType })
     },
-    addNewFunction () {
+    editDomainFieldName (list, field) {
+      this.fieldNameEdit = list.list + '-' + field.id
+    },
+    deleteField (list, field) {
+      this.$store.dispatch(list.list + '/remove', field.id)
+    },
+    selectField (list, field) {
+      if (list.title === 'Properties') {
+        this.$store.commit('selectProperty', field)
+      } else { this.$store.commit('selectFunction', field) }
     }
   }
 }
