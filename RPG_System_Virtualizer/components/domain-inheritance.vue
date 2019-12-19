@@ -47,7 +47,7 @@ export default {
       },
       set (value) {
         console.log('dependencies', value)
-        this.$store.dispatch('domains/addDependency', value)
+        // this.$store.dispatch('domains/addDependency', value)
         this.$store.commit('addDomainDependencyId', value)
       }
     },
@@ -68,8 +68,10 @@ export default {
       }
     }
   },
-  async mounted () {
-    this.$store.commit('setDomainDependencyIds', await domainService.findAllDependencyIds(this.domain.id))
+  mounted () { // Wrapper-Service to allow for getting and changing domain dependencies required
+    console.log(domainService)
+    // this.$store.commit('setDomainDependencyIds', await this.$store.dispatch('domains/findAllDependencyIds', this.domain.id))
+    // this.$store.commit('setDomainDependencyIds', await domainService.findAllDependencyIds(this.domain.id))
   }
 }
 </script>
