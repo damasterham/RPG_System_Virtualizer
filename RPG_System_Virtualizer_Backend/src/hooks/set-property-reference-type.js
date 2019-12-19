@@ -16,7 +16,7 @@ module.exports = (options = {}) => {
       const rawValueService = await context.app.service('raw-values');
       await rawValueService.create({
         propertyId: context.result.id,
-        defaultValue: context.data.defaultValue
+        defaultValue: context.data.defaultValue // Should maybe not be passed yet
         // default value isnotnullorundefined
       });
     }
@@ -35,7 +35,7 @@ module.exports = (options = {}) => {
       // Could be used to get relevant property if wanted
       await propertyDirectReference.create({
         propertyId: context.result.id,
-        propertyReferenceId: context.data.propertyReference.propertyId,
+        propertyReferenceId: context.params.data.propertyReference.propertyId,
       });
     }
       break;
@@ -45,13 +45,14 @@ module.exports = (options = {}) => {
       // Could be used to get relevant function if wanted
       await propertyFunctions.create({
         propertyId: context.result.id,
-        functionId: context.data.propertyReference.functionId
+        functionId: context.params.data.propertyReference.functionId
       });
     }
       break;
 
     // TODO make domain dependencies check, to ensure no circular dependencies
     // Partially completed?? with hook: validate-is-valid-property-reference.js
+    //// Is this checked by hook validation???
     case 'domain': {
       // Check if in domain dependencies
       const domainDependencies = sequelize.models.domain_dependencies;
@@ -59,7 +60,7 @@ module.exports = (options = {}) => {
       const dependencies = await domainDependencies.findOne({
         where: {
           domainId: context.data.domainId,
-          domainDependencyId: context.data.propertyReference.domainId
+          domainDependencyId: context.params.data.propertyReference.domainId
         }
       });
 
@@ -70,7 +71,7 @@ module.exports = (options = {}) => {
         // Could be used to get relevant domain if wanted
         await propertyDomainEnums.create({
           propertyId: context.result.id,
-          domainId: context.data.propertyReference.domainId
+          domainId: context.params.data.propertyReference.domainId
         });
       }
       else

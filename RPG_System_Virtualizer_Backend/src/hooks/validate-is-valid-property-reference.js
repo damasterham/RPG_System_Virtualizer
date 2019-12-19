@@ -9,12 +9,15 @@ module.exports = (options = {}) => {
   // or
   // reference present in junction table
 
-    // Ignore if reference type is raw_value 
+    // Ignore if reference type is raw_value
     if (context.data.referenceType === 'raw_value')
       return context;
 
+    const ownerDomainId = context.params.data.domainId;
+    const referenceDomainId = context.params.data.propertyReference.domainId;
+
     // Validate if necesary paramenters for parent/dependency check is present
-    if (!context.data.domainId || !context.data.propertyReference.domainId)
+    if (!ownerDomainId || !referenceDomainId)
     {
       // If not present return failure
       return Promise.reject({
@@ -33,12 +36,12 @@ module.exports = (options = {}) => {
       where d.id = :ownerDomain
       union select dn.id, dn.name, dn.parent_domain_id from domains dn
         inner join parents on parents.parent_domain_id = dn.id
-      ) 
+      )
       select id from parents
       where parents.id = :referenceDomain;`, {
       replacements: {
-        ownerDomain: context.data.domainId,
-        referenceDomain: context.data.propertyReference.domainId
+        ownerDomain: ownerDomainId,
+        referenceDomain: referenceDomainId
       },
       type: sequelize.QueryTypes.SELECT
     });
@@ -50,14 +53,14 @@ module.exports = (options = {}) => {
     const domainDependencies = sequelize.models.domain_dependencies;
     const hasValidDependency = await domainDependencies.findOne({
       where: {
-        domainId: context.data.domainId,
-        domainDependencyId: context.data.propertyReference.domainId
+        domainId: ownerDomainId,
+        domainDependencyId: referenceDomainId
       }
     });
 
     if (hasValidDependency)
       return context;
-  
+
     // If the property refence domain is not the same, nor parent, nor dependency return failure
     return Promise.reject({
       name: 'MissingDomainReference',
@@ -70,7 +73,7 @@ module.exports = (options = {}) => {
 
 
 
-    // Should also actualy check if that domain contains any properties/functons of the datatype, 
+    // Should also actualy check if that domain contains any properties/functons of the datatype,
     // (and on its own domain, that isn't the property itself)
 
     // NOT/// or domain dependency parents, recursive
@@ -78,25 +81,25 @@ module.exports = (options = {}) => {
 
     // switch (context.data.referenceType) {
     //   case 'raw_value':
-        
+
     //     break;
     //   case 'property':
-      
+
     //     break;
     //   case 'function':
-    
+
     //     break;
     //   case 'domain':
-  
+
     //     break;
     //   default:
     //     return Promise.reject({
     //       name: 'InvalidReferenceType',
     //       message: `InvalidReferenceType: and invalid enum value was passed '${context.data.referenceType}'
-    //       Must be of type 'raw_value', 'property', 'function', or 'domain'` 
+    //       Must be of type 'raw_value', 'property', 'function', or 'domain'`
     //     });
     // }
-    
+
 
   };
 };
