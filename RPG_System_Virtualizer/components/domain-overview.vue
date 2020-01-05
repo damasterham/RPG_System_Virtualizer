@@ -20,7 +20,7 @@
           ? $store.getters[subList.list + '/list'].filter(func => func.functionType === subList.functionType)
           : $store.getters[subList.list + '/list']"
       >
-        <v-list-item v-show="subList.listValue === true" :key="subList.list + '-item-' + field.id" @click="selectField(list, field)">
+        <v-list-item v-show="subList.listValue === true" :key="subList.list + '-item-' + field.id" @click="selectField(subList, field)">
           <v-tooltip v-if="fieldNameEdit !== subList.list + '-' + field.id" right>
             <template v-slot:activator="{ on }">
               <v-list-item-title style="cursor: pointer" v-on="on">
@@ -212,8 +212,10 @@ export default {
       this.$store.dispatch(list.list + '/remove', field.id)
     },
     selectField (list, field) {
+      console.log('selectField | list:', list, 'field: ', field)
       if (list.title === 'Properties') {
         this.$store.commit('selectProperty', field)
+        console.log('property:', this.$store.getters.getProperty())
       } else { this.$store.commit('selectFunction', field) }
     }
   }

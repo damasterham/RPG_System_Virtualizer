@@ -49,8 +49,8 @@
         </v-app-bar-nav-icon>
         <v-toolbar-title>System Designer{{ system.name ? ' - ' : '' }}{{ system.name }}</v-toolbar-title>
       </v-app-bar>
-      <v-container fluid fill-height>
-        <v-row dense style="height: 100%">
+      <v-container fluid>
+        <v-row dense style="height: 90.6vh">
           <v-col id="Domain Overview" cols="3">
             <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
             <domainOverview
@@ -67,15 +67,16 @@
             <domainInheritance v-if="domain !== null" :domain="domain" />
           </v-col>
           <v-divider vertical />
-          <v-col id="Property/Function Settings" cols="6">
-            <v-row v-if="property !== null">
-              <v-col id="Property Settings">
+          <v-col id="Property/Function Settings">
+            <v-row no-gutters>
+              <v-col v-if="property !== null" id="Property Settings" cols="12">
                 <!-- Property overview & settings -->
-                <propertySettings :domain="domain" />
+                <propertySettings :domain="domain" :property="property" />
               </v-col>
             </v-row>
-            <v-row v-if="func !== null">
-              <v-col id="Function Settings">
+            <v-divider v-if="func !== null && property !== null" />
+            <v-row no-gutters>
+              <v-col v-if="func !== null" id="Function Settings" cols="12">
                 <!-- function overview & settings -->
                 <functionSettings :domain="domain" />
               </v-col>
