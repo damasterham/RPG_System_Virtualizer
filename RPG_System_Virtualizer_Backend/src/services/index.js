@@ -10,6 +10,7 @@ const propertyInstances = require('./property_instances/property_instances.servi
 const functionInstances = require('./function_instances/function_instances.service.js');
 const variableInstances = require('./variable_instances/variable_instances.service.js');
 const rawValueInstances = require('./raw_value_instances/raw_value_instances.service.js');
+const domainDependencies = require('./domain_dependencies/domain_dependencies.service.js');
 // eslint-disable-next-line no-unused-vars
 module.exports = function (app) {
   app.configure(test);
@@ -24,4 +25,5 @@ module.exports = function (app) {
   app.configure(functionInstances);
   app.configure(variableInstances);
   app.configure(rawValueInstances);
+  app.configure(domainDependencies);
 };

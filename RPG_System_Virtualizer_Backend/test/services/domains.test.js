@@ -94,6 +94,7 @@ describe('\'domains\' service', () => {
   });
 
   context('domain with dependencies', () => {
+    const domainDependencies = app.service('domain-dependencies');
     let otherDomainDependency;
 
     it('created entry and added a dependency to entry', async () => {
@@ -114,6 +115,26 @@ describe('\'domains\' service', () => {
       // assert.ok(dependencies[0].id === entryWithParent.id, 'Dependency added to domain was not present');
     });
 
+    // ONLY WORKS IN BACKEND
+    // it('found all dependency ids of entry', async () => {
+    //   otherDomainDependency = await domainService.create({
+    //     systemId: system.id,
+    //     name: 'DomainTest-SomeDomainDependency',
+    //   });
+    //   assert.ok(otherDomainDependency.id, 'did not create entry');
+
+    //   const dependecy = await domainService.addDependency(entryWithDependency.id, otherDomainDependency.id);
+    //   assert.ok(dependecy.domainId === entryWithDependency.id, 'dependency does not have correct domain id');
+    //   assert.ok(dependecy.domainDependencyId === otherDomainDependency.id, 'dependency does not have correct dependency id');
+
+    //   const dependencies = await domainService.findAllDependencyIds(entryWithDependency.id);
+    //   assert.ok(dependencies.length === 2, 'there was not the expected amount of dependencies');
+    //   assert.ok(dependencies[0].domainId === entryWithDependency.id, 'dependency does not have correct domain id');
+    //   assert.ok(dependencies[0].domainDependencyId === entryWithParent.id, 'dependency does not have correct domain id');
+    //   assert.ok(dependencies[1].domainDependencyId === otherDomainDependency.id, 'dependency does not have correct domain id');
+
+    // });
+
     it('found all dependency ids of entry', async () => {
       otherDomainDependency = await domainService.create({
         systemId: system.id,
@@ -125,7 +146,13 @@ describe('\'domains\' service', () => {
       assert.ok(dependecy.domainId === entryWithDependency.id, 'dependency does not have correct domain id');
       assert.ok(dependecy.domainDependencyId === otherDomainDependency.id, 'dependency does not have correct dependency id');
 
-      const dependencies = await domainService.findAllDependencyIds(entryWithDependency.id);
+      const dependenciesWrap = await domainDependencies.find({
+        query: {
+          domainId: entryWithDependency.id
+        }
+      });
+      const dependencies = dependenciesWrap.data;
+      //const dependencies = await domainService.findAllDependencyIds(entryWithDependency.id);
       assert.ok(dependencies.length === 2, 'there was not the expected amount of dependencies');
       assert.ok(dependencies[0].domainId === entryWithDependency.id, 'dependency does not have correct domain id');
       assert.ok(dependencies[0].domainDependencyId === entryWithParent.id, 'dependency does not have correct domain id');
