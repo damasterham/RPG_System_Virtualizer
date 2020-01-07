@@ -79,9 +79,7 @@ export default function createService (namespace, options = {}) {
           let res = await service.find(params)
           if (res.data && !clear) {
             let progress = Math.round((100 * (res.skip + res.limit)) / res.total)
-            if (progress > 100) {
-              progress = 100
-            }
+            if (progress > 100) { progress = 100 }
             commit('pagination', {
               limit: res.limit,
               skip: res.skip,
@@ -219,10 +217,8 @@ export default function createService (namespace, options = {}) {
       current: (state) => {
         return state.current
       },
-      get: state => (id) => {
-        return state.list.find((item) => {
-          return item.id === id
-        })
+      get: state => (id, key = 'id') => {
+        return state.list.find(item => item[key] === id)
       },
       list: (state) => {
         return state.list
