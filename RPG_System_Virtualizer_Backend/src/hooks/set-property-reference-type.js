@@ -67,7 +67,7 @@ module.exports = (options = {}) => {
       if (dependencies)
       {
         // Create domain reference
-        const propertyDomainEnums = sequelize.models.property_domain_enums;
+        const propertyDomainEnums = sequelize.models.properties_domains;
         // Could be used to get relevant domain if wanted
         await propertyDomainEnums.create({
           propertyId: context.result.id,
