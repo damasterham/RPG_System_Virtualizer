@@ -57,6 +57,8 @@
               v-if="domain !== null"
               ref="domainOverview"
               :domain="domain"
+              :property="$store.getters.getProperty()"
+              :func="$store.getters.getFunction()"
               @newProperty="newProperty()"
               @newFunction="newFunction($event)"
             />
@@ -246,6 +248,7 @@ export default {
   },
   async created () {
     service('domains')(this.$store)
+    service('domain-dependencies')(this.$store)
     service('properties')(this.$store)
     service('functions')(this.$store)
     if (!this.$store.state.system) {
@@ -272,8 +275,15 @@ export default {
       this.domainNameEdit = domainId
     },
     selectDomain (domain) {
-      this.$store.commit('selectDomain', domain)
-      this.$nextTick(() => this.$refs.domainOverview.fetchPropertiesAndFunctions())
+      this.$store.commit('selectDomain', null)
+      this.$store.commit('selectProperty', null)
+      this.$store.commit('selectFunction', null)
+      this.$nextTick(() => {
+        this.$store.commit('selectDomain', domain)
+        this.$nextTick(() => {
+          this.$refs.domainOverview.fetchPropertiesAndFunctions()
+        })
+      })
     },
     deleteDomain (domain) {
       this.$store.dispatch('domains/remove', domain.id)
@@ -290,11 +300,11 @@ export default {
       this.newProp = {}
       this.newPropDialog = false
     },
-    createNewProperty () {
+    async createNewProperty () {
       this.newProp.name = this.newPropName
       this.newProp.dataType = this.newPropType
       this.newProp.referenceType = this.newPropValue
-      const res = this.$store.dispatch('properties/create', this.newProp)
+      const res = await this.$store.dispatch('properties/create', this.newProp)
       this.$store.commit('selectProperty', res)
       this.closeNewPropDialog()
     },
