@@ -72,6 +72,11 @@ export default {
         default: return undefined
       }
     },
+    // Domains
+    selectableDomains () {
+      return this.$store.getters['domains/list'].filter(domain => this.$store.state.domainDependencyIds.some(dom => dom === domain.id))
+    },
+    // Functions
     selectableFunctions () {
       const res = []
       return res.concat(this.functions).concat(this.inheritedFunctions)
@@ -87,6 +92,7 @@ export default {
     inheritedFunctions () {
       return this.$store.getters['functions/list'].filter(item => this.$store.state.domainParentage.some(parent => parent === item.domainId) && item.dataType === this.property.dataType)
     },
+    // Properties
     selectableProperties () {
       const res = []
       return res.concat(this.properties).concat(this.inheritedProperties).concat(this.dependencies)
@@ -106,11 +112,6 @@ export default {
     dependencyProperties () {
       const res = this.$store.getters['properties/list'].filter(item => this.$store.state.domainDependencyIds.some(dep => dep === item.domainId))
       return res
-    }
-  },
-  methods: {
-    setPropertyValue (e) {
-      console.log('setPropertyValue | ', e)
     }
   }
 }
