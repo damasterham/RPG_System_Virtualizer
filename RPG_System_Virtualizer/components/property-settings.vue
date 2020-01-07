@@ -12,7 +12,17 @@
       </v-col>
     </v-row>
     <v-divider inset style="margin-right: 72px" />
-    <component :is="propertyReferenceComponent" :property="property" :property-values="property.referenceType === 'property' ? selectableProperties : []" />
+    <component
+      :is="propertyReferenceComponent"
+      :property="property"
+      :property-values="
+        property.referenceType === 'property'
+          ? selectableProperties
+          : property.referenceType === 'function'
+            ? selectableFunctions
+            : selectableDomains
+      "
+    />
   </div>
 </template>
 
@@ -86,9 +96,7 @@ export default {
       const list = [ ...this.$store.getters['properties/list'] ]
       list.splice(list.findIndex(item => item.id === this.property.id), 1)
       list.forEach((item) => {
-        if (item.dataType === this.property.dataType) {
-          res.push(item)
-        }
+        if (item.dataType === this.property.dataType) { res.push(item) }
       })
       return res
     },
