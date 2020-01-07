@@ -4,6 +4,7 @@ export const state = () => ({
   modules: {},
   system: null,
   domain: null,
+  domainParentage: [],
   domainDependencyIds: [],
   property: null,
   function: null
@@ -17,6 +18,9 @@ export const getters = {
   },
   getDomain: state => () => {
     return state.domain
+  },
+  getDomainParentage: state => () => {
+    return state.domainParentage
   },
   getProperty: state => () => {
     return state.property
@@ -37,6 +41,15 @@ export const mutations = {
   },
   selectDomain (state, data) {
     state.domain = data
+    if (data !== null && state.modules.domains) {
+      let dom = data
+      const parentage = []
+      while (dom.parentDomainId !== null) {
+        parentage.push(dom.parentDomainId)
+        dom = this.getters['domains/get'](dom.parentDomainId)
+      }
+      state.domainParentage = parentage
+    }
   },
   selectProperty (state, data) {
     state.property = data
