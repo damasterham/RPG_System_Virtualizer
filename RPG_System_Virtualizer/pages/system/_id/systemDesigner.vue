@@ -212,17 +212,6 @@ export default {
       return this.$store.getters.getFunction()
     },
     domains () {
-      /*
-      const domains = [...this.$store.getters['domains/list']]
-      domains.sort((a, b) => {
-        if (a.name.toLowerCase() < b.name.toLowerCase()) {
-          return -1
-        } else if (a.name.toLowerCase() > b.name.toLowerCase()) {
-          return 1
-        } else { return 0 }
-      })
-      return domains
-      */
       return this.$store.getters['domains/list']
     },
     propertyMinFill () {
@@ -260,7 +249,8 @@ export default {
   async mounted () {
     await this.$store.dispatch('domains/find', { query: {
       systemId: this.system.id, $sort: { name: 1 }
-    } })
+    },
+    $clear: true })
   },
   methods: {
     // Domains

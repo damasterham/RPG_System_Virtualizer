@@ -77,22 +77,18 @@ export default {
       get () {
         if (this.domain.parentDomainId === null) { return '' }
         const res = this.$store.getters['domains/get'](this.domain.parentDomainId).name
-        console.log('parentDomain get', res)
         return res
       },
       set (value) {
-        console.log('parentDomain set', value)
         if (!value) { value = null }
         if (value !== this.domain.parentDomainId) { this.setDomainParent(value) }
       }
     }
   },
   async mounted () {
-    const dependencies = await this.$store.dispatch('domain-dependencies/find', { query: {} })
+    const dependencies = await this.$store.dispatch('domain-dependencies/find', { query: { }, clear: true })
     this.$store.commit('setDomainDependencyIds', dependencies.filter(item => item.domainId === this.domain.id).map(item => item.domainDependencyId))
-    if (this.domain.parentDomainId) {
-      this.$refs.parentSelect.setValue(this.domain.parentDomainId)
-    }
+    if (this.domain.parentDomainId) { this.$refs.parentSelect.setValue(this.domain.parentDomainId) }
   },
   methods: {
     handleCircularDependencyError (source) {
@@ -108,9 +104,9 @@ export default {
         }
       }
       const res = await this.$store.dispatch('domains/patch', [this.domain.id, { parentDomainId: value }])
-      console.log('setDomainParent res', res)
       this.$store.commit('selectDomain', res)
-      this.$store.dispatch('properties/find', { query: { domainId: { $in: [res.id].concat(this.$store.state.domainParentage).concat(this.dependencies) } } })
+      this.$store.dispatch('properties/find', { query: { domainId: { $in: [res.id].concat(this.$store.state.domainParentage).concat(this.dependencies) } }, $clear: true })
+      this.$store.dispatch('functions/find', { query: { domainId: { $in: [res.id].concat(this.$store.state.domainParentage) } }, $clear: true })
       this.$nextTick(() => {
         this.$refs.parentSelect.setValue(res.parentDomainId)
       })
@@ -123,11 +119,13 @@ export default {
       } else {
         this.$store.dispatch('domain-dependencies/create', { domainId: this.domain.id, domainDependencyId: value })
         this.$store.commit('addDomainDependencyId', value)
+        this.$store.dispatch('properties/find', { query: { domainIn: value } })
       }
     },
     async removeDomainDependencyId (dependency) {
       await this.$store.dispatch('domain-dependencies/remove', [null, { query: { domainId: this.domain.id, domainDependencyId: dependency } }])
       this.$store.commit('removeDomainDependencyId', dependency)
+      this.$store.commit('properties/removeItems', dependency, 'domainId')
     },
     checkForCircularDependency (domainId, dependency) {
       console.log('checkForCircularDependency', dependency)

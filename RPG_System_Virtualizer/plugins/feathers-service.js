@@ -58,11 +58,14 @@ export default function createService (namespace, options = {}) {
           // state.list = [...state.list.slice(0, state.list.length), item]
         }
       },
-      removeItem (state, id) {
-        if (state.current && state.current.id === id) {
+      removeItem (state, id, key = 'id') {
+        if (state.current && state.current[key] === id) {
           state.current = null
         }
-        state.list = state.list.filter(element => element.id !== id)
+        state.list = state.list.filter(element => element[key] !== id)
+      },
+      removeItems (state, id, key = 'id') {
+        state.list = state.list.filter(element => !id.every(el => el !== element[key]))
       },
       pagination (state, pagination) {
         state.pagination = pagination

@@ -224,7 +224,7 @@ export default {
   methods: {
     async fetchPropertiesAndFunctions () {
       await this.$store.dispatch('properties/find', { query: {
-        domainId: { $in: [this.domain.id].concat(this.$store.state.domainParentage) }
+        domainId: { $in: [this.domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds) }
       },
       $clear: true })
       await this.$store.dispatch('functions/find', { query: {
@@ -233,11 +233,9 @@ export default {
       $clear: true })
     },
     toggleNewPropertyDialog () {
-      console.log('adding property')
       this.$emit('newProperty')
     },
     toggleNewFunctionDialog (functionType) {
-      console.log('adding function of type: ' + functionType)
       this.$emit('newFunction', { type: functionType })
     },
     editDomainFieldName (list, field) {
