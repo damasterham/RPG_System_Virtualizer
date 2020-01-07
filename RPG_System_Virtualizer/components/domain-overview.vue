@@ -18,9 +18,15 @@
       <template
         v-for="field in subList.functionType
           ? $store.getters[subList.list + '/list'].filter(func => func.functionType === subList.functionType)
-          : $store.getters[subList.list + '/list']"
+          : properties"
       >
-        <v-list-item v-show="subList.listValue === true" :key="subList.list + '-item-' + field.id" @click="selectField(subList, field)">
+        <v-list-item
+          v-show="subList.listValue === true"
+          :key="subList.list + '-item-' + field.id"
+          :input-value="(property !== null && (property.id === field.id && field.referenceType)) || (func !== null && (func.id === field.id && field.functionType))"
+          color="blue-grey lighten-1"
+          @click="selectField(subList, field)"
+        >
           <v-tooltip v-if="fieldNameEdit !== subList.list + '-' + field.id" right>
             <template v-slot:activator="{ on }">
               <v-list-item-title style="cursor: pointer" v-on="on">
@@ -44,10 +50,24 @@
             @blur="fieldNameEdit = ''"
           />
           <v-spacer />
-          <v-btn icon @click.stop="editDomainFieldName(subList, field)">
+          <v-btn
+            :disabled="
+              field.referenceType && field.name === 'Name' ||
+                field.domainId !== domain.id
+            "
+            icon
+            @click.stop="editDomainFieldName(subList, field)"
+          >
             <v-icon>edit</v-icon>
           </v-btn>
-          <v-btn icon @click.stop="deleteField(subList, field)">
+          <v-btn
+            :disabled="
+              field.referenceType && field.name === 'Name' ||
+                field.domainId !== domain.id
+            "
+            icon
+            @click.stop="deleteField(subList, field)"
+          >
             <v-icon>delete</v-icon>
           </v-btn>
         </v-list-item>
@@ -68,6 +88,14 @@ export default {
     domain: {
       type: Object,
       default: () => { return { id: null, name: null, version: '0.0' } }
+    },
+    property: {
+      type: Object,
+      default: () => null
+    },
+    func: {
+      type: Object,
+      default: () => null
     }
   },
   data () {
@@ -160,7 +188,14 @@ export default {
       return this.stringFormatters.length > 0
     },
     properties () {
-      return this.$store.getters['properties/list']
+      let list = []
+      list = list.concat(this.$store.getters['properties/list'].filter(item => item.domainId === this.domain.id))
+      this.$store.state.domainParentage.forEach((parent) => {
+        this.$store.getters['properties/list'].filter(item => item.domainId === parent).forEach((inheritedProp) => {
+          if (list.every(prop => prop.name.toLowerCase() !== inheritedProp.name.toLowerCase())) { list.push(inheritedProp) }
+        })
+      })
+      return list
     },
     // Function Distinctions
     equations () {
@@ -179,9 +214,9 @@ export default {
         if (obj) { return obj.name }
         return ''
       },
-      set (value) {
+      async set (value) {
         const params = this.fieldNameEdit.split('-')
-        this.$store.dispatch(params[0] + '/patch', [params[1], { name: value }])
+        await this.$store.dispatch(params[0] + '/patch', [params[1], { name: value }])
         this.fieldNameEdit = ''
       }
     }
@@ -189,11 +224,11 @@ export default {
   methods: {
     async fetchPropertiesAndFunctions () {
       await this.$store.dispatch('properties/find', { query: {
-        domainId: this.domain.id
+        domainId: { $in: [this.domain.id].concat(this.$store.state.domainParentage) }
       },
       $clear: true })
       await this.$store.dispatch('functions/find', { query: {
-        domainId: this.domain.id
+        domainId: { $in: [this.domain.id].concat(this.$store.state.domainParentage) }
       },
       $clear: true })
     },
@@ -208,15 +243,17 @@ export default {
     editDomainFieldName (list, field) {
       this.fieldNameEdit = list.list + '-' + field.id
     },
-    deleteField (list, field) {
-      this.$store.dispatch(list.list + '/remove', field.id)
+    async deleteField (list, field) {
+      await this.$store.dispatch(list.list + '/remove', field.id)
     },
     selectField (list, field) {
-      console.log('selectField | list:', list, 'field: ', field)
       if (list.title === 'Properties') {
-        this.$store.commit('selectProperty', field)
-        console.log('property:', this.$store.getters.getProperty())
-      } else { this.$store.commit('selectFunction', field) }
+        this.$store.commit('selectProperty', null)
+        this.$nextTick(() => this.$store.commit('selectProperty', field))
+      } else {
+        this.$store.commit('selectFunction', null)
+        this.$nextTick(() => this.$store.commit('selectFunction', field))
+      }
     }
   }
 }
