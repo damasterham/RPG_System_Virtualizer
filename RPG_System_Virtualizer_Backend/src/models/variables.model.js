@@ -17,7 +17,7 @@ module.exports = function (app) {
       allowNull: false
     },
     referenceType: {
-      type: DataTypes.ENUM('function, property'),
+      type: DataTypes.ENUM('function, property, domain'),
       allowNull: false
     },
     version: {

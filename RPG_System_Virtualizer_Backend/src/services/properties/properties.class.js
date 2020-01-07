@@ -49,7 +49,7 @@ exports.Properties = class Properties extends Service {
     // Partially completed?? with hook: validate-is-valid-property-reference.js
     case 'domain': {
       // Create domain reference
-      const propertyDomainEnums = this.sequelize.models.property_domain_enums;
+      const propertyDomainEnums = this.sequelize.models.properties_domains;
       // Could be used to get relevant domain if wanted
       return propertyDomainEnums.create({
         propertyId: id,
