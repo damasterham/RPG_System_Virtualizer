@@ -119,13 +119,13 @@ export default {
       } else {
         this.$store.dispatch('domain-dependencies/create', { domainId: this.domain.id, domainDependencyId: value })
         this.$store.commit('addDomainDependencyId', value)
-        this.$store.dispatch('properties/find', { query: { domainIn: value } })
+        this.$store.dispatch('properties/find', { query: { domainId: value } })
       }
     },
     async removeDomainDependencyId (dependency) {
       await this.$store.dispatch('domain-dependencies/remove', [null, { query: { domainId: this.domain.id, domainDependencyId: dependency } }])
       this.$store.commit('removeDomainDependencyId', dependency)
-      this.$store.commit('properties/removeItems', dependency, 'domainId')
+      this.$store.commit('properties/removeItem', dependency, 'domainId')
     },
     checkForCircularDependency (domainId, dependency) {
       console.log('checkForCircularDependency', dependency)

@@ -2,7 +2,7 @@
   <v-row no-gutters>
     <v-autocomplete
       :value="propertyReference"
-      label="Property Value"
+      label="Property Reference"
       :items="formattedPropertyValues"
       item-text="name"
       return-object
@@ -33,7 +33,7 @@ export default {
       get () {
         const propertyReference = this.$store.getters['properties-properties/get'](this.property.id, 'propertyId')
         console.log(propertyReference)
-        if (propertyReference) { return this.$store.getters['properties/get'](propertyReference.propertyReferenceId) }
+        if (propertyReference) { return this.$store.getters['properties/get'](propertyReference.referenceId) }
         return null
       },
       set (val) {

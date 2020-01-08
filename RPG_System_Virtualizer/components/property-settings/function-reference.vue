@@ -2,11 +2,11 @@
   <v-row no-gutters>
     <v-autocomplete
       :value="functionReference"
-      label="Property Value"
-      :items="formattedPropertyValues"
+      label="Function Reference"
+      :items="propertyValues"
       item-text="name"
       return-object
-      @change="propertyReference = $event"
+      @change="functionReference = $event"
     />
   </v-row>
 </template>
@@ -32,23 +32,12 @@ export default {
     functionReference: {
       get () {
         const functionReference = this.$store.getters['properties-functions/get'](this.property.id, 'propertyId')
-        if (functionReference) { return this.$store.getters['functions/get'](functionReference.functionId) }
+        if (functionReference) { return this.$store.getters['functions/get'](functionReference.referenceId) }
         return null
       },
       set (val) {
         this.setPropertyValue(val)
       }
-    },
-    formattedPropertyValues () {
-      const list = []
-      this.propertyValues.forEach((property) => {
-        const listFunc = JSON.parse(JSON.stringify(property))
-        if (![property.domainId].concat(this.$store.state.domainParentage).some(parent => parent === property.domainId)) {
-          listFunc.name = this.$store.getters['domains/get'](property.domainId).name + '.' + property.name
-        }
-        list.push(listFunc)
-      })
-      return list
     }
   },
   created () {

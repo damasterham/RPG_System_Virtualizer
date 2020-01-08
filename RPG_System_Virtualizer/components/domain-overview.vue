@@ -1,80 +1,82 @@
 <template>
-  <v-list dense shaped>
-    <template v-for="subList in list">
-      <ListHeaderWithIconButton
-        :key="'header-' + subList.order"
-        :condition="subList.condition ? subList.condition : oneOrMoreTextFormatters"
-        :icon="subList.icon"
-        :title="subList.title"
-        :tooltip-text="subList.tooltipText"
-        @clicked="subList.onClick"
-      >
-        <template v-slot:moreButtons>
-          <v-btn icon @click="subList.listValue = !subList.listValue">
-            <v-icon>{{ subList.listValue ? 'expand_less' : 'expand_more' }}</v-icon>
-          </v-btn>
-        </template>
-      </ListHeaderWithIconButton>
-      <template
-        v-for="field in subList.functionType
-          ? $store.getters[subList.list + '/list'].filter(func => func.functionType === subList.functionType)
-          : properties"
-      >
-        <v-list-item
-          v-show="subList.listValue === true"
-          :key="subList.list + '-item-' + field.id"
-          :input-value="(property !== null && (property.id === field.id && field.referenceType)) || (func !== null && (func.id === field.id && field.functionType))"
-          color="blue-grey lighten-1"
-          @click="selectField(subList, field)"
+  <div style="max-height: 90.5vh; overflow-y: auto">
+    <v-list dense shaped style="height: 100%">
+      <template v-for="subList in list">
+        <ListHeaderWithIconButton
+          :key="'header-' + subList.order"
+          :condition="subList.condition ? subList.condition : oneOrMoreTextFormatters"
+          :icon="subList.icon"
+          :title="subList.title"
+          :tooltip-text="subList.tooltipText"
+          @clicked="subList.onClick"
         >
-          <v-tooltip v-if="fieldNameEdit !== subList.list + '-' + field.id" right>
-            <template v-slot:activator="{ on }">
-              <v-list-item-title style="cursor: pointer" v-on="on">
-                <v-icon small>
-                  fiber_manual_record
-                </v-icon>
-                {{ field.name }}
-              </v-list-item-title>
-            </template>
-            <span>{{ field.name }}</span>
-          </v-tooltip>
-          <v-text-field
-            v-else
-            autofocus
-            hide-details
-            :value="fieldNameEditValue"
-            :label="subList.title === 'Properties'
-              ? 'Property Name'
-              : subList.title.substring(0, subList.title.length - 1) + ' Name'"
-            @change="fieldNameEditValue = $event"
-            @blur="fieldNameEdit = ''"
-          />
-          <v-spacer />
-          <v-btn
-            :disabled="
-              field.referenceType && field.name === 'Name' ||
-                field.domainId !== domain.id
-            "
-            icon
-            @click.stop="editDomainFieldName(subList, field)"
+          <template v-slot:moreButtons>
+            <v-btn icon @click="subList.listValue = !subList.listValue">
+              <v-icon>{{ subList.listValue ? 'expand_less' : 'expand_more' }}</v-icon>
+            </v-btn>
+          </template>
+        </ListHeaderWithIconButton>
+        <template
+          v-for="field in subList.functionType
+            ? $store.getters[subList.list + '/list'].filter(func => func.functionType === subList.functionType)
+            : properties"
+        >
+          <v-list-item
+            v-show="subList.listValue === true"
+            :key="subList.list + '-item-' + field.id"
+            :input-value="(property !== null && (property.id === field.id && field.referenceType)) || (func !== null && (func.id === field.id && field.functionType))"
+            color="blue-grey lighten-1"
+            @click="selectField(subList, field)"
           >
-            <v-icon>edit</v-icon>
-          </v-btn>
-          <v-btn
-            :disabled="
-              field.referenceType && field.name === 'Name' ||
-                field.domainId !== domain.id
-            "
-            icon
-            @click.stop="deleteField(subList, field)"
-          >
-            <v-icon>delete</v-icon>
-          </v-btn>
-        </v-list-item>
-        <v-divider v-show="subList.listValue === true" :key="'divider-' + field.id" />
+            <v-tooltip v-if="fieldNameEdit !== subList.list + '-' + field.id" right>
+              <template v-slot:activator="{ on }">
+                <v-list-item-title style="cursor: pointer" v-on="on">
+                  <v-icon small>
+                    fiber_manual_record
+                  </v-icon>
+                  {{ field.name }}
+                </v-list-item-title>
+              </template>
+              <span>{{ field.name }}</span>
+            </v-tooltip>
+            <v-text-field
+              v-else
+              autofocus
+              hide-details
+              :value="fieldNameEditValue"
+              :label="subList.title === 'Properties'
+                ? 'Property Name'
+                : subList.title.substring(0, subList.title.length - 1) + ' Name'"
+              @change="fieldNameEditValue = $event"
+              @blur="fieldNameEdit = ''"
+            />
+            <v-spacer />
+            <v-btn
+              :disabled="
+                field.referenceType && field.name === 'Name' ||
+                  field.domainId !== domain.id
+              "
+              icon
+              @click.stop="editDomainFieldName(subList, field)"
+            >
+              <v-icon>edit</v-icon>
+            </v-btn>
+            <v-btn
+              :disabled="
+                field.referenceType && field.name === 'Name' ||
+                  field.domainId !== domain.id
+              "
+              icon
+              @click.stop="deleteField(subList, field)"
+            >
+              <v-icon>delete</v-icon>
+            </v-btn>
+          </v-list-item>
+          <v-divider v-show="subList.listValue === true" :key="'divider-' + subList.title + '-' + field.id" />
+        </template>
       </template>
-    </template>
-  </v-list>
+    </v-list>
+  </div>
 </template>
 
 <script>
@@ -195,7 +197,9 @@ export default {
           if (list.every(prop => prop.name.toLowerCase() !== inheritedProp.name.toLowerCase())) { list.push(inheritedProp) }
         })
       })
-      return list
+      return list.sort((a, b) => {
+        return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : b.name.toLowerCase() < a.name.toLowerCase() ? 1 : 0
+      })
     },
     // Function Distinctions
     equations () {

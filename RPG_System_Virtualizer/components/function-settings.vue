@@ -1,27 +1,36 @@
 <template>
-  <div>
+  <div style="margin-top: 10px; margin-left: 5px">
+    <v-row no-gutters>
+      <v-chip outlined text-color="blue-grey lighten-2">
+        Function
+      </v-chip>
+      &nbsp;
+      <span class="headline">
+        {{ func.name }}
+      </span>
+    </v-row>
     <v-row no-gutters>
       <v-col style="margin-right: 4px">
-        <v-text-field readonly label="Function Name" :value="func.name" />
-      </v-col>
-      <v-col style="margin-left: 4px; margin-right: 4px">
-        <v-text-field readonly label="Function Data Type" :value="func.dataType | firstLetterCapitalized" />
+        <v-text-field readonly label="Type" :value="func.functionType | firstLetterCapitalized | removeUnderscore" />
       </v-col>
       <v-col style="margin-left: 4px">
-        <v-text-field readonly label="Function Type" :value="func.functionType | firstLetterCapitalized | removeUnderscore" />
+        <v-text-field readonly label="Data Type" :value="func.dataType | firstLetterCapitalized" />
       </v-col>
     </v-row>
-    <v-divider inset style="margin-right: 72px" />
-    <!-- <component :is="functionReferenceComponent" /> -->
+    <v-divider inset style="margin-right: 72px; margin-bottom: 10px" />
+    <component
+      :is="functionReferenceComponent"
+      :func="func"
+    />
   </div>
 </template>
 
 <script>
-// import equationReference from '~/components/function-settings/equations-reference.vue'
+import equationReference from '~/components/function-settings/equation-reference.vue'
 
 export default {
   components: {
-    // equationReference
+    equationReference
   },
   filters: {
     firstLetterCapitalized (val) {
@@ -47,13 +56,11 @@ export default {
     }
   },
   computed: {
-    /*
     functionReferenceComponent () {
-      switch (this.property.functionType) {
+      switch (this.func.functionType) {
         default: return equationReference
       }
     }
-    */
   }
 }
 </script>

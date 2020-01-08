@@ -2,11 +2,11 @@
   <v-row no-gutters>
     <v-autocomplete
       :value="domainReference"
-      label="Property Value"
+      label="Domain Reference"
       :items="propertyValues"
       item-text="name"
       return-object
-      @change="propertyReference = $event"
+      @change="domainReference = $event"
     />
   </v-row>
 </template>
@@ -32,7 +32,7 @@ export default {
     domainReference: {
       get () {
         const domainReference = this.$store.getters['properties-domains/get'](this.property.id, 'propertyId')
-        if (domainReference) { return this.$store.getters['domains/get'](domainReference.domainId) }
+        if (domainReference) { return this.$store.getters['domains/get'](domainReference.referenceId) }
         return null
       },
       set (val) {

@@ -1,14 +1,20 @@
 <template>
-  <div>
+  <div style="margin-left: 5px">
     <v-row no-gutters>
+      <v-chip outlined text-color="blue-grey lighten-2">
+        Property
+      </v-chip>
+      &nbsp;
+      <span class="headline">
+        {{ property.name }}
+      </span>
+    </v-row>
+    <v-row no-gutters style="margin-top: 12px">
       <v-col style="margin-right: 4px">
-        <v-text-field readonly label="Property Name" :value="property.name" />
-      </v-col>
-      <v-col style="margin-left: 4px; margin-right: 4px">
-        <v-text-field readonly label="Property Data Type" :value="property.dataType | firstLetterCapitalized" />
+        <v-text-field readonly label="Reference Type" :value="property.referenceType === 'raw_value' ? 'User Input' : property.referenceType | firstLetterCapitalized | removeUnderscore" />
       </v-col>
       <v-col style="margin-left: 4px">
-        <v-text-field readonly label="Property Reference Type" :value="property.referenceType === 'raw_value' ? 'User Input' : property.referenceType | firstLetterCapitalized | removeUnderscore" />
+        <v-text-field readonly label="Data Type" :value="property.dataType | firstLetterCapitalized" />
       </v-col>
     </v-row>
     <v-divider inset style="margin-right: 72px" />

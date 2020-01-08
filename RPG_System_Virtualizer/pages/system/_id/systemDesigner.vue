@@ -51,6 +51,11 @@
       </v-app-bar>
       <v-container fluid>
         <v-row dense style="height: 90.6vh">
+          <v-col id="Domain Family Settings" cols="3">
+            <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
+            <domainInheritance v-if="domain !== null" :domain="domain" />
+          </v-col>
+          <v-divider vertical />
           <v-col id="Domain Overview" cols="3">
             <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
             <domainOverview
@@ -64,11 +69,6 @@
             />
           </v-col>
           <v-divider vertical />
-          <v-col id="Domain Family Settings" cols="3">
-            <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
-            <domainInheritance v-if="domain !== null" :domain="domain" />
-          </v-col>
-          <v-divider vertical />
           <v-col id="Property/Function Settings">
             <v-row no-gutters>
               <v-col v-if="property !== null" id="Property Settings" cols="12">
@@ -80,7 +80,7 @@
             <v-row no-gutters>
               <v-col v-if="func !== null" id="Function Settings" cols="12">
                 <!-- function overview & settings -->
-                <functionSettings :domain="domain" />
+                <functionSettings :domain="domain" :func="func" />
               </v-col>
             </v-row>
           </v-col>
@@ -336,6 +336,21 @@ export default {
 }
 </script>
 
-<style lang="stylus">
+<style>
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  border-radius: 10px;
+  background-color: #424242;
+}
 
+::-webkit-scrollbar {
+  width: 12px;
+  background-color: #424242;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+  background-color: #555;
+}
 </style>

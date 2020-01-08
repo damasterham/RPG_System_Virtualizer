@@ -40,13 +40,17 @@ export default {
         if (defaultValue) {
           let val = defaultValue.defaultValue
           if (val === null && this.property.dataType === 'boolean') { val = false }
-          if (this.property.dataType === 'float') { val === null ? val = '0.00' : val = parseFloat(val).toFixed(2) }
+          if (this.property.dataType === 'float' && val !== null) { val = parseFloat(val).toFixed(2) }
           return val
         }
         return ''
       },
       async set (val) {
-        if (this.property.dataType === 'float' && val) { val = parseFloat(val).toFixed(2) }
+        console.log('defaultValue set', val)
+        console.log(val)
+        if (this.property.dataType === 'float') {
+          if (typeof val === 'string' && val.length === 0) { val = null } else if (val) { val = parseFloat(val).toFixed(2) }
+        }
         await this.$store.dispatch('raw-values/patch', [this.property.id, { defaultValue: val }])
       }
     },
