@@ -47,8 +47,7 @@ export default {
       },
       async set (val) {
         if (this.property.dataType === 'float' && val) { val = parseFloat(val).toFixed(2) }
-        const res = await this.$store.dispatch('raw-values/patch', [this.property.id, { defaultValue: val }])
-        this.$store.commit('raw-values/updateItem', res)
+        await this.$store.dispatch('raw-values/patch', [this.property.id, { defaultValue: val }])
       }
     },
     inputType () {

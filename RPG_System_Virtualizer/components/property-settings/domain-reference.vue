@@ -44,7 +44,7 @@ export default {
   methods: {
     async setPropertyValue (e) {
       console.log('setPropertyValue | ', e)
-      await this.$store.dispatch('properties/patch', [this.property.id, {}, { data: { id: e.id, referenceType: this.property.referenceType } }])
+      await this.$store.dispatch('properties/patch', [this.property.id, {}, { data: { referenceId: e.id, referenceType: this.property.referenceType } }])
     }
   }
 }

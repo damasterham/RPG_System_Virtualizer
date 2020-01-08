@@ -295,7 +295,8 @@ export default {
       this.newProp.dataType = this.newPropType
       this.newProp.referenceType = this.newPropValue
       const res = await this.$store.dispatch('properties/create', this.newProp)
-      this.$store.commit('selectProperty', res)
+      this.$store.commit('selectProperty', null)
+      this.$nextTick(() => this.$store.commit('selectProperty', res))
       this.closeNewPropDialog()
     },
 
@@ -311,12 +312,13 @@ export default {
       this.newFunc = {}
       this.newFuncDialog = false
     },
-    createNewFunction () {
+    async createNewFunction () {
       this.newFunc.name = this.newFuncName
       this.newFunc.functionType = this.newFuncType
       this.newFunc.dataType = this.newFuncDataType
-      const res = this.$store.dispatch('functions/create', this.newFunc)
-      this.$store.commit('selectFunction', res)
+      const res = await this.$store.dispatch('functions/create', this.newFunc)
+      this.$store.commit('selectFunction', null)
+      this.$nextTick(() => this.$store.commit('selectFunction', res))
       this.closeNewFuncDialog()
     },
 
