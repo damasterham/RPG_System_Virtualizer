@@ -126,7 +126,7 @@ export default {
       }
     },
     variables () {
-      return []
+      return this.$store.getters['variables/list'].filter(item => item.functionId === this.func.id)
     }
   },
   created () {
