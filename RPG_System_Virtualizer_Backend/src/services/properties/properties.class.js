@@ -10,14 +10,16 @@ exports.Properties = class Properties extends Service {
   async setReference(id, referenceType, referenceId)
   {
     switch (referenceType) {
-    case 'raw_value': {
-      const rawValueService = await this.app.service('raw-values');
-      return rawValueService.create({
-        propertyId: id,
-        // defaultValue: data.defaultValue // Should maybe not be passed yet
-        // default value isnotnullorundefined
-      });
-    }
+    // Handle which reference type it is
+    //// Could now be rewritten to use junction services
+    // case 'raw_value': {
+    //   const rawValueService = await this.app.service('raw-values');
+    //   return rawValueService.create({
+    //     propertyId: id,
+    //     // defaultValue: data.defaultValue // Should maybe not be passed yet
+    //     // default value isnotnullorundefined
+    //   });
+    // }
     case 'property': {
       // context.app.service('properties')
       // Needs to be able to create entry in junction table properties_properties
@@ -59,7 +61,7 @@ exports.Properties = class Properties extends Service {
     }
 
     default:
-      throw new Error(`Invaldi property reference type, tried to set type '${referenceType}' which does not exist
+      throw new Error(`Invalid property reference type, tried to set type '${referenceType}' which does not exist
       Must be of type raw_value, property, function or domain`);
     }
   }

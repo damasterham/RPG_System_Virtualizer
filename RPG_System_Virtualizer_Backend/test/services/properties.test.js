@@ -188,10 +188,20 @@ describe('\'properties\' service', () => {
 
     it('created a reference to raw_value property', async () =>
     {
-      const propRef = await propertiesService.setReference(
+      const propRef = await propertiesService.patch(
         newPropertyDirectLookup.id,
-        newPropertyDirectLookup.referenceType,
-        newPropertyRawValue.id);
+        {}, // Empty since only other data is to be updated
+        {
+          data: {
+            referenceId: newPropertyRawValue.id,
+            referenceType: newPropertyDirectLookup.referenceType
+          }
+        }
+      );
+
+      // const propRef = await propertiesService.setReference(
+      //   newPropertyDirectLookup.referenceType,
+      //   newPropertyRawValue.id);
 
       assert.ok(propRef.propertyId === newPropertyDirectLookup.id);
       assert.ok(propRef.propertyReferenceId === newPropertyRawValue.id);
