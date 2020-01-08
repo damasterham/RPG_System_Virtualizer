@@ -2,6 +2,8 @@
 // for more of what you can do here.
 const Sequelize = require('sequelize');
 const DataTypes = Sequelize.DataTypes;
+// const Status = require('./status');
+
 
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelize');
@@ -19,7 +21,13 @@ module.exports = function (app) {
       type: DataTypes.TEXT,
       allowNull: false,
       defaultValue: '0.0'
+    },
+    toBeDeleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
+    // status: Status
   }, {
     hooks: {
       beforeCount(options) {
@@ -66,8 +74,8 @@ module.exports = function (app) {
 
     // Domain associations used as glorified enum
     domains.belongsToMany(models.properties, {
-      as: 'propertyDomainEnum',
-      through: 'property_domain_enums',
+      as: 'propertiesDomains',
+      through: 'properties_domains',
       otherKey: {
         name: 'propertyId',
         unique: true,
@@ -75,8 +83,8 @@ module.exports = function (app) {
     });
 
     domains.belongsToMany(models.variables, {
-      as: 'VariableDomainEnum',
-      through: 'variable_domain_enums',
+      as: 'variablesDomains',
+      through: 'variables_domains',
       otherKey: {
         name: 'variable_id',
         unique: true,
