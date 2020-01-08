@@ -16,7 +16,7 @@ module.exports = (options = {}) => {
     // .then((res) => {
     context.result = {
       propertyId: res.propertyId,
-      propertyReferenceId: res.propertyReferenceId
+      referenceId: res.propertyReferenceId || res.functionId || res.domainId
     };
     return context;
     // }).catch((err) => {
