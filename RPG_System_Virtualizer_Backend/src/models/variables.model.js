@@ -18,7 +18,7 @@ module.exports = function (app) {
     },
     referenceType: {
       type: DataTypes.ENUM('function', 'property', 'domain'),
-      allowNull: false
+      allowNull: true
     },
     version: {
       type: DataTypes.TEXT,
