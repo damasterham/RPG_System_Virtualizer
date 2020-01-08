@@ -224,11 +224,11 @@ export default {
   methods: {
     async fetchPropertiesAndFunctions () {
       await this.$store.dispatch('properties/find', { query: {
-        domainId: { $in: [this.domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds) }
+        domainId: { $in: [this.domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds) }, $sort: { name: 1 }
       },
       $clear: true })
       await this.$store.dispatch('functions/find', { query: {
-        domainId: { $in: [this.domain.id].concat(this.$store.state.domainParentage) }
+        domainId: { $in: [this.domain.id].concat(this.$store.state.domainParentage) }, $sort: { name: 1 }
       },
       $clear: true })
     },

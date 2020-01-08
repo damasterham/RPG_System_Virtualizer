@@ -95,22 +95,22 @@ export default {
     // Properties
     selectableProperties () {
       const res = []
-      return res.concat(this.properties).concat(this.inheritedProperties).concat(this.dependencies)
+      console.log('inherent properties', this.inherentProperties)
+      console.log('inherited properties', this.inheritedProperties)
+      console.log('dependency properties', this.dependencyProperties)
+      return res.concat(this.inherentProperties).concat(this.inheritedProperties).concat(this.dependencyProperties)
     },
-    properties () {
-      const res = []
-      const list = [ ...this.$store.getters['properties/list'] ]
-      list.splice(list.findIndex(item => item.id === this.property.id), 1)
-      list.forEach((item) => {
-        if (item.dataType === this.property.dataType) { res.push(item) }
-      })
-      return res
+    inherentProperties () {
+      const res = [ ...this.$store.getters['properties/list'] ]
+      res.splice(res.findIndex(item => item.id === this.property.id), 1)
+      return res.filter(item => item.domainId === this.property.domainId && item.dataType === this.property.dataType)
     },
     inheritedProperties () {
-      return this.$store.getters['properties/list'].filter(item => this.$store.state.domainParentage.some(parent => parent === item.domainId) && item.dataType === this.property.dataType)
+      const res = this.$store.getters['properties/list'].filter(item => this.$store.state.domainParentage.some(parent => parent === item.domainId) && item.dataType === this.property.dataType)
+      return res
     },
     dependencyProperties () {
-      const res = this.$store.getters['properties/list'].filter(item => this.$store.state.domainDependencyIds.some(dep => dep === item.domainId))
+      const res = this.$store.getters['properties/list'].filter(item => this.$store.state.domainDependencyIds.some(dep => dep === item.domainId) && item.dataType === this.property.dataType)
       return res
     }
   }

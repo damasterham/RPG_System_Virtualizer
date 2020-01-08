@@ -232,20 +232,10 @@ export default function createService (namespace, options = {}) {
       query: (state) => {
         return state.query
       }
-
     }
   }
   return (store) => {
     const preserveState = store.state.hasOwnProperty(namespace)
-    /*
-    if (process.server) {
-      if (!preserveState) {
-        store.registerModule(namespace, module)
-      }
-    } else if (!store.state.modules.hasOwnProperty(namespace)) {
-
-    }
-    */
     store.registerModule(namespace, module, {
       preserveState
     })

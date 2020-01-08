@@ -13,6 +13,9 @@
 
 <script>
 import service from '~/plugins/feathers-service.js'
+import client from '~/plugins/feathers-client.js'
+
+const propertiesClient = client.service('properties')
 
 export default {
   props: {
@@ -28,7 +31,10 @@ export default {
   computed: {
     propertyReference: {
       get () {
-        return this.$store.getters['properties/get'](this.$store.getters['properties-properties/get'](this.property.id, 'propertyId').propertyReferenceId)
+        const propertyReference = this.$store.getters['properties-properties/get'](this.property.id, 'propertyId')
+        console.log(propertyReference)
+        if (propertyReference) { return this.$store.getters['properties/get'](propertyReference.propertyReferenceId) }
+        return null
       },
       set (val) {
         this.setPropertyValue(val)
@@ -36,6 +42,7 @@ export default {
     },
     formattedPropertyValues () {
       const list = []
+      console.log(this.propertyValues)
       this.propertyValues.forEach((property) => {
         const listProp = JSON.parse(JSON.stringify(property))
         if (![property.domainId].concat(this.$store.state.domainParentage).some(parent => parent === property.domainId)) {
@@ -53,9 +60,12 @@ export default {
     await this.$store.dispatch('properties-properties/find', { query: { propertyId: this.property.id } })
   },
   methods: {
-    async setPropertyValue (e) {
+    setPropertyValue (e) {
       console.log('setPropertyValue | ', e)
-      await this.$store.dispatch('properties/patch', [this.property.id, {}, { data: { referenceId: e.id, referenceType: this.property.referenceType } }])
+      propertiesClient.patch(this.property.id, {}, { data: { referenceId: e.id, referenceType: this.property.referenceType } }).then((res) => {
+        console.log('propertiesClient result:', res)
+        // this.$store.commit('properties-properties/updateItem', res) Waiting for Hook implementation
+      })
     }
   }
 }
