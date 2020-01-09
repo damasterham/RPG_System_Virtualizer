@@ -192,9 +192,11 @@ describe('\'properties\' service', () => {
         newPropertyDirectLookup.id,
         {}, // Empty since only other data is to be updated
         {
-          data: {
-            referenceId: newPropertyRawValue.id,
-            referenceType: newPropertyDirectLookup.referenceType
+          query: {
+            data: {
+              referenceId: newPropertyRawValue.id,
+              referenceType: newPropertyDirectLookup.referenceType
+            }
           }
         }
       );

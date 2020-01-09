@@ -26,6 +26,16 @@ module.exports = function (app) {
 
     // The id of the Domain Definition
     domainInstances.belongsTo(models.domains);
+
+
+    // Domain dependency instances
+    domainInstances.belongsToMany(domainInstances, {
+      as: 'domainDependencyInstances',
+      through: 'domain_dependency_instances',
+      foreignKey: {
+        name: 'domainInstanceId',
+      }
+    });
   };
 
   return domainInstances;

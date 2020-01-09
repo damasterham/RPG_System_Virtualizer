@@ -1,15 +1,12 @@
 // See http://docs.sequelizejs.com/en/latest/docs/models-definition/
 // for more of what you can do here.
-const Sequelize = require('sequelize');
-const DataTypes = Sequelize.DataTypes;
+// const Sequelize = require('sequelize');
+// const DataTypes = Sequelize.DataTypes;
 
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelize');
-  const rawValueInstances = sequelizeClient.define('raw_value_instances', {
-    value: {
-      type: DataTypes.TEXT,
-      allowNull: false // Gets either value from input, or default
-    }
+  const domainDependencyInstances = sequelizeClient.define('domain_dependency_instances', {
+
   }, {
     hooks: {
       beforeCount(options) {
@@ -19,11 +16,10 @@ module.exports = function (app) {
   });
 
   // eslint-disable-next-line no-unused-vars
-  rawValueInstances.associate = function (models) {
+  domainDependencyInstances.associate = function (models) {
     // Define associations here
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
-    rawValueInstances.belongsTo(models.raw_values);
   };
 
-  return rawValueInstances;
+  return domainDependencyInstances;
 };
