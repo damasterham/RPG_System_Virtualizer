@@ -26,7 +26,7 @@
       </v-card>
     </v-dialog>
     <v-row no-gutters>
-      <v-col cols="11">
+      <v-col>
         <v-textarea
           :value="equation"
           label="Definition"
@@ -35,7 +35,7 @@
           @change="equation = $event"
         />
       </v-col>
-      <v-col align-self="center" style="margin-left: 15px">
+      <v-col cols="auto" style="margin-left: 15px">
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <v-btn icon @click="toggleHelp" v-on="on">
@@ -48,6 +48,7 @@
             Open Help Dialog
           </span>
         </v-tooltip>
+        <br>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <v-btn icon @click="createNewVariable()" v-on="on">
@@ -83,7 +84,6 @@
 
 <script>
 import variableList from '~/components/function-settings/variable-list.vue'
-import service from '~/plugins/feathers-service.js'
 
 export default {
   components: {
@@ -133,10 +133,6 @@ export default {
     variables () {
       return this.$store.getters['variables/list'].filter(item => item.functionId === this.func.id)
     }
-  },
-  created () {
-    service('equation-rounder')(this.$store)
-    service('variables')(this.$store)
   },
   async mounted () {
     await this.$store.dispatch('variables/find', { query: { functionId: this.func.id }, $clear: true })

@@ -4,10 +4,12 @@
       Variables
     </span>
     <v-row id="listOfVariables" no-gutters>
-      <template v-for="(variable, index) in variables">
-        <variable :key="variable.id" :references="references" />
-        <v-divider v-if="index !== variables.length - 1" :key="'divider-' + variable.id" />
-      </template>
+      <v-col>
+        <template v-for="variable in variables">
+          <variable :key="'variable-' + variable.id" :references="references" :variable="variable" />
+          <!-- <v-divider v-if="index !== variables.length - 1" :key="'divider-' + variable.id" /> -->
+        </template>
+      </v-col>
     </v-row>
   </div>
 </template>
@@ -63,6 +65,7 @@ export default {
             return { name: prop.name.toLowerCase(), id: prop.id, type: 'Property', domainId: prop.domainId }
           })
         )
+      console.log('inherent properties:', [ ...res ])
       this.$store.state.domainParentage
         .forEach((parent) => {
           this.$store.getters['properties/list']
@@ -77,18 +80,20 @@ export default {
               }
             })
         })
+      console.log('inherited properties:', [ ...res ])
       res = res
         .sort((a, b) => this.sortAlphabetically(a, b, 'name'))
       let functions = []
       functions = functions
         .concat(this.$store.getters['functions/list']
           .filter((func) => { // Get inherent functions of matching dataType
-            return func.domainId === this.domain.id && func.dataType === this.func.dataType
+            return func.domainId === this.domain.id && func.dataType === this.func.dataType && func.id !== this.func.id
           })
           .map((func) => { // Break down into smaller object
             return { name: func.name.toLowerCase(), id: func.id, type: 'Function', domainId: func.domainId }
           })
         )
+      console.log('inherent functions:', [ ...res ])
       this.$store.state.domainParentage
         .forEach((parent) => {
           this.$store.getters['functions/list']
@@ -103,6 +108,7 @@ export default {
               }
             })
         })
+      console.log('inherited functions:', [ ...res ])
       functions = functions
         .sort((a, b) => this.sortAlphabetically(a, b, 'name'))
       res = res.concat(functions) // Join properties and functions
@@ -111,67 +117,18 @@ export default {
         res.push( // Break down into smaller object
           { name: domain.name.toUpperCase(), id: domain.id, type: 'Domain' }
         )
+        console.log(this.$store.getters['properties/list'].filter(prop => prop.domainId === domain.id))
         res = res.concat(this.$store.getters['properties/list']
           .filter((prop) => { // Get dependency properties of matching dataType
             return prop.domainId === dependency && prop.dataType === this.func.dataType
           })
           .map((prop) => { // Break down into smaller object
-            return { name: domain.name + '.' + prop.name, id: prop.id, type: 'Property', domainId: domain.id }
+            return { name: domain.name.toUpperCase() + '.' + prop.name, id: prop.id, type: 'Property', domainId: domain.id }
           })
           .sort((a, b) => this.sortAlphabetically(a, b, 'name')))
       })
+      console.log('domain dependencies', res)
       return res
-    },
-    domainReferences () {
-      const res = []
-      res.concat(this.$store.getters['domains/list'].filter(item => this.$store.state.domainDependencyIds.some(dep => dep === item.id)))
-      return res
-    },
-    functionReferences () {
-      const res = []
-      res.concat(this.$store.getters['functions/list'].filter(item => [this.domain.id].concat(this.$store.state.domainParentage).some(id => id === item.domainId)))
-      return res.filter(item => item.dataType === this.variable.dataType)
-    },
-    inherentPropertyReferences () {
-      const res = []
-      res.concat(this.$store.getters['properties/list'].filter(item => item.domainId === this.domain.id))
-      return res.filter(item => item.dataType === this.variable.dataType).sort((a, b) => {
-        if (a.name.toLowerCase() < b.name.toLowerCase()) {
-          return -1
-        } else if (a.name.toLowerCase() > b.name.toLowerCase()) {
-          return 1
-        } else { return 0 }
-      })
-    },
-    inheritedPropertyReferences () {
-      const res = []
-      res.concat(this.$store.getters['properties/list'].filter(item => this.$store.state.domainParentage.some(parent => parent === item.domainId)))
-      return res.filter(item => item.dataType === this.variable.dataType).sort((a, b) => {
-        if (this.this.$store.state.domainParentage.indexOf(a.domainId) < this.this.$store.state.domainParentage.indexOf(b.domainId)) {
-          return -1
-        } else if (this.this.$store.state.domainParentage.indexOf(a.domainId) > this.this.$store.state.domainParentage.indexOf(b.domainId)) {
-          return 1
-        } else if (a.name.toLowerCase() < b.name.toLowerCase()) {
-          return -1
-        } else if (a.name.toLowerCase() > b.name.toLowerCase()) {
-          return 1
-        } else { return 0 }
-      })
-    },
-    dependencyPropertyReferences () {
-      const res = []
-      res.concat(this.$store.getters['properties/list'].filter(item => this.$store.state.domainDependencyIds.some(dep => dep === item.domainId)))
-      return res.filter(item => item.dataType === this.variable.dataType).sort((a, b) => {
-        if (this.this.$store.state.domainDependencyIds.indexOf(a.domainId) < this.this.$store.state.domainDependencyIds.indexOf(b.domainId)) {
-          return -1
-        } else if (this.this.$store.state.domainDependencyIds.indexOf(a.domainId) > this.this.$store.state.domainDependencyIds.indexOf(b.domainId)) {
-          return 1
-        } else if (a.name.toLowerCase() < b.name.toLowerCase()) {
-          return -1
-        } else if (a.name.toLowerCase() > b.name.toLowerCase()) {
-          return 1
-        } else { return 0 }
-      })
     }
   },
   methods: {

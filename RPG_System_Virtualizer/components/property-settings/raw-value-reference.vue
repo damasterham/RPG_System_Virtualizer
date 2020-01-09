@@ -14,8 +14,6 @@
 </template>
 
 <script>
-import service from '~/plugins/feathers-service.js'
-
 export default {
   filters: {
     firstLetterCapitalized (val) {
@@ -62,9 +60,6 @@ export default {
         default: return 'text'
       }
     }
-  },
-  created () {
-    if (!this.$store.state.modules['raw-values']) { service('raw-values')(this.$store) }
   },
   async mounted () {
     const res = await this.$store.dispatch('raw-values/find', { query: { propertyId: this.property.id } })

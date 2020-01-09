@@ -12,10 +12,9 @@
 </template>
 
 <script>
-import service from '~/plugins/feathers-service.js'
 import client from '~/plugins/feathers-client.js'
 
-const domainsClient = client.service('domains')
+const propertiesClient = client.service('properties')
 
 export default {
   props: {
@@ -32,7 +31,7 @@ export default {
     domainReference: {
       get () {
         const domainReference = this.$store.getters['properties-domains/get'](this.property.id, 'propertyId')
-        if (domainReference) { return this.$store.getters['domains/get'](domainReference.referenceId) }
+        if (domainReference) { return this.$store.getters['domains/get'](domainReference.domainId) }
         return null
       },
       set (val) {
@@ -40,18 +39,15 @@ export default {
       }
     }
   },
-  created () {
-    if (!this.$store.state.modules['properties-domains']) { service('properties-domains')(this.$store) }
-  },
   async mounted () {
     await this.$store.dispatch('properties-domains/find', { query: { propertyId: this.property.id } })
   },
   methods: {
     setPropertyValue (e) {
       console.log('setPropertyValue | ', e)
-      domainsClient.patch(this.property.id, {}, { data: { referenceId: e.id, referenceType: this.property.referenceType } }).then((res) => {
-        console.log('domainsClient result:', res)
-        // this.$store.commit('properties-functions/updateItem', res) Waiting for hook implementation
+      propertiesClient.patch(this.property.id, {}, { query: { data: { referenceId: e.id, referenceType: this.property.referenceType } } }).then((res) => {
+        console.log('propertiesClient result:', res)
+        this.$store.commit('properties-functions/updateItem', res)
       })
     }
   }

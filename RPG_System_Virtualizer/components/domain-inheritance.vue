@@ -85,9 +85,9 @@ export default {
       }
     }
   },
-  async mounted () {
-    const dependencies = await this.$store.dispatch('domain-dependencies/find', { query: { }, clear: true })
-    this.$store.commit('setDomainDependencyIds', dependencies.filter(item => item.domainId === this.domain.id).map(item => item.domainDependencyId))
+  mounted () {
+    // const dependencies = await this.$store.dispatch('domain-dependencies/find', { query: { }, clear: true })
+    // this.$store.commit('setDomainDependencyIds', dependencies.filter(item => item.domainId === this.domain.id).map(item => item.domainDependencyId))
     if (this.domain.parentDomainId) { this.$refs.parentSelect.setValue(this.domain.parentDomainId) }
   },
   methods: {

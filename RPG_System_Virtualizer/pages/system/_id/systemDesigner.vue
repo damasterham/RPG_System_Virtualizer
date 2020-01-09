@@ -115,7 +115,7 @@
           <v-form ref="newFuncForm" v-model="newFuncValid">
             <v-text-field v-model="newFuncName" :rules="rules" label="Function Name" />
             <v-text-field readonly :value="newFuncType | capitalizeFirstLetter" />
-            <v-autocomplete v-model="newFuncDataType" :rules="rules" :items="dataTypes" label="Function Data Type" />
+            <v-autocomplete v-model="newFuncDataType" :rules="rules" :items="selectableDataTypes" label="Function Data Type" />
           </v-form>
         </template>
         <template v-slot:buttons>
@@ -197,6 +197,13 @@ export default {
     }
   },
   computed: {
+    selectableDataTypes () {
+      switch (this.newFuncType) {
+        case 'equation': return this.dataTypes.filter(item => item.value !== 'string' && item.value !== 'boolean')
+        case 'lookup': return this.dataTypes.filter(item => item.value === 'int')
+        default: return this.dataTypes
+      }
+    },
     system () {
       const system = this.$store.getters.getSystem()
       if (system !== null) { return system }
@@ -239,7 +246,13 @@ export default {
     service('domains')(this.$store)
     service('domain-dependencies')(this.$store)
     service('properties')(this.$store)
+    service('properties-domains')(this.$store)
+    service('properties-functions')(this.$store)
+    service('properties-properties')(this.$store)
+    service('raw-values')(this.$store)
     service('functions')(this.$store)
+    service('equation-rounder')(this.$store)
+    service('variables')(this.$store)
     if (!this.$store.state.system) {
       service('systems')(this.$store)
       const system = await this.$store.dispatch('systems/get', this.$route.params.id)
@@ -264,15 +277,24 @@ export default {
     editDomainName (domainId) {
       this.domainNameEdit = domainId
     },
-    selectDomain (domain) {
+    async selectDomain (domain) {
       this.$store.commit('selectDomain', null)
       this.$store.commit('selectProperty', null)
       this.$store.commit('selectFunction', null)
+      if (this.$store.getters['domain-dependencies/list'].length === 0) {
+        await this.$store.dispatch('domain-dependencies/find', { query: { }, clear: true })
+      }
+      this.$store.commit('setDomainDependencyIds', this.$store.getters['domain-dependencies/list'].filter(item => item.domainId === domain.id).map(item => item.domainDependencyId))
+      await this.$store.dispatch('properties/find', { query: {
+        domainId: { $in: [domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds) }
+      },
+      $clear: true })
+      await this.$store.dispatch('functions/find', { query: {
+        domainId: { $in: [domain.id].concat(this.$store.state.domainParentage) }, $sort: { name: 1 }
+      },
+      $clear: true })
       this.$nextTick(() => {
         this.$store.commit('selectDomain', domain)
-        this.$nextTick(() => {
-          this.$refs.domainOverview.fetchPropertiesAndFunctions()
-        })
       })
     },
     deleteDomain (domain) {

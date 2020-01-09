@@ -21,16 +21,19 @@
     <component
       :is="functionReferenceComponent"
       :func="func"
+      :domain="domain"
     />
   </div>
 </template>
 
 <script>
 import equationReference from '~/components/function-settings/equation-reference.vue'
+import lookupReference from '~/components/function-settings/lookup-reference.vue'
 
 export default {
   components: {
-    equationReference
+    equationReference,
+    lookupReference
   },
   filters: {
     firstLetterCapitalized (val) {
@@ -58,7 +61,9 @@ export default {
   computed: {
     functionReferenceComponent () {
       switch (this.func.functionType) {
-        default: return equationReference
+        case 'equation': return equationReference
+        case 'lookup': return lookupReference
+        default: return undefined
       }
     }
   }
