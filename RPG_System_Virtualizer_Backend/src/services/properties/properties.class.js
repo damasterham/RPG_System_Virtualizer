@@ -37,6 +37,7 @@ exports.Properties = class Properties extends Service {
         propertyReferenceId: referenceId,
       });
     }
+    ////// TODODODODO  set generint referenceId or use individual func/prop/domain -Id
     case 'function': {
       // Needs to be able to create entry in junction table propertys_fuctions
       const propertyFunctions = this.sequelize.models.properties_functions;

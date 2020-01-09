@@ -2,6 +2,10 @@
 const incrementMinor = require('../../hooks/increment-minor');
 const incrementMajor = require('../../hooks/increment-major');
 
+const setVariableReference = require('../../hooks/set-variable-reference');
+
+const retainReferenceType = require('../../hooks/retain-reference-type');
+
 module.exports = {
   before: {
     all: [],
@@ -9,7 +13,7 @@ module.exports = {
     get: [],
     create: [],
     update: [],
-    patch: [incrementMinor()],
+    patch: [incrementMinor(), retainReferenceType()],
     remove: []
   },
 
@@ -19,7 +23,7 @@ module.exports = {
     get: [],
     create: [],
     update: [],
-    patch: [],
+    patch: [setVariableReference()],
     remove: [incrementMajor()]
   },
 

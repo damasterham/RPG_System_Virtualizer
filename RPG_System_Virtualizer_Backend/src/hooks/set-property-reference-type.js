@@ -7,12 +7,12 @@ module.exports = (options = {}) => {
   return async context => {
 
     // Only run if params.data.refenceId is present
-    if (!context.params.data.referenceId)
+    if (!context.params.query || !context.params.query.data.referenceId)
       return context;
 
     const res = await context.service.setReference(context.id,
-      context.params.data.referenceType,
-      context.params.data.referenceId);
+      context.params.query.data.referenceType,
+      context.params.query.data.referenceId);
     // .then((res) => {
     context.result = {
       propertyId: res.propertyId,

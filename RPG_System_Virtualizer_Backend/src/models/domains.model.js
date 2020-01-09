@@ -26,6 +26,11 @@ module.exports = function (app) {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
+    },
+    instantiable: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
     // status: Status
   }, {
@@ -86,7 +91,7 @@ module.exports = function (app) {
       as: 'variablesDomains',
       through: 'variables_domains',
       otherKey: {
-        name: 'variable_id',
+        name: 'variableId',
         unique: true,
       }
     });
