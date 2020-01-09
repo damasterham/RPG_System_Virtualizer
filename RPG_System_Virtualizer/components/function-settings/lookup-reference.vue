@@ -35,6 +35,7 @@
         <Variable :references="references" :variable="variable" :deletable="false" />
       </v-col>
     </v-row>
+    <v-row />
   </div>
 </template>
 
