@@ -48,44 +48,6 @@ export default {
       async set (val) {
 
       }
-    },
-    references () { // Finish this
-      // Add sorting based on domains and inherent/inherited/dependencies
-      // Ensure that inherited properties are overwritten by inherent ones
-      let res = []
-      res = res.concat(this.inherentPropertyReferences)
-      this.inheritedPropertyReferences.forEach((inheritedProperty) => {
-        if (!res.some(item => item.name === inheritedProperty.name)) { res.push(inheritedProperty) }
-      })
-      res.concat(this.dependencyPropertyReferences.map((item) => {
-        return { name: item.name, domainId: item.domainId, id: item.id }
-      }))
-      return []
-    },
-    domainReferences () {
-      const res = []
-      res.concat(this.$store.getters['domains/list'].filter(item => this.$store.state.domainDependencyIds.some(dep => dep === item.id)))
-      return res
-    },
-    functionReferences () {
-      const res = []
-      res.concat(this.$store.getters['functions/list'].filter(item => [this.domain.id].concat(this.$store.state.domainParentage).some(id => id === item.domainId)))
-      return res.filter(item => item.dataType === this.variable.dataType)
-    },
-    inherentPropertyReferences () {
-      const res = []
-      res.concat(this.$store.getters['properties/list'].filter(item => item.domainId === this.domain.id))
-      return res.filter(item => item.dataType === this.variable.dataType)
-    },
-    inheritedPropertyReferences () {
-      const res = []
-      res.concat(this.$store.getters['properties/list'].filter(item => this.$store.state.domainParentage.some(parent => parent === item.domainId)))
-      return res.filter(item => item.dataType === this.variable.dataType)
-    },
-    dependencyPropertyReferences () {
-      const res = []
-      res.concat(this.$store.getters['properties/list'].filter(item => this.$store.state.domainDependencyIds.some(dep => dep === item.domainId)))
-      return res.filter(item => item.dataType === this.variable.dataType)
     }
   }
 }

@@ -73,6 +73,7 @@
     </v-row>
     <v-divider inset style="margin-right: 72px; margin-bottom: 10px" />
     <variableList
+      :domain="domain"
       :func="func"
       :variables="variables"
       :add-variable="addVariable"
@@ -89,6 +90,10 @@ export default {
     variableList
   },
   props: {
+    domain: {
+      type: Object,
+      default: () => {}
+    },
     func: {
       type: Object,
       default: () => {}
@@ -99,11 +104,11 @@ export default {
       addVariable: false,
       // Help
       helpDialog: false,
-      addition: 'Addition: +',
-      subtraction: 'Subtraction: -',
-      multiplication: 'Multiplication: *',
-      division: 'Division: /',
-      grouping: 'Grouping: ( )'
+      addition: 'Addition:         +',
+      subtraction: 'Subtraction:      -',
+      multiplication: 'Multiplication:   *',
+      division: 'Division:         /',
+      grouping: 'Grouping:         ( )'
     }
   },
   computed: {
@@ -134,6 +139,7 @@ export default {
     service('variables')(this.$store)
   },
   async mounted () {
+    await this.$store.dispatch('variables/find', { query: { functionId: this.func.id }, $clear: true })
     const res = await this.$store.dispatch('equation-rounder/find', { query: { functionId: this.func.id }, $clear: true })
     if (res.length === 0) { await this.$store.dispatch('equation-rounder/create', { functionId: this.func.id, value: 0.5 }) }
   },
