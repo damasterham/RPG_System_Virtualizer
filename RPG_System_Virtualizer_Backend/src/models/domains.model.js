@@ -2,13 +2,16 @@
 // for more of what you can do here.
 const Sequelize = require('sequelize');
 const DataTypes = Sequelize.DataTypes;
+// const Status = require('./status');
+
 
 module.exports = function (app) {
-  const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
+  const sequelizeClient = app.get('sequelize');
   const domains = sequelizeClient.define('domains', {
     name: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
+      unique: 'systemDomainUnique'
     },
     shorthand: {
       type: DataTypes.TEXT,
@@ -18,7 +21,13 @@ module.exports = function (app) {
       type: DataTypes.TEXT,
       allowNull: false,
       defaultValue: '0.0'
+    },
+    toBeDeleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
+    // status: Status
   }, {
     hooks: {
       beforeCount(options) {
@@ -36,36 +45,46 @@ module.exports = function (app) {
     // of model that other models are dependant on. It just just sets null on column
     // used as the foreign key
 
-    // TODO: Model out how domain inheritance should be checked
-    // sketch a graph of it
-
     // Systems.id <= Domains.system_id
-    domains.belongsTo(models.systems);
+    domains.belongsTo(models.systems, {
+      foreignKey: {
+        unique: 'systemDomainUnique'
+      }
+    });
     // models.systems.hasMany(domains);
 
     // Domains.id <= Domains.parent_domain_id
     domains.hasOne(domains, {
       foreignKey:  {
-        name: 'parent_domain_id',
+        name: 'parentDomainId',
         allowNull: true
       }
       // constraint: false,
     });
 
+    // Domain dependencies
+    domains.belongsToMany(domains, {
+      as: 'domainDependencies',
+      through: 'domain_dependencies',
+      foreignKey: {
+        name: 'domainId',
+      }
+    });
+
 
     // Domain associations used as glorified enum
     domains.belongsToMany(models.properties, {
-      as: 'PropertyDomainEnum',
-      through: 'property_domain_enums',
+      as: 'propertiesDomains',
+      through: 'properties_domains',
       otherKey: {
-        name: 'property_id',
+        name: 'propertyId',
         unique: true,
       }
     });
 
     domains.belongsToMany(models.variables, {
-      as: 'VariableDomainEnum',
-      through: 'variable_domain_enums',
+      as: 'variablesDomains',
+      through: 'variables_domains',
       otherKey: {
         name: 'variable_id',
         unique: true,

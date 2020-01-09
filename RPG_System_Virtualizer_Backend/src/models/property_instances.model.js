@@ -1,15 +1,12 @@
 // See http://docs.sequelizejs.com/en/latest/docs/models-definition/
 // for more of what you can do here.
-const Sequelize = require('sequelize');
-const DataTypes = Sequelize.DataTypes;
+// const Sequelize = require('sequelize');
+// const DataTypes = Sequelize.DataTypes;
 
 module.exports = function (app) {
-  const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
+  const sequelizeClient = app.get('sequelize');
   const propertyInstances = sequelizeClient.define('property_instances', {
-    text: {
-      type: DataTypes.STRING,
-      allowNull: false
-    }
+
   }, {
     hooks: {
       beforeCount(options) {

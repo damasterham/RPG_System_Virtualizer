@@ -2,9 +2,11 @@ const incrementMinor = require('../../hooks/increment-minor');
 
 const incrementMajor = require('../../hooks/increment-major');
 
-const createRawValue = require('../../hooks/create-raw-value');
-
 const setPropertyReferenceType = require('../../hooks/set-property-reference-type');
+
+// const validateIsValidPropertyReference = require('../../hooks/validate-is-valid-property-reference');
+
+const createRawValueForProperty = require('../../hooks/create-raw-value-for-property');
 
 module.exports = {
   before: {
@@ -13,7 +15,10 @@ module.exports = {
     get: [],
     create: [],
     update: [],
-    patch: [incrementMinor()],
+    patch: [
+      incrementMinor(),
+      setPropertyReferenceType()],
+    /*, validateIsValidPropertyReference()*/
     remove: []
   },
 
@@ -21,9 +26,9 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [createRawValue(), setPropertyReferenceType()],
+    create: [createRawValueForProperty()],
     update: [],
-    patch: [createRawValue(), setPropertyReferenceType()],
+    patch: [/*Remove old property reference type*/],
     remove: [incrementMajor()]
   },
 

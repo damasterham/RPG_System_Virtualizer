@@ -5,19 +5,20 @@ const DataTypes = Sequelize.DataTypes;
 const Primitives = require('./primitives');
 
 module.exports = function (app) {
-  const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
+  const sequelizeClient = app.get('sequelize');
   const variables = sequelizeClient.define('variables', {
     name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      unique: 'functionVariableUnique'
     },
     dataType: {
       type: Primitives,
       allowNull: false
     },
     referenceType: {
-      type: DataTypes.ENUM('function, property'),
-      allowNull: false
+      type: DataTypes.ENUM('function', 'property', 'domain'),
+      allowNull: true
     },
     version: {
       type: DataTypes.TEXT,
@@ -44,7 +45,12 @@ module.exports = function (app) {
 
     // Variables.function_id => Functions.id
     // corresponds to parameters of function
-    variables.belongsTo(models.functions);
+    variables.belongsTo(models.functions, {
+      foreignKey: {
+        unique: 'functionVariableUnique',
+        allowNull: false
+      }
+    });
 
   };
 

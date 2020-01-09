@@ -3,13 +3,11 @@
 
 // eslint-disable-next-line no-unused-vars
 module.exports = (options = {}) => {
+  // Auto creates a raw value entry corresponding the property
+  // Could alternativly be don via service('properties').setReference()
   return async context => {
-    // Creates raw value with default value
-    const rawValueService = await context.app.service('raw-values');
-    await rawValueService.create({
-      propertyId: context.result.id,
-      defaultValue: context.data.defaultValue
-      // default value isnotnullorundefined 
+    await context.app.service('raw-values').create({
+      propertyId: context.result.id
     });
     return context;
   };

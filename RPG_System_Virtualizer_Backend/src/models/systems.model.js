@@ -4,11 +4,12 @@ const Sequelize = require('sequelize');
 const DataTypes = Sequelize.DataTypes;
 
 module.exports = function (app) {
-  const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
+  const sequelizeClient = app.get('sequelize');
   const systems = sequelizeClient.define('systems', {
     name: {
       type: DataTypes.TEXT,
       allowNull: false,
+      // Possibly make unique or make composite unique of user.id & system.name
     },
     shorthand: {
       type: DataTypes.TEXT,

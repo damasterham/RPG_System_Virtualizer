@@ -4,16 +4,18 @@ const Sequelize = require('sequelize');
 const DataTypes = Sequelize.DataTypes;
 const Primitives = require('./primitives');
 
+// TODO unique (domain.id, function.name)
 module.exports = function (app) {
-  const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
+  const sequelizeClient = app.get('sequelize');
   const functions = sequelizeClient.define('functions', {
     name: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
+      unique: 'domainFunctionUnique'
     },
     definition: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
     },
     dataType: {
       type: Primitives,
@@ -47,24 +49,32 @@ module.exports = function (app) {
 
     // Domain owner of functions
     // Functions.domain_id => Domains.id
-    functions.belongsTo(models.domains);
+    functions.belongsTo(models.domains,{
+      foreignKey: {
+        unique: 'domainFunctionUnique',
+        allowNull: false
+      }
+    });
 
     // Property with reference to a function
     functions.belongsToMany(models.properties, {
-      as: 'PropertyFunction',
+      as: 'propertyFunction',
       through: 'properties_functions',
       otherKey: {
-        name: 'property_id',
+        name: 'propertyId',
         unique: true
+      },
+      foreignKey: {
+        name: 'functionId'
       }
     });
 
     // Variable with reference to a function
     functions.belongsToMany(models.variables, {
-      as: 'VariableFunction',
+      as: 'variableFunction',
       through: 'variables_functions',
       otherKey: {
-        name: 'variable_id',
+        name: 'variableId',
         unique: true,
       }
     });
