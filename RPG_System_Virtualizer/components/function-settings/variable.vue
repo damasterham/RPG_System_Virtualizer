@@ -78,6 +78,24 @@ export default {
     },
     variableReference: {
       get () {
+        let referenceNamespace = ''
+        let objectNamespace = ''
+        switch (this.variable.referenceType) {
+          case 'function': referenceNamespace = 'variables-functions'; objectNamespace = 'functions'; break
+          case 'domain': referenceNamespace = 'variables-domains'; objectNamespace = 'domains'; break
+          case 'property': referenceNamespace = 'variables-properties'; objectNamespace = 'properties'; break
+          default: break
+        }
+        let reference = this.$store.getters[referenceNamespace + '/get'](this.variable.id, 'variableId')
+        if (reference && reference !== null) {
+          reference = this.$store.getters[objectNamespace + '/get'](reference[this.variable.referenceType + 'Id'])
+          if (reference && reference !== null) {
+            const res = { name: reference.name, id: reference.id }
+            res.type = this.variable.referenceType.charAt(0).toUpperCase() + this.variable.referenceType.substring(1)
+            if (res.type !== 'Domain') { res.domainId = reference.domainId } else { res.name = res.name.toUpperCase() }
+            return res
+          }
+        }
         return null
       },
       set (val) {
@@ -106,6 +124,17 @@ export default {
         })
       }
     }
+  },
+  async mounted () {
+    let namespace = ''
+    switch (this.variable.referenceType) {
+      case 'function': namespace = 'variables-functions'; break
+      case 'domain': namespace = 'variables-domains'; break
+      case 'property': namespace = 'variables-properties'; break
+      default: break
+    }
+    const res = await this.$store.dispatch(namespace + '/find', { query: { variableId: this.variable.id } })
+    console.log('mounted finish', res)
   },
   methods: {
     deleteVariable () {

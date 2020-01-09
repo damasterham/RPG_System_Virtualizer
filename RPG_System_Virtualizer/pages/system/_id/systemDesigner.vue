@@ -205,9 +205,9 @@ export default {
       }
     },
     system () {
-      const system = this.$store.getters.getSystem()
+      const system = this.$store.state.system
       if (system !== null) { return system }
-      return {}
+      return { id: 0 }
     },
     domain () {
       return this.$store.getters.getDomain()
@@ -242,7 +242,7 @@ export default {
       }
     }
   },
-  async created () {
+  created () {
     service('domains')(this.$store)
     service('domain-dependencies')(this.$store)
     service('properties')(this.$store)
@@ -253,17 +253,22 @@ export default {
     service('functions')(this.$store)
     service('equation-rounder')(this.$store)
     service('variables')(this.$store)
-    if (!this.$store.state.system) {
-      service('systems')(this.$store)
+    service('variables-domains')(this.$store)
+    service('variables-functions')(this.$store)
+    service('variables-properties')(this.$store)
+    service('systems')(this.$store)
+  },
+  async mounted () {
+    if (this.$store.state.system === null) {
       const system = await this.$store.dispatch('systems/get', this.$route.params.id)
       this.$store.commit('selectSystem', system)
     }
-  },
-  async mounted () {
-    await this.$store.dispatch('domains/find', { query: {
-      systemId: this.system.id, $sort: { name: 1 }
-    },
-    $clear: true })
+    this.$nextTick(async () => {
+      await this.$store.dispatch('domains/find', { query: {
+        systemId: this.system.id, $sort: { name: 1 }
+      },
+      $clear: true })
+    })
   },
   methods: {
     // Domains

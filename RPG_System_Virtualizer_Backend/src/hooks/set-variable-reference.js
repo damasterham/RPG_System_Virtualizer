@@ -22,7 +22,9 @@ module.exports = (options = {}) => {
       context.params.data.referenceId);
 
     // eslint-disable-next-line require-atomic-updates
-    context.result.reference = res;
+    // context.result.reference = res;
+    // eslint-disable-next-line require-atomic-updates
+    context.dispatch = { ...context.result, reference: res };
     return context;
   };
 };

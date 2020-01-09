@@ -9,8 +9,8 @@
       <v-row>
         <v-col v-for="item in systems" :key="item.id" cols="3">
           <v-card raised height="100%" width="100%" @click="selectSystem(item)">
-            <v-img v-if="!item.addNew" v-show="item.imagelink.length > 0" contain height="200px" :src="item.imagelink" />
-            <v-img v-else height="200px" src="https://cdn.iview.abc.net.au/thumbs/1200/ck/CK1714V_59a4b949bbec1_1280.jpg" />
+            <v-img v-if="item.addNew" height="200px" src="https://cdn.iview.abc.net.au/thumbs/1200/ck/CK1714V_59a4b949bbec1_1280.jpg" />
+            <v-img v-else contain height="200px" :src="item.imagelink !== null ? item.imagelink : ''" />
             <v-card-title>{{ item.name }}</v-card-title>
             <v-card-subtitle>{{ item.shorthand }}</v-card-subtitle>
             <v-card-text>{{ item.description }}</v-card-text>
@@ -140,7 +140,8 @@ export default {
       listOfSystems.push({
         addNew: true,
         name: 'Create New System',
-        shorthand: ''
+        shorthand: '',
+        imagelink: ''
       })
       return listOfSystems
     }
