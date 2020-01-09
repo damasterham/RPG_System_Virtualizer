@@ -9,8 +9,8 @@
       <v-row>
         <v-col v-for="item in systems" :key="item.id" cols="3">
           <v-card raised height="100%" width="100%" @click="selectSystem(item)">
-            <v-img v-if="!item.addNew" v-show="item.imagelink.length > 0" contain height="200px" :src="item.imagelink" />
-            <v-img v-else height="200px" src="https://cdn.iview.abc.net.au/thumbs/1200/ck/CK1714V_59a4b949bbec1_1280.jpg" />
+            <v-img v-if="item.addNew" height="200px" src="https://cdn.iview.abc.net.au/thumbs/1200/ck/CK1714V_59a4b949bbec1_1280.jpg" />
+            <v-img v-else contain height="200px" :src="item.imagelink !== null ? item.imagelink : ''" />
             <v-card-title>{{ item.name }}</v-card-title>
             <v-card-subtitle>{{ item.shorthand }}</v-card-subtitle>
             <v-card-text>{{ item.description }}</v-card-text>
@@ -48,7 +48,7 @@
     <FillOutDialog :toggle="inspectDialog" :height="'800px'" :width="'50%'">
       <template v-slot:toolbar>
         <v-toolbar>
-          <v-btn text color="Primary">
+          <v-btn text color="Primary" @click="openSystemDesigner()">
             System Designer
           </v-btn>
           <v-btn text color="Primary">
@@ -140,7 +140,8 @@ export default {
       listOfSystems.push({
         addNew: true,
         name: 'Create New System',
-        shorthand: ''
+        shorthand: '',
+        imagelink: ''
       })
       return listOfSystems
     }
@@ -151,17 +152,19 @@ export default {
   mounted () {
     this.$store.commit('systems/clear')
     this.$store.dispatch('systems/find', { query: { id: { $gte: 0 } } })
-    console.log(this.$store)
   },
   methods: {
     selectSystem (system) {
       if (system.addNew) {
         this.createDialog = true
       } else {
-        console.log('system selected:', system)
         this.system = { ...system }
         this.inspectDialog = true
       }
+    },
+    openSystemDesigner () {
+      this.$store.commit('selectSystem', this.system)
+      this.$router.push({ name: 'system-id-systemDesigner', params: { id: this.system.id } })
     },
     create () {
       this.$store.dispatch('systems/create', {
@@ -178,9 +181,6 @@ export default {
       this.newSystemShorthand = ''
       this.newSystemDescription = ''
       this.newSystemImage = ''
-    },
-    logIt (x) {
-      console.log(x)
     }
   }
 }

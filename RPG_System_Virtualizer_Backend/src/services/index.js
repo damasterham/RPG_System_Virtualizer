@@ -18,6 +18,8 @@ const variablesFunctions = require('./variables_functions/variables_functions.se
 const variablesDomains = require('./variables_domains/variables_domains.service.js');
 const variablesProperties = require('./variables_properties/variables_properties.service.js');
 const equationRounder = require('./equation_rounder/equation_rounder.service.js');
+const propertySpecificVariables = require('./property_specific_variables/property_specific_variables.service.js');
+const domainDependencyInstances = require('./domain_dependency_instances/domain_dependency_instances.service.js');
 // eslint-disable-next-line no-unused-vars
 module.exports = function (app) {
   app.configure(test);
@@ -40,4 +42,6 @@ module.exports = function (app) {
   app.configure(variablesDomains);
   app.configure(variablesProperties);
   app.configure(equationRounder);
+  app.configure(propertySpecificVariables);
+  app.configure(domainDependencyInstances);
 };

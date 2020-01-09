@@ -17,6 +17,7 @@ module.exports = {
     update: [],
     patch: [
       incrementMinor(),
+      // TODO setting the ref type should also delete the old reference
       setPropertyReferenceType()],
     /*, validateIsValidPropertyReference()*/
     remove: []

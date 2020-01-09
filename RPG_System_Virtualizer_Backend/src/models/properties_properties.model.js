@@ -6,7 +6,6 @@
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelize');
   const propertiesProperties = sequelizeClient.define('properties_properties', {
-
   }, {
     hooks: {
       beforeCount(options) {

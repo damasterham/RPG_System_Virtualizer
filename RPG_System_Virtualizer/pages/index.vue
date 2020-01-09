@@ -63,40 +63,8 @@
 </template>
 
 <script>
-import service from '~/plugins/feathers-service'
-
 export default {
-  data () {
-    return {
-      text: 'Woop'
-    }
-  },
-  computed: {
-    list () {
-      return []
-    }
-  },
-  created () {
-    console.log('created started')
-    service('test')(this.$store)
-    console.log('created finished')
-  },
-  mounted () {
-    console.log('mounted started')
-    // client.service('test')(this.$store)
-    console.log('mounted finished')
-  },
-  methods: {
-    async onClick () {
-      this.text += 'Create new test'
-      console.log(await this.$store.dispatch('test/find', {
-        query: {
-          $limit: -1
-        }
-      }))
-      // this.$store.dispatch('test/create', { value: 'new test' })
-    }
-  }
+
 }
 </script>
 

@@ -58,11 +58,14 @@ export default function createService (namespace, options = {}) {
           // state.list = [...state.list.slice(0, state.list.length), item]
         }
       },
-      removeItem (state, id) {
-        if (state.current && state.current.id === id) {
+      removeItem (state, id, key = 'id') {
+        if (state.current && state.current[key] === id) {
           state.current = null
         }
-        state.list = state.list.filter(element => element.id !== id)
+        state.list = state.list.filter(element => element[key] !== id)
+      },
+      removeItems (state, id, key = 'id') {
+        state.list = state.list.filter(element => !id.every(el => el !== element[key]))
       },
       pagination (state, pagination) {
         state.pagination = pagination
@@ -74,12 +77,12 @@ export default function createService (namespace, options = {}) {
     actions: {
       async find ({ state, commit }, params) {
         try {
-          const res = await service.find(params)
-          if (res.data) {
+          const clear = params.$clear === true
+          delete params.$clear
+          let res = await service.find(params)
+          if (res.data && !clear) {
             let progress = Math.round((100 * (res.skip + res.limit)) / res.total)
-            if (progress > 100) {
-              progress = 100
-            }
+            if (progress > 100) { progress = 100 }
             commit('pagination', {
               limit: res.limit,
               skip: res.skip,
@@ -90,6 +93,7 @@ export default function createService (namespace, options = {}) {
             commit('addItems', res.data)
             return res.data
           } else {
+            if (res.data) { res = res.data }
             commit('clear')
             commit('addItems', res)
             return res
@@ -216,10 +220,8 @@ export default function createService (namespace, options = {}) {
       current: (state) => {
         return state.current
       },
-      get: state => (id) => {
-        return state.list.find((item) => {
-          return item.id === id
-        })
+      get: state => (id, key = 'id') => {
+        return state.list.find(item => item[key] === id)
       },
       list: (state) => {
         return state.list
@@ -230,20 +232,10 @@ export default function createService (namespace, options = {}) {
       query: (state) => {
         return state.query
       }
-
     }
   }
   return (store) => {
     const preserveState = store.state.hasOwnProperty(namespace)
-    /*
-    if (process.server) {
-      if (!preserveState) {
-        store.registerModule(namespace, module)
-      }
-    } else if (!store.state.modules.hasOwnProperty(namespace)) {
-
-    }
-    */
     store.registerModule(namespace, module, {
       preserveState
     })

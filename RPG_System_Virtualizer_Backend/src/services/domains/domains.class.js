@@ -6,6 +6,7 @@ exports.Domains = class Domains extends Service {
     this.dependencies = await this.app.get('sequelize').models.domain_dependencies;
   }
 
+  // depcrecated
   async findAllDependencyIds(domainId){
     return this.dependencies.findAll({
       where: {
@@ -14,6 +15,7 @@ exports.Domains = class Domains extends Service {
     });
   }
 
+  // depcrecated
   async addDependency(domainId, depdencyId) {
     return this.dependencies.create({
       domainId: domainId,
@@ -21,6 +23,7 @@ exports.Domains = class Domains extends Service {
     });
   }
 
+  // depcrecated
   async addParent(domainId, parentId) {
     return this.patch(domainId, {
       parentDomainId: parentId
