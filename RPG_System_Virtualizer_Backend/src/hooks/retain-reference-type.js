@@ -7,6 +7,9 @@ module.exports = (options = {}) => {
   return async context => {
 
     // Move query to just params, ensures it isn't read as a query column
+    if (!context.params.query.data)
+      return context;
+
     context.params.data = context.params.query.data;
     // Check the current reftype
     // if (context.params.query.data.prevReferenceType)
