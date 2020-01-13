@@ -10,7 +10,7 @@ module.exports = (options = {}) => {
       return context;
 
     // If it had a previous reference, delete it
-    if (context.params.data || context.params.data.prevReferenceType) {
+    if (context.params.data && context.params.data.prevReferenceType) {
       // Can actually run async?
       await context.service.deleteReference(context.id,
         context.params.data.prevReferenceType);
