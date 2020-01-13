@@ -1,22 +1,37 @@
 <template>
   <v-row no-gutters>
-    <v-autocomplete
-      :value="functionReference"
-      label="Function Reference"
-      :items="propertyValues"
-      item-text="name"
-      return-object
-      @change="functionReference = $event"
-    />
+    <v-col>
+      <v-autocomplete
+        :value="functionReference"
+        label="Function Reference"
+        :items="propertyValues"
+        item-text="name"
+        return-object
+        @change="functionReference = $event"
+      />
+      <v-divider inset style="margin-right: 72px; margin-bottom: 10px" />
+      <template v-for="variable in functionVariables">
+        <specificVariable
+          :key="variable.id"
+          :function="func"
+          :variable="variable"
+          :data-type="property.dataType"
+        />
+      </template>
+    </v-col>
   </v-row>
 </template>
 
 <script>
+import specificVariable from '~/components/property-settings/specific-variable.vue'
 import client from '~/plugins/feathers-client.js'
 
 const propertiesClient = client.service('properties')
 
 export default {
+  components: {
+    specificVariable
+  },
   props: {
     propertyValues: {
       type: Array,
@@ -36,11 +51,25 @@ export default {
       },
       set (val) {
         this.setPropertyValue(val)
+        this.$store.dispatch('variables/find', { query: { functionId: val.id } })
+        this.$store.dispatch('functions/find', { qurey: { id: val.id } })
       }
+    },
+    func () {
+      if (this.functionReference !== null) {
+        return this.$store.getters['functions/get'](this.functionReference.id)
+      } return {}
+    },
+    functionVariables () {
+      if (this.functionReference !== null) {
+        return this.$store.getters['variables/list'].filter(item => item.functionId === this.functionReference.id)
+      }
+      return []
     }
   },
   async mounted () {
-    await this.$store.dispatch('properties-functions/find', { query: { propertyId: this.property.id }, $clear: true })
+    const res = await this.$store.dispatch('properties-functions/find', { query: { propertyId: this.property.id }, $clear: true })
+    if (res) { await this.$store.dispatch('variables/find', { query: { functionId: res[0].functionId } }) }
   },
   methods: {
     setPropertyValue (e) {

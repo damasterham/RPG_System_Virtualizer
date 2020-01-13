@@ -3,6 +3,7 @@
     <v-col cols="4" style="margin-right: 4px">
       <v-text-field
         :value="variableName"
+        :readonly="readonly"
         label="Name"
         @change="variableName = $event"
       />
@@ -10,8 +11,9 @@
     <v-col style="margin-left: 4px">
       <v-autocomplete
         :value="variableReference"
-        label="Reference"
+        :readonly="readonly"
         :items="references"
+        label="Reference"
         item-text="name"
         return-object
         @change="variableReference = $event"
@@ -32,7 +34,7 @@
         </template>
       </v-autocomplete>
     </v-col>
-    <v-col v-if="deletable" cols="1">
+    <v-col v-if="deletable && !readonly" cols="1">
       <v-btn icon class="mt-3" @click="deleteVariable">
         <v-icon>delete</v-icon>
       </v-btn>
@@ -65,6 +67,10 @@ export default {
     deletable: {
       type: Boolean,
       default: true
+    },
+    readonly: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -78,22 +84,24 @@ export default {
     },
     variableReference: {
       get () {
-        let referenceNamespace = ''
-        let objectNamespace = ''
-        switch (this.variable.referenceType) {
-          case 'function': referenceNamespace = 'variables-functions'; objectNamespace = 'functions'; break
-          case 'domain': referenceNamespace = 'variables-domains'; objectNamespace = 'domains'; break
-          case 'property': referenceNamespace = 'variables-properties'; objectNamespace = 'properties'; break
-          default: break
-        }
-        let reference = this.$store.getters[referenceNamespace + '/get'](this.variable.id, 'variableId')
-        if (reference && reference !== null) {
-          reference = this.$store.getters[objectNamespace + '/get'](reference[this.variable.referenceType + 'Id'])
+        if (this.variable.referenceType && this.variable.referenceType !== null) {
+          let referenceNamespace = ''
+          let objectNamespace = ''
+          switch (this.variable.referenceType) {
+            case 'function': referenceNamespace = 'variables-functions'; objectNamespace = 'functions'; break
+            case 'domain': referenceNamespace = 'variables-domains'; objectNamespace = 'domains'; break
+            case 'property': referenceNamespace = 'variables-properties'; objectNamespace = 'properties'; break
+            default: break
+          }
+          let reference = this.$store.getters[referenceNamespace + '/get'](this.variable.id, 'variableId')
           if (reference && reference !== null) {
-            const res = { name: reference.name, id: reference.id }
-            res.type = this.variable.referenceType.charAt(0).toUpperCase() + this.variable.referenceType.substring(1)
-            if (res.type !== 'Domain') { res.domainId = reference.domainId } else { res.name = res.name.toUpperCase() }
-            return res
+            reference = this.$store.getters[objectNamespace + '/get'](reference[this.variable.referenceType + 'Id'])
+            if (reference && reference !== null) {
+              const res = { name: reference.name, id: reference.id }
+              res.type = this.variable.referenceType.charAt(0).toUpperCase() + this.variable.referenceType.substring(1)
+              if (res.type !== 'Domain') { res.domainId = reference.domainId } else { res.name = res.name.toUpperCase() }
+              return res
+            }
           }
         }
         return null
@@ -126,15 +134,16 @@ export default {
     }
   },
   async mounted () {
-    let namespace = ''
-    switch (this.variable.referenceType) {
-      case 'function': namespace = 'variables-functions'; break
-      case 'domain': namespace = 'variables-domains'; break
-      case 'property': namespace = 'variables-properties'; break
-      default: break
+    if (this.variable.referenceType && this.variable.referenceType !== null) {
+      let namespace = ''
+      switch (this.variable.referenceType) {
+        case 'function': namespace = 'variables-functions'; break
+        case 'domain': namespace = 'variables-domains'; break
+        case 'property': namespace = 'variables-properties'; break
+        default: break
+      }
+      await this.$store.dispatch(namespace + '/find', { query: { variableId: this.variable.id } })
     }
-    const res = await this.$store.dispatch(namespace + '/find', { query: { variableId: this.variable.id } })
-    console.log('mounted finish', res)
   },
   methods: {
     deleteVariable () {

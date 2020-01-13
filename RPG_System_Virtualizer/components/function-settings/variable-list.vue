@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import variable from '~/components/function-settings/variable.vue'
+import variable from '~/components/variable.vue'
 
 export default {
   components: {

@@ -256,7 +256,7 @@ export default {
     service('variables-domains')(this.$store)
     service('variables-functions')(this.$store)
     service('variables-properties')(this.$store)
-    service('systems')(this.$store)
+    if (this.$store.state.system === null) { service('systems')(this.$store) }
   },
   async mounted () {
     if (this.$store.state.system === null) {
