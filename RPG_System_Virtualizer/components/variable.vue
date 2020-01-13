@@ -60,6 +60,14 @@ export default {
       type: Object,
       default: () => {}
     },
+    specific: {
+      type: Boolean,
+      default: false
+    },
+    specificValue: {
+      type: Object,
+      default: () => {}
+    },
     references: {
       type: Array,
       default: () => []
@@ -84,52 +92,46 @@ export default {
     },
     variableReference: {
       get () {
-        if (this.variable.referenceType && this.variable.referenceType !== null) {
-          let referenceNamespace = ''
-          let objectNamespace = ''
-          switch (this.variable.referenceType) {
-            case 'function': referenceNamespace = 'variables-functions'; objectNamespace = 'functions'; break
-            case 'domain': referenceNamespace = 'variables-domains'; objectNamespace = 'domains'; break
-            case 'property': referenceNamespace = 'variables-properties'; objectNamespace = 'properties'; break
-            default: break
-          }
-          let reference = this.$store.getters[referenceNamespace + '/get'](this.variable.id, 'variableId')
-          if (reference && reference !== null) {
-            reference = this.$store.getters[objectNamespace + '/get'](reference[this.variable.referenceType + 'Id'])
-            if (reference && reference !== null) {
-              const res = { name: reference.name, id: reference.id }
-              res.type = this.variable.referenceType.charAt(0).toUpperCase() + this.variable.referenceType.substring(1)
-              if (res.type !== 'Domain') { res.domainId = reference.domainId } else { res.name = res.name.toUpperCase() }
-              return res
+        if (!this.specific) {
+          if (this.variable.referenceType && this.variable.referenceType !== null) {
+            let referenceNamespace = ''
+            let objectNamespace = ''
+            switch (this.variable.referenceType) {
+              case 'function': referenceNamespace = 'variables-functions'; objectNamespace = 'functions'; break
+              case 'domain': referenceNamespace = 'variables-domains'; objectNamespace = 'domains'; break
+              case 'property': referenceNamespace = 'variables-properties'; objectNamespace = 'properties'; break
+              default: break
             }
+            let reference = this.$store.getters[referenceNamespace + '/get'](this.variable.id, 'variableId')
+            if (reference && reference !== null) {
+              reference = this.$store.getters[objectNamespace + '/get'](reference[this.variable.referenceType + 'Id'])
+              if (reference && reference !== null) {
+                const res = { name: reference.name, id: reference.id }
+                res.type = this.variable.referenceType.charAt(0).toUpperCase() + this.variable.referenceType.substring(1)
+                if (res.type !== 'Domain') { res.domainId = reference.domainId } else { res.name = res.name.toUpperCase() }
+                if (res.domainId && res.domainId !== this.domain.id) {
+                  res.name = this.$store.getters['domains/get'](res.domainId).name.toUpperCase() + '.' + res.name
+                }
+                return res
+              }
+            }
+          }
+        } else if (this.specificValue) {
+          const property = this.$store.getters['properties/get'](this.specificValue.propertyReferenceId)
+          const domain = this.$store.getters['domains/get'](property.domainId)
+          return {
+            name: domain.name.toUpperCase() + '.' + property.name,
+            type: 'Property',
+            id: property.id,
+            domainId: domain.id
           }
         }
         return null
       },
       set (val) {
-        variableClient.patch(this.variable.id, { referenceType: val.type.toLowerCase() }, { query: { data: { referenceId: val.id } } }).then((res) => {
-          console.log('variableReference set res', res)
-          // Remove existing reference from local store
-          let namespace = ''
-          switch (this.variable.referenceType) {
-            case 'function': namespace = 'variables-functions'; break
-            case 'domain': namespace = 'variables-domains'; break
-            case 'property': namespace = 'variables-properties'; break
-            default: break
-          }
-          this.$store.commit(namespace + '/removeItem', this.variable.id)
-          // Create new reference in local store, using res.reference
-          switch (res.referenceType) {
-            case 'function': namespace = 'variables-functions'; break
-            case 'domain': namespace = 'variables-domains'; break
-            case 'property': namespace = 'variables-properties'; break
-            default: break
-          }
-          this.$store.commit(namespace + '/addItem', res.reference)
-          // delete reference & update variable
-          delete res.reference
-          this.$store.commit('variables/updateItem', res)
-        })
+        if (this.specific) {
+          this.patchSpecificVariableReference(val)
+        } else { this.patchVariableReference(val) }
       }
     }
   },
@@ -159,6 +161,36 @@ export default {
         this.$store.dispatch(namespace + '/remove', [null, { query: { variableId: this.variable.id } }])
       }
       this.$store.dispatch('variables/remove', this.variable.id)
+    },
+    patchVariableReference (val) {
+      variableClient.patch(this.variable.id, { referenceType: val.type.toLowerCase() }, { query: { data: { referenceId: val.id } } }).then((res) => {
+        // Remove existing reference from local store
+        let namespace = ''
+        switch (this.variable.referenceType) {
+          case 'function': namespace = 'variables-functions'; break
+          case 'domain': namespace = 'variables-domains'; break
+          case 'property': namespace = 'variables-properties'; break
+          default: break
+        }
+        this.$store.commit(namespace + '/removeItem', { id: this.variable.id, key: 'variableId' })
+        // Create new reference in local store, using res.reference
+        if (this.variable.referenceType !== res.referenceType) {
+          switch (res.referenceType) {
+            case 'function': namespace = 'variables-functions'; break
+            case 'domain': namespace = 'variables-domains'; break
+            case 'property': namespace = 'variables-properties'; break
+            default: break
+          }
+        }
+        this.$store.commit(namespace + '/addItem', res.reference)
+        // delete reference & update variable
+        delete res.reference
+        this.$store.commit('variables/updateItem', res)
+      })
+    },
+    patchSpecificVariableReference (val) {
+      console.log('patchSpecificVariableReference val', val)
+      this.$emit('updateSpecific', val)
     }
   }
 }

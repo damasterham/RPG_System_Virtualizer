@@ -12,7 +12,9 @@
       <v-divider inset style="margin-right: 72px; margin-bottom: 10px" />
       <template v-for="variable in functionVariables">
         <specificVariable
+          v-if="variable.referenceType === 'domain'"
           :key="variable.id"
+          :domain="$store.state.domain"
           :function="func"
           :variable="variable"
           :data-type="property.dataType"
@@ -69,13 +71,16 @@ export default {
   },
   async mounted () {
     const res = await this.$store.dispatch('properties-functions/find', { query: { propertyId: this.property.id }, $clear: true })
-    if (res) { await this.$store.dispatch('variables/find', { query: { functionId: res[0].functionId } }) }
+    if (res) {
+      console.log(res, this.$store.state.function)
+      if (this.$store.state.function !== null && res[0].functionId !== this.$store.state.function.id) {
+        await this.$store.dispatch('variables/find', { query: { functionId: res[0].functionId } })
+      }
+    }
   },
   methods: {
     setPropertyValue (e) {
-      console.log('setPropertyValue | ', e)
       propertiesClient.patch(this.property.id, {}, { query: { data: { referenceId: e.id, referenceType: this.property.referenceType } } }).then((res) => {
-        console.log('propertiesClient result:', res)
         this.$store.commit('properties-functions/updateItem', res)
       })
     }

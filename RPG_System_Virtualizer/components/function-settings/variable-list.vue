@@ -6,7 +6,12 @@
     <v-row id="listOfVariables" no-gutters>
       <v-col>
         <template v-for="variable in variables">
-          <variable :key="'variable-' + variable.id" :references="references" :variable="variable" />
+          <variable
+            :key="'variable-' + variable.id"
+            :references="references"
+            :variable="variable"
+            :domain="domain"
+          />
           <!-- <v-divider v-if="index !== variables.length - 1" :key="'divider-' + variable.id" /> -->
         </template>
       </v-col>

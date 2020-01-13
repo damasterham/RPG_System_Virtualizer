@@ -59,6 +59,10 @@ export default function createService (namespace, options = {}) {
         }
       },
       removeItem (state, id, key = 'id') {
+        if (typeof id === 'object' && id !== null) {
+          key = id.key
+          id = id.id
+        }
         if (state.current && state.current[key] === id) {
           state.current = null
         }

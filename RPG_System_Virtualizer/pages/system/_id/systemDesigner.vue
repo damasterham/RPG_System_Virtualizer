@@ -51,12 +51,12 @@
       </v-app-bar>
       <v-container fluid>
         <v-row dense style="height: 90.6vh">
-          <v-col id="Domain Family Settings" cols="3">
+          <v-col id="Domain Family Settings" cols="3" style="max-height: 90.5vh; overflow-y: auto">
             <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
-            <domainInheritance v-if="domain !== null" :domain="domain" />
+            <domainInheritance v-if="domain !== null" :domain="domain" style="height: 99%" />
           </v-col>
           <v-divider vertical />
-          <v-col id="Domain Overview" cols="3">
+          <v-col id="Domain Overview" cols="3" style="max-height: 90.5vh; overflow-y: auto">
             <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
             <domainOverview
               v-if="domain !== null"
@@ -70,15 +70,15 @@
           </v-col>
           <v-divider vertical />
           <v-col id="Property/Function Settings">
-            <v-row no-gutters>
-              <v-col v-if="property !== null" id="Property Settings" cols="12">
+            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', func === null ? '90.5vh' : 90.4 / 2 + 'vh')">
+              <v-col v-if="property !== null" id="Property Settings" cols="12" style="height: 100%">
                 <!-- Property overview & settings -->
                 <propertySettings :domain="domain" :property="property" />
               </v-col>
             </v-row>
             <v-divider v-if="func !== null && property !== null" />
-            <v-row no-gutters>
-              <v-col v-if="func !== null" id="Function Settings" cols="12">
+            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', property === null ? '90.5vh' : 90.4 / 2 + 'vh')">
+              <v-col v-if="func !== null" id="Function Settings" cols="12" style="height: 100%">
                 <!-- function overview & settings -->
                 <functionSettings :domain="domain" :func="func" />
               </v-col>
@@ -249,6 +249,7 @@ export default {
     service('properties-domains')(this.$store)
     service('properties-functions')(this.$store)
     service('properties-properties')(this.$store)
+    service('property-specific-variables')(this.$store)
     service('raw-values')(this.$store)
     service('functions')(this.$store)
     service('equation-rounder')(this.$store)

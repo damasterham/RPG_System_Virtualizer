@@ -2,9 +2,13 @@
   <variable
     :deletable="false"
     :readonly="variable.referenceType !== 'domain'"
+    :specific="true"
+    :specific-value="$store.getters['property-specific-variables/get'](variable.id, 'variableId')"
     :references="references"
     :variable="variable"
     :func="func"
+    :domain="domain"
+    @updateSpecific="updateSpecificVariable($event)"
   />
 </template>
 
@@ -30,12 +34,14 @@ export default {
     dataType: {
       type: String,
       default: ''
+    },
+    property: {
+      type: Object,
+      default: () => {}
     }
   },
   computed: {
     references () {
-      let referenceNamespace = ''
-      let objectNamespace
       let reference = {}
       let res = []
       if (this.variable.referenceType === 'domain') {
@@ -44,54 +50,39 @@ export default {
           const props = this.$store.getters['properties/list'].filter((item) => {
             return item.domainId === reference.domainId && item.dataType === this.dataType
           })
+          const domain = this.$store.getters['domains/get'](props[0].domainId)
           res = res.concat(props.map((item) => {
             return {
-              name: item.name,
+              name: domain.name.toUpperCase() + '.' + item.name,
               id: item.id,
               type: 'Property',
               domainId: item.domainId
             }
           }))
         }
-      } else if (this.variable.referenceType && this.variable.referenceType !== null) {
-        switch (this.variable.referenceType) {
-          case 'function': referenceNamespace = 'variables-functions'; objectNamespace = 'functions'; break
-          case 'domain': referenceNamespace = 'variables-domains'; objectNamespace = 'domains'; break
-          case 'property': referenceNamespace = 'variables-properties'; objectNamespace = 'properties'; break
-          default: break
-        }
-        reference = this.$store.getters[referenceNamespace + '/get'](this.variable.id, 'variableId')
-        if (reference && reference !== null) {
-          reference = this.$store.getters[objectNamespace + '/get'](res[this.variable.referenceType + 'Id'])
-          if (reference && reference !== null) {
-            const obj = {
-              name: reference.name,
-              id: reference.id,
-              type: this.variable.referenceType.charAt(0).toUpperCase() + this.variable.referenceType.substring(1),
-              domainId: reference.domainId
-            }
-            res.push(obj)
-          }
-        }
       }
-      console.log('res:', res)
       return res
     }
   },
   async mounted () {
-    if (this.variable.referenceType && this.variable.referenceType !== null) {
-      let namespace = ''
-      switch (this.variable.referenceType) {
-        case 'function': namespace = 'variables-functions'; break
-        case 'domain': namespace = 'variables-domains'; break
-        case 'property': namespace = 'variables-properties'; break
-        default: break
+    await this.$store.dispatch('variables-domains/find', { query: { variableId: this.variable.id } })
+    await this.$store.dispatch('property-specific-variables/find', { query: {
+      variableId: this.variable.id
+    },
+    $clear: true })
+  },
+  methods: {
+    updateSpecificVariable (e) {
+      console.log('updateSpecificVariable e', e)
+      let reference = this.$store.getters['property-specific-variables/get'](this.variable.id, 'variableId')
+      if (reference && reference !== null) {
+        this.$store.dispatch('property-specific-variables/patch', [null, { propertyReferenceId: e.id }, { query: { variableId: reference.variableId } }])
+      } else {
+        reference = { variableId: this.variable.id, propertyId: this.property.id, propertyReferenceId: e.id }
+        this.$store.dispatch('property-specific-variables/create', reference)
       }
-      const res = await this.$store.dispatch(namespace + '/find', { query: { variableId: this.variable.id } })
-      console.log(res)
     }
   }
-
 }
 </script>
 
