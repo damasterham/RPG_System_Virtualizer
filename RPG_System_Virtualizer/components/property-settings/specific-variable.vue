@@ -53,7 +53,7 @@ export default {
             }
           }))
         }
-      } else {
+      } else if (this.variable.referenceType && this.variable.referenceType !== null) {
         switch (this.variable.referenceType) {
           case 'function': referenceNamespace = 'variables-functions'; objectNamespace = 'functions'; break
           case 'domain': referenceNamespace = 'variables-domains'; objectNamespace = 'domains'; break
@@ -79,15 +79,17 @@ export default {
     }
   },
   async mounted () {
-    let namespace = ''
-    switch (this.variable.referenceType) {
-      case 'function': namespace = 'variables-functions'; break
-      case 'domain': namespace = 'variables-domains'; break
-      case 'property': namespace = 'variables-properties'; break
-      default: break
+    if (this.variable.referenceType && this.variable.referenceType !== null) {
+      let namespace = ''
+      switch (this.variable.referenceType) {
+        case 'function': namespace = 'variables-functions'; break
+        case 'domain': namespace = 'variables-domains'; break
+        case 'property': namespace = 'variables-properties'; break
+        default: break
+      }
+      const res = await this.$store.dispatch(namespace + '/find', { query: { variableId: this.variable.id } })
+      console.log(res)
     }
-    const res = await this.$store.dispatch(namespace + '/find', { query: { variableId: this.variable.id } })
-    console.log(res)
   }
 
 }
