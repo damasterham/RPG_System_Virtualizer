@@ -2,7 +2,7 @@
   <v-app>
     <leftDrawer :drawer="domainDrawer" />
     <v-content>
-      <appToolbar :title="system.name ? 'Element Creator - ' + system.name : 'Element Creator'" @toggleLeftDrawer="domainDrawer = !domainDrawer" />
+      <appToolbar :title="system.name ? 'Content Creator - ' + system.name : 'Content Creator'" @toggleLeftDrawer="domainDrawer = !domainDrawer" />
     </v-content>
   </v-app>
 </template>
