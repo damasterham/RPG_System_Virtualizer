@@ -17,6 +17,7 @@
           :domain="$store.state.domain"
           :function="func"
           :variable="variable"
+          :property="property"
           :data-type="property.dataType"
         />
       </template>
