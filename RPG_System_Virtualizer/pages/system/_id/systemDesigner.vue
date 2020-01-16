@@ -45,12 +45,7 @@
       </template>
     </leftDrawer>
     <v-content>
-      <v-app-bar>
-        <v-app-bar-nav-icon clipped-left @click="domainDrawer = !domainDrawer">
-          <v-icon>menu</v-icon>
-        </v-app-bar-nav-icon>
-        <v-toolbar-title>System Designer{{ system.name ? ' - ' : '' }}{{ system.name }}</v-toolbar-title>
-      </v-app-bar>
+      <appToolbar :title="system.name ? 'System Designer - ' + system.name : 'System Designer'" @toggleLeftDrawer="domainDrawer = !domainDrawer" />
       <v-container fluid>
         <v-row dense style="height: 90.6vh">
           <v-col id="Domain Family Settings" cols="3" style="max-height: 90.5vh; overflow-y: auto">
@@ -143,11 +138,13 @@ import functionSettings from '~/components/function-settings.vue'
 import fillOutDialog from '~/components/fill-out-dialog.vue'
 import SaveCancelButtons from '~/components/save-cancel-buttons.vue'
 import leftDrawer from '~/components/left-drawer.vue'
+import appToolbar from '~/components/app-toolbar.vue'
 
 import service from '~/plugins/feathers-service.js'
 
 export default {
   components: {
+    appToolbar,
     domainInheritance,
     domainOverview,
     fillOutDialog,
@@ -272,6 +269,8 @@ export default {
     }
   },
   created () {
+    // console.log(this.$route)
+    // console.log(this.$router)
     service('domains')(this.$store)
     service('domain-dependencies')(this.$store)
     service('properties')(this.$store)
