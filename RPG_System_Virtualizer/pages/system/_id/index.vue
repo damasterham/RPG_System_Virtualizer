@@ -51,11 +51,11 @@
           <v-btn text color="Primary" @click="openSystemDesigner()">
             System Designer
           </v-btn>
-          <v-btn text color="Primary">
-            Layout Designer
+          <v-btn text color="Primary" @click="openElementCreator()">
+            Element Creator
           </v-btn>
           <v-btn text color="Primary">
-            Element Creator
+            Layout Designer
           </v-btn>
         </v-toolbar>
       </template>
@@ -166,6 +166,10 @@ export default {
     openSystemDesigner () {
       this.$store.commit('selectSystem', this.system)
       this.$router.push({ name: 'system-id-systemDesigner', params: { id: this.system.id } })
+    },
+    openElementCreator () {
+      this.$store.commit('selectSystem', this.system)
+      this.$router.push({ name: 'system-id-elementCreator', params: { id: this.system.id } })
     },
     create () {
       this.$store.dispatch('systems/create', {
