@@ -150,8 +150,7 @@ export default {
     service('systems')(this.$store)
   },
   mounted () {
-    this.$store.commit('systems/clear')
-    this.$store.dispatch('systems/find', { query: { id: { $gte: 0 } } })
+    this.$store.dispatch('systems/find', { query: { id: { $gte: 0 } }, $clear: true })
   },
   methods: {
     selectSystem (system) {

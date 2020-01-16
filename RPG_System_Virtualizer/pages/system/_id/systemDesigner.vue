@@ -1,47 +1,49 @@
 <template>
   <v-app>
-    <v-navigation-drawer v-model="domainDrawer" app>
-      <!-- List of all domains, add new / rename / delete domain functionality -->
-      <v-list dense shaped>
-        <v-list-item @click="newDomain()">
-          <v-list-item-title>
-            Add Domain
-          </v-list-item-title>
-          <v-list-item-action>
-            <v-icon>add</v-icon>
-          </v-list-item-action>
-        </v-list-item>
-        <v-divider />
-        <template v-for="item in domains">
-          <v-list-item :key="item.id" :input-value="domain && item.id === domain.id" color="blue-grey lighten-1" @click="selectDomain(item)">
-            <v-tooltip v-if="domainNameEdit !== item.id" right>
-              <template v-slot:activator="{ on }">
-                <v-list-item-title style="cursor: pointer" v-on="on">
-                  {{ item.name }}
-                </v-list-item-title>
-              </template>
-              <span>{{ item.name }}</span>
-            </v-tooltip>
-            <v-text-field
-              v-else
-              autofocus
-              :value="domainNameEditValue"
-              label="Domain Name"
-              @change="domainNameEditValue = $event"
-              @blur="domainNameEdit = 0"
-            />
-            <v-spacer />
-            <v-btn icon @click.stop="editDomainName(item.id)">
-              <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn icon @click.stop="deleteDomain(item)">
-              <v-icon>delete</v-icon>
-            </v-btn>
+    <leftDrawer :drawer="domainDrawer">
+      <template v-slot:default>
+        <!-- List of all domains, add new / rename / delete domain functionality -->
+        <v-list dense shaped>
+          <v-list-item @click="newDomain()">
+            <v-list-item-title>
+              Add Domain
+            </v-list-item-title>
+            <v-list-item-action>
+              <v-icon>add</v-icon>
+            </v-list-item-action>
           </v-list-item>
-          <v-divider :key="'divider' + item.id" />
-        </template>
-      </v-list>
-    </v-navigation-drawer>
+          <v-divider />
+          <template v-for="item in domains">
+            <v-list-item :key="item.id" :input-value="domain && item.id === domain.id" color="blue-grey lighten-1" @click="selectDomain(item)">
+              <v-tooltip v-if="domainNameEdit !== item.id" right>
+                <template v-slot:activator="{ on }">
+                  <v-list-item-title style="cursor: pointer" v-on="on">
+                    {{ item.name }}
+                  </v-list-item-title>
+                </template>
+                <span>{{ item.name }}</span>
+              </v-tooltip>
+              <v-text-field
+                v-else
+                autofocus
+                :value="domainNameEditValue"
+                label="Domain Name"
+                @change="domainNameEditValue = $event"
+                @blur="domainNameEdit = 0"
+              />
+              <v-spacer />
+              <v-btn icon @click.stop="editDomainName(item.id)">
+                <v-icon>edit</v-icon>
+              </v-btn>
+              <v-btn icon @click.stop="deleteDomain(item)">
+                <v-icon>delete</v-icon>
+              </v-btn>
+            </v-list-item>
+            <v-divider :key="'divider' + item.id" />
+          </template>
+        </v-list>
+      </template>
+    </leftDrawer>
     <v-content>
       <v-app-bar>
         <v-app-bar-nav-icon clipped-left @click="domainDrawer = !domainDrawer">
@@ -140,6 +142,7 @@ import propertySettings from '~/components/property-settings.vue'
 import functionSettings from '~/components/function-settings.vue'
 import fillOutDialog from '~/components/fill-out-dialog.vue'
 import SaveCancelButtons from '~/components/save-cancel-buttons.vue'
+import leftDrawer from '~/components/left-drawer.vue'
 
 import service from '~/plugins/feathers-service.js'
 
@@ -149,6 +152,7 @@ export default {
     domainOverview,
     fillOutDialog,
     functionSettings,
+    leftDrawer,
     propertySettings,
     SaveCancelButtons
   },
