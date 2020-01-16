@@ -3,7 +3,12 @@
     <leftDrawer :drawer="domainDrawer">
       <v-list shaped>
         <template v-for="collection in domainCollections">
-          <v-list-tile :key="collection.id" :input-value="domainCollection !== null && collection.id === domainCollection.id" color="blue-grey lighten-1" @click="selectCollection(collection)">
+          <v-list-tile
+            :key="collection.id"
+            :input-value="domainCollection !== null && collection.id === domainCollection.id"
+            color="blue-grey lighten-1"
+            @click="selectCollection(collection)"
+          >
             <v-tooltip right>
               <template v-slot:activator="{ on }">
                 <v-list-item-title style="cursor: pointer" v-on="on">
@@ -17,7 +22,10 @@
       </v-list>
     </leftDrawer>
     <v-content>
-      <appToolbar :title="system.name ? 'Content Creator - ' + system.name : 'Content Creator'" @toggleLeftDrawer="domainDrawer = !domainDrawer" />
+      <appToolbar
+        :title="system.name ? 'Content Creator - ' + system.name : 'Content Creator'"
+        @toggleLeftDrawer="domainDrawer = !domainDrawer"
+      />
     </v-content>
   </v-app>
 </template>
@@ -56,6 +64,11 @@ export default {
   created () {
     service('systems')(this.$store)
     service('domain-collections')(this.$store)
+  },
+  methods: {
+    selectCollection (collection) {
+      console.log(collection)
+    }
   }
 }
 </script>
