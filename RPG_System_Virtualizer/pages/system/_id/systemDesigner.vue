@@ -1,62 +1,59 @@
 <template>
   <v-app>
-    <v-navigation-drawer v-model="domainDrawer" app>
-      <!-- List of all domains, add new / rename / delete domain functionality -->
-      <v-list dense shaped>
-        <v-list-item @click="newDomain()">
-          <v-list-item-title>
-            Add Domain
-          </v-list-item-title>
-          <v-list-item-action>
-            <v-icon>add</v-icon>
-          </v-list-item-action>
-        </v-list-item>
-        <v-divider />
-        <template v-for="item in domains">
-          <v-list-item :key="item.id" :input-value="domain && item.id === domain.id" color="blue-grey lighten-1" @click="selectDomain(item)">
-            <v-tooltip v-if="domainNameEdit !== item.id" right>
-              <template v-slot:activator="{ on }">
-                <v-list-item-title style="cursor: pointer" v-on="on">
-                  {{ item.name }}
-                </v-list-item-title>
-              </template>
-              <span>{{ item.name }}</span>
-            </v-tooltip>
-            <v-text-field
-              v-else
-              autofocus
-              :value="domainNameEditValue"
-              label="Domain Name"
-              @change="domainNameEditValue = $event"
-              @blur="domainNameEdit = 0"
-            />
-            <v-spacer />
-            <v-btn icon @click.stop="editDomainName(item.id)">
-              <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn icon @click.stop="deleteDomain(item)">
-              <v-icon>delete</v-icon>
-            </v-btn>
+    <leftDrawer :drawer="domainDrawer">
+      <template v-slot:default>
+        <!-- List of all domains, add new / rename / delete domain functionality -->
+        <v-list dense shaped>
+          <v-list-item @click="newDomain()">
+            <v-list-item-title>
+              Add Domain
+            </v-list-item-title>
+            <v-list-item-action>
+              <v-icon>add</v-icon>
+            </v-list-item-action>
           </v-list-item>
-          <v-divider :key="'divider' + item.id" />
-        </template>
-      </v-list>
-    </v-navigation-drawer>
+          <v-divider />
+          <template v-for="item in domains">
+            <v-list-item :key="item.id" :input-value="domain && item.id === domain.id" color="blue-grey lighten-1" @click="selectDomain(item)">
+              <v-tooltip v-if="domainNameEdit !== item.id" right>
+                <template v-slot:activator="{ on }">
+                  <v-list-item-title style="cursor: pointer" v-on="on">
+                    {{ item.name }}
+                  </v-list-item-title>
+                </template>
+                <span>{{ item.name }}</span>
+              </v-tooltip>
+              <v-text-field
+                v-else
+                autofocus
+                :value="domainNameEditValue"
+                label="Domain Name"
+                @change="domainNameEditValue = $event"
+                @blur="domainNameEdit = 0"
+              />
+              <v-spacer />
+              <v-btn icon @click.stop="editDomainName(item.id)">
+                <v-icon>edit</v-icon>
+              </v-btn>
+              <v-btn icon @click.stop="deleteDomain(item)">
+                <v-icon>delete</v-icon>
+              </v-btn>
+            </v-list-item>
+            <v-divider :key="'divider' + item.id" />
+          </template>
+        </v-list>
+      </template>
+    </leftDrawer>
     <v-content>
-      <v-app-bar>
-        <v-app-bar-nav-icon clipped-left @click="domainDrawer = !domainDrawer">
-          <v-icon>menu</v-icon>
-        </v-app-bar-nav-icon>
-        <v-toolbar-title>System Designer{{ system.name ? ' - ' : '' }}{{ system.name }}</v-toolbar-title>
-      </v-app-bar>
+      <appToolbar :title="system.name ? 'System Designer - ' + system.name : 'System Designer'" @toggleLeftDrawer="domainDrawer = !domainDrawer" />
       <v-container fluid>
         <v-row dense style="height: 90.6vh">
-          <v-col id="Domain Family Settings" cols="3">
+          <v-col id="Domain Family Settings" cols="3" style="max-height: 90.5vh; overflow-y: auto">
             <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
-            <domainInheritance v-if="domain !== null" :domain="domain" />
+            <domainInheritance v-if="domain !== null" :domain="domain" style="height: 99%" />
           </v-col>
           <v-divider vertical />
-          <v-col id="Domain Overview" cols="3">
+          <v-col id="Domain Overview" cols="3" style="max-height: 90.5vh; overflow-y: auto">
             <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
             <domainOverview
               v-if="domain !== null"
@@ -70,15 +67,15 @@
           </v-col>
           <v-divider vertical />
           <v-col id="Property/Function Settings">
-            <v-row no-gutters>
-              <v-col v-if="property !== null" id="Property Settings" cols="12">
+            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', func === null ? '90.5vh' : 90.4 / 2 + 'vh')">
+              <v-col v-if="property !== null" id="Property Settings" cols="12" style="height: 100%">
                 <!-- Property overview & settings -->
                 <propertySettings :domain="domain" :property="property" />
               </v-col>
             </v-row>
             <v-divider v-if="func !== null && property !== null" />
-            <v-row no-gutters>
-              <v-col v-if="func !== null" id="Function Settings" cols="12">
+            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', property === null ? '90.5vh' : 90.4 / 2 + 'vh')">
+              <v-col v-if="func !== null" id="Function Settings" cols="12" style="height: 100%">
                 <!-- function overview & settings -->
                 <functionSettings :domain="domain" :func="func" />
               </v-col>
@@ -140,15 +137,19 @@ import propertySettings from '~/components/property-settings.vue'
 import functionSettings from '~/components/function-settings.vue'
 import fillOutDialog from '~/components/fill-out-dialog.vue'
 import SaveCancelButtons from '~/components/save-cancel-buttons.vue'
+import leftDrawer from '~/components/left-drawer.vue'
+import appToolbar from '~/components/app-toolbar.vue'
 
 import service from '~/plugins/feathers-service.js'
 
 export default {
   components: {
+    appToolbar,
     domainInheritance,
     domainOverview,
     fillOutDialog,
     functionSettings,
+    leftDrawer,
     propertySettings,
     SaveCancelButtons
   },
@@ -156,6 +157,31 @@ export default {
     capitalizeFirstLetter (val) {
       return val.charAt(0).toUpperCase() + val.substring(1)
     }
+  },
+  async fetch ({ store, params }) {
+    service('domains')(store)
+    service('domain-dependencies')(store)
+    service('properties')(store)
+    service('properties-domains')(store)
+    service('properties-functions')(store)
+    service('properties-properties')(store)
+    service('property-specific-variables')(store)
+    service('raw-values')(store)
+    service('functions')(store)
+    service('equation-rounder')(store)
+    service('variables')(store)
+    service('variables-domains')(store)
+    service('variables-functions')(store)
+    service('variables-properties')(store)
+    service('systems')(store)
+    if (store.state.system === null) {
+      const system = await store.dispatch('systems/get', params.id)
+      store.commit('selectSystem', system)
+    }
+    await store.dispatch('domains/find', { query: {
+      systemId: store.state.system.id, $sort: { name: 1 }
+    },
+    $clear: true })
   },
   data () {
     return {
@@ -243,12 +269,15 @@ export default {
     }
   },
   created () {
+    // console.log(this.$route)
+    // console.log(this.$router)
     service('domains')(this.$store)
     service('domain-dependencies')(this.$store)
     service('properties')(this.$store)
     service('properties-domains')(this.$store)
     service('properties-functions')(this.$store)
     service('properties-properties')(this.$store)
+    service('property-specific-variables')(this.$store)
     service('raw-values')(this.$store)
     service('functions')(this.$store)
     service('equation-rounder')(this.$store)
@@ -257,18 +286,6 @@ export default {
     service('variables-functions')(this.$store)
     service('variables-properties')(this.$store)
     service('systems')(this.$store)
-  },
-  async mounted () {
-    if (this.$store.state.system === null) {
-      const system = await this.$store.dispatch('systems/get', this.$route.params.id)
-      this.$store.commit('selectSystem', system)
-    }
-    this.$nextTick(async () => {
-      await this.$store.dispatch('domains/find', { query: {
-        systemId: this.system.id, $sort: { name: 1 }
-      },
-      $clear: true })
-    })
   },
   methods: {
     // Domains

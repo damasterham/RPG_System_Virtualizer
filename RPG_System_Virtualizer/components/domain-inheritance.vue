@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="height: 100%">
     <v-autocomplete
       ref="parentSelect"
       :value="parentDomain"

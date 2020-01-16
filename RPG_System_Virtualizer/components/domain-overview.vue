@@ -1,6 +1,6 @@
 <template>
-  <div style="max-height: 90.5vh; overflow-y: auto">
-    <v-list dense shaped style="height: 100%">
+  <div style="height: 100%">
+    <v-list dense shaped>
       <template v-for="subList in list">
         <ListHeaderWithIconButton
           :key="'header-' + subList.order"

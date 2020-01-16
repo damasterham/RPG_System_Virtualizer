@@ -51,11 +51,11 @@
           <v-btn text color="Primary" @click="openSystemDesigner()">
             System Designer
           </v-btn>
-          <v-btn text color="Primary">
-            Layout Designer
+          <v-btn text color="Primary" @click="openElementCreator()">
+            Element Creator
           </v-btn>
           <v-btn text color="Primary">
-            Element Creator
+            Layout Designer
           </v-btn>
         </v-toolbar>
       </template>
@@ -85,6 +85,10 @@ export default {
   components: {
     SaveCancelButtons,
     FillOutDialog
+  },
+  async fetch ({ store, params }) {
+    service('systems')(store)
+    await store.dispatch('systems/find', { query: { id: { $gte: 0 } }, $clear: true })
   },
   data () {
     return {
@@ -136,6 +140,7 @@ export default {
       }
     },
     systems () {
+      console.log(this.$store.getters['systems/list'])
       const listOfSystems = [ ...this.$store.getters['systems/list'] ]
       listOfSystems.push({
         addNew: true,
@@ -149,10 +154,6 @@ export default {
   created () {
     service('systems')(this.$store)
   },
-  mounted () {
-    this.$store.commit('systems/clear')
-    this.$store.dispatch('systems/find', { query: { id: { $gte: 0 } } })
-  },
   methods: {
     selectSystem (system) {
       if (system.addNew) {
@@ -165,6 +166,10 @@ export default {
     openSystemDesigner () {
       this.$store.commit('selectSystem', this.system)
       this.$router.push({ name: 'system-id-systemDesigner', params: { id: this.system.id } })
+    },
+    openElementCreator () {
+      this.$store.commit('selectSystem', this.system)
+      this.$router.push({ name: 'system-id-elementCreator', params: { id: this.system.id } })
     },
     create () {
       this.$store.dispatch('systems/create', {
