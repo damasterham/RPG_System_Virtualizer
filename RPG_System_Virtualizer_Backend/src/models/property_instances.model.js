@@ -19,6 +19,7 @@ module.exports = function (app) {
   propertyInstances.associate = function (models) {
     // Define associations here
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
+    propertyInstances.belongsTo(models.properties);
   };
 
   return propertyInstances;
