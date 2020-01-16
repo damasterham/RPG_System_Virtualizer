@@ -5,6 +5,8 @@
 module.exports = (options = {}) => {
   // Auto creates a raw value entry corresponding the property
   // Could alternativly be don via service('properties').setReference()
+
+  // Could get this data back from same, propertService.create call
   return async context => {
     await context.app.service('raw-values').create({
       propertyId: context.result.id

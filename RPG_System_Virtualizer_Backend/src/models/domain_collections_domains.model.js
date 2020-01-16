@@ -5,7 +5,7 @@
 
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelize');
-  const propertyInstances = sequelizeClient.define('property_instances', {
+  const domainCollectionsDomains = sequelizeClient.define('domain_collections_domains', {
 
   }, {
     hooks: {
@@ -16,11 +16,10 @@ module.exports = function (app) {
   });
 
   // eslint-disable-next-line no-unused-vars
-  propertyInstances.associate = function (models) {
+  domainCollectionsDomains.associate = function (models) {
     // Define associations here
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
-    propertyInstances.belongsTo(models.properties);
   };
 
-  return propertyInstances;
+  return domainCollectionsDomains;
 };
