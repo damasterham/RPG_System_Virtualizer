@@ -6,7 +6,7 @@ const hooks = require('./property_specific_variables.hooks');
 module.exports = function (app) {
   const options = {
     Model: createModel(app),
-    paginate: app.get('paginate'),
+    // paginate: app.get('paginate'),
     multi:['remove', 'patch']
   };
 
