@@ -86,6 +86,10 @@ export default {
     SaveCancelButtons,
     FillOutDialog
   },
+  async fetch ({ store, params }) {
+    service('systems')(store)
+    await store.dispatch('systems/find', { query: { id: { $gte: 0 } }, $clear: true })
+  },
   data () {
     return {
       createDialog: false,
@@ -136,6 +140,7 @@ export default {
       }
     },
     systems () {
+      console.log(this.$store.getters['systems/list'])
       const listOfSystems = [ ...this.$store.getters['systems/list'] ]
       listOfSystems.push({
         addNew: true,
@@ -148,10 +153,6 @@ export default {
   },
   created () {
     service('systems')(this.$store)
-  },
-  mounted () {
-    this.$store.commit('systems/clear')
-    this.$store.dispatch('systems/find', { query: { id: { $gte: 0 } } })
   },
   methods: {
     selectSystem (system) {
