@@ -67,7 +67,7 @@ export default {
   async mounted () {
     await this.$store.dispatch('variables-domains/find', { query: { variableId: this.variable.id } })
     await this.$store.dispatch('property-specific-variables/find', { query: {
-      variableId: this.variable.id
+      variableId: this.variable.id, propertyId: this.property.id
     },
     $clear: true })
   },
