@@ -52,7 +52,7 @@
             System Designer
           </v-btn>
           <v-btn text color="Primary" @click="openElementCreator()">
-            Element Creator
+            Content Creator
           </v-btn>
           <v-btn text color="Primary">
             Layout Designer
