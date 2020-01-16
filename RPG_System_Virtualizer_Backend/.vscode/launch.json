@@ -7,16 +7,30 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Mocha Debug",
+            "name": "Mocha Debug Services",
             // "skipFiles": [
             //     "<node_internals>/**"
             // ],
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             // "internalConsoleOptions": "openOnSessionStart",
-            "args": ["${workspaceFolder}/test/","--recursive","--exit"],
+            "args": ["${workspaceFolder}/test/services","--recursive","--exit"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "protocol": "inspector"
-        }
+        },
+        {
+          "type": "node",
+          "request": "launch",
+          "name": "Mocha Debug User Stories",
+          // "skipFiles": [
+          //     "<node_internals>/**"
+          // ],
+          "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+          // "internalConsoleOptions": "openOnSessionStart",
+          "args": ["${workspaceFolder}/test/userstories","--recursive","--exit"],
+          "console": "integratedTerminal",
+          "internalConsoleOptions": "neverOpen",
+          "protocol": "inspector"
+      }
     ]
 }

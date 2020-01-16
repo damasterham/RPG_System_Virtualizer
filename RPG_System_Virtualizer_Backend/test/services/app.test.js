@@ -1,7 +1,7 @@
 const assert = require('assert');
 const axios = require('axios');
 const url = require('url');
-const app = require('../src/app');
+const app = require('../../src/app');
 
 const hostname= app.get('host') || 'localhost';
 const port = app.get('port') || 3030;
