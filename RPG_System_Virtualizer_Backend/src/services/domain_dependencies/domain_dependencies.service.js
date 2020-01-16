@@ -6,7 +6,7 @@ const hooks = require('./domain_dependencies.hooks');
 module.exports = function (app) {
   const options = {
     Model: createModel(app),
-    paginate: app.get('paginate'),
+    // paginate: app.get('paginate'),
     multi: ['remove']
   };
 

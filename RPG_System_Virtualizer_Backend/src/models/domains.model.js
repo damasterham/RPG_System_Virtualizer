@@ -87,12 +87,21 @@ module.exports = function (app) {
       }
     });
 
+    // Domain associations used as glorified enum
     domains.belongsToMany(models.variables, {
       as: 'variablesDomains',
       through: 'variables_domains',
       otherKey: {
         name: 'variableId',
         unique: true,
+      }
+    });
+
+    // Domain collections, actual junction table?
+    domains.belongsToMany(models.domain_collections, {
+      through: 'domain_collections_domains',
+      otherKey: {
+        name: 'domainCollectionId',
       }
     });
 

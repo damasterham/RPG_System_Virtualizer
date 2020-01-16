@@ -12,7 +12,7 @@ module.exports = function (app) {
       primaryKey: true
     },
     defaultValue: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true
     }
   }, {
