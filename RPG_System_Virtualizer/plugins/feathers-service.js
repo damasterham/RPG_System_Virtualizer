@@ -239,16 +239,21 @@ export default function createService (namespace, options = {}) {
     }
   }
   return (store) => {
-    console.log({ ...process })
     const preserveState = store.state.hasOwnProperty(namespace)
-    store.registerModule(namespace, module, { preserveState })
-    store.commit('addModule', namespace)
-    if (options.enableEvents) {
-      // Listen to socket events when available.
-      service.on('created', item => store.commit(`${namespace}/addItem`, item))
-      service.on('updated', item => store.commit(`${namespace}/updateItem`, item))
-      service.on('patched', item => store.commit(`${namespace}/updateItem`, item))
-      service.on('removed', item => store.commit(`${namespace}/removeItem`, item))
+    if (process.server) {
+      if (!preserveState) {
+        store.registerModule(namespace, module)
+      }
+    } else if (!store.state.modules.hasOwnProperty(namespace)) {
+      store.registerModule(namespace, module, { preserveState })
+      store.commit('addModule', namespace)
+      if (options.enableEvents) {
+        // Listen to socket events when available.
+        service.on('created', item => store.commit(`${namespace}/addItem`, item))
+        service.on('updated', item => store.commit(`${namespace}/updateItem`, item))
+        service.on('patched', item => store.commit(`${namespace}/updateItem`, item))
+        service.on('removed', item => store.commit(`${namespace}/removeItem`, item))
+      }
     }
   }
 }

@@ -161,6 +161,31 @@ export default {
       return val.charAt(0).toUpperCase() + val.substring(1)
     }
   },
+  async fetch ({ store, params }) {
+    service('domains')(store)
+    service('domain-dependencies')(store)
+    service('properties')(store)
+    service('properties-domains')(store)
+    service('properties-functions')(store)
+    service('properties-properties')(store)
+    service('property-specific-variables')(store)
+    service('raw-values')(store)
+    service('functions')(store)
+    service('equation-rounder')(store)
+    service('variables')(store)
+    service('variables-domains')(store)
+    service('variables-functions')(store)
+    service('variables-properties')(store)
+    service('systems')(store)
+    if (store.state.system === null) {
+      const system = await store.dispatch('systems/get', params.id)
+      store.commit('selectSystem', system)
+    }
+    await store.dispatch('domains/find', { query: {
+      systemId: store.state.system.id, $sort: { name: 1 }
+    },
+    $clear: true })
+  },
   data () {
     return {
       domainDrawer: true,
@@ -261,19 +286,7 @@ export default {
     service('variables-domains')(this.$store)
     service('variables-functions')(this.$store)
     service('variables-properties')(this.$store)
-    if (this.$store.state.system === null) { service('systems')(this.$store) }
-  },
-  async mounted () {
-    if (this.$store.state.system === null) {
-      const system = await this.$store.dispatch('systems/get', this.$route.params.id)
-      this.$store.commit('selectSystem', system)
-    }
-    this.$nextTick(async () => {
-      await this.$store.dispatch('domains/find', { query: {
-        systemId: this.system.id, $sort: { name: 1 }
-      },
-      $clear: true })
-    })
+    service('systems')(this.$store)
   },
   methods: {
     // Domains
