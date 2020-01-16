@@ -52,7 +52,7 @@
             <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
             <domainInheritance v-if="domain !== null" :domain="domain" style="height: 99%" />
           </v-col>
-          <v-divider vertical />
+          <v-divider v-if="domain !== null" vertical />
           <v-col id="Domain Overview" cols="3" style="max-height: 90.5vh; overflow-y: auto">
             <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
             <domainOverview
@@ -65,7 +65,7 @@
               @newFunction="newFunction($event)"
             />
           </v-col>
-          <v-divider vertical />
+          <v-divider v-if="domain !== null" vertical />
           <v-col id="Property/Function Settings">
             <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', func === null ? '90.5vh' : 90.4 / 2 + 'vh')">
               <v-col v-if="property !== null" id="Property Settings" cols="12" style="height: 100%">
