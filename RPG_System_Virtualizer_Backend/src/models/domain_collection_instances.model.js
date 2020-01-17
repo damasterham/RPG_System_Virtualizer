@@ -5,7 +5,11 @@ const DataTypes = Sequelize.DataTypes;
 
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelize');
-  const propertyInstances = sequelizeClient.define('property_instances', {
+  const domainCollectionInstances = sequelizeClient.define('domain_collection_instances', {
+    name: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     version: {
       type: DataTypes.TEXT,
       allowNull: false,
@@ -19,20 +23,11 @@ module.exports = function (app) {
   });
 
   // eslint-disable-next-line no-unused-vars
-  propertyInstances.associate = function (models) {
+  domainCollectionInstances.associate = function (models) {
     // Define associations here
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
-
-    // The properties definition
-    propertyInstances.belongsTo(models.properties);
-
-    // The instanced domain it belongs to
-    // Will allow for domain instances with parents to be able
-    // contain all properties instead of instancing the parents themselves
-    propertyInstances.belongsTo(models.domain_instances, {
-      onDelete: 'cascade'
-    });
+    domainCollectionInstances.belongsTo(models.domain_collections);
   };
 
-  return propertyInstances;
+  return domainCollectionInstances;
 };

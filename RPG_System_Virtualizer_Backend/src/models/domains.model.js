@@ -54,7 +54,8 @@ module.exports = function (app) {
     domains.belongsTo(models.systems, {
       foreignKey: {
         unique: 'systemDomainUnique'
-      }
+      },
+      onDelete: 'cascade'
     });
     // models.systems.hasMany(domains);
 

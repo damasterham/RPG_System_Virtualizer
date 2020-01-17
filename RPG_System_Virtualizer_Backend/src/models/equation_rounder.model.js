@@ -33,7 +33,8 @@ module.exports = function (app) {
     equationRounder.belongsTo(models.functions, {
       foreignKey: {
         name: 'functionId'
-      }
+      },
+      onDelete: 'cascade'
     });
 
   };

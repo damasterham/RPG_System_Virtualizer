@@ -30,7 +30,8 @@ module.exports = function (app) {
     rawValueInstances.belongsTo(models.raw_values, {
       foreignKey: {
         name: 'propertyInstanceId',
-      }
+      },
+      onDelete: 'cascade'
     });
   };
 

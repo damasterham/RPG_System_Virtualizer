@@ -49,6 +49,16 @@ module.exports = function (app) {
       foreignKey: {
         unique: 'functionVariableUnique',
         allowNull: false
+      },
+      onDelete: 'cascade'
+    });
+
+
+    // What specific property is pointing to the variable
+    variables.belongsToMany(models.properties, {
+      through: 'property_specific_variables',
+      otherKey: {
+        name: 'propertyId'
       }
     });
 

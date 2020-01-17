@@ -22,6 +22,7 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
   let propertyInstanceService;
   let rawValueInstanceService;
   let functionInstanceService;
+  let domainCollectionInstanceService;
 
   before(async () => {
     systemService = await app.service('systems');
@@ -40,6 +41,8 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
     domainDependencyInstanceService = await app.service('domain-dependency-instances');
     propertyInstanceService = await app.service('property-instances');
     rawValueInstanceService = await app.service('raw-value-instances');
+    domainCollectionInstanceService = await app.service('domain-collection-instances');
+
   });
 
   // it('registered the service', () => {
@@ -224,7 +227,7 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
               `Did not set property reference: ${element} Modifier correctly`);
 
             assert.equal(
-              modifiers[element].reference.referenceId,
+              modifiers[element].reference.functionId,
               modifiers.calculateModifier.id,
               'Did not set property reference function correctly');
           }
@@ -251,7 +254,10 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
           assert.ok(true, 'Woop');
         });
         it('Created a Domain Collection of Attributes and Modifiers, to bind them when instanced', async () => {
-          characterSheet = await domainCollectionService.create({});
+          characterSheet = await domainCollectionService.create({
+            systemId: dnd.id,
+            name: 'CharaterSheet'
+          });
           assert.ok(characterSheet, 'Did not create Character Sheet domain collection');
           assert.ok(characterSheet.id, 'Did not create Character Sheet domain collection');
         });
@@ -312,16 +318,39 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
       context('Instantiation', () => {
         context('Bob\'s Character Sheet', () => {
           const attArr = [16,10,14,8,11,15];
+          let bobsCharacterSheet;
           let bobsAttributes;
           let bobsModifiers;
           /// Attributes
+          it('Created an instance of CharacterSheet', async  () => {
+            bobsCharacterSheet = await domainCollectionInstanceService.create({
+              name: 'Bob\'s Character Sheet',
+              domainCollectionId: characterSheet.id
+            });
+            assert.ok(bobsCharacterSheet, 'Did not create domain collection');
+            assert.ok(bobsCharacterSheet.id, 'Did not create domain collection');
+            assert.ok(bobsCharacterSheet.domainCollectionId, 'Did not create domain collection');
+          });
 
           it('Created an instance of Attributes', async () => {
             // Attributes
             bobsAttributes = await domainInstanceService.create({
-              domainId: attributes.id
+              domainId: attributes.id,
+              domainCollectionId: bobsCharacterSheet.id // can be ommitted for domains flagged instatiable
+              // TODO: should to hook check if the domain has instatiable flag
+            //}
+            // If domain collection instance domains should be store in a junction table
+            // {
+            //   query: {
+            //     data: {
+            //       domainCollectionId: bobsCharacterSheet.id
+            //     }
+            //   }
             });
+            assert.ok(bobsAttributes, 'Did not create an instance of Attributes');
             assert.ok(bobsAttributes.domainId, 'Did not create an instance of Attributes');
+            assert.ok(bobsAttributes.domainCollectionId, 'Did not create an instance of Attributes');
+            assert.equal(bobsAttributes.version, '0.0', 'Version expected from definition was not correct');
           });
           // Get the properties of the domain and create a new properties for bob
           it('Created instanced properties for Attributes', async () => {
@@ -378,9 +407,13 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
           // Context is from characterSheet domain collection
           it('Created instance of AttributeModifiers', async () =>{
             bobsModifiers = await domainInstanceService.create({
-              domainId: modifiers.id
+              domainId: modifiers.id,
+              domainCollectionId: bobsCharacterSheet.id
             });
-            assert.ok(bobsModifiers.domainId, 'Did not create an instance of ');
+            assert.ok(bobsModifiers, 'Did not create an instance of AttributeModifiers');
+            assert.ok(bobsModifiers.domainId, 'Did not create an instance of AttributeModifiers');
+            assert.ok(bobsModifiers.domainCollectionId, 'Did not create an instance of AttributeModifiers');
+            assert.equal(bobsModifiers.version, '0.0', 'Version expected from definition was not correct');
           });
           it('Created instanced properties for AttributeModifier', async () => {
             for (let index = 0; index < att.length; index++) {

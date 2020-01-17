@@ -18,6 +18,7 @@ module.exports = function (app) {
     },
     propertyReferenceId: {
       type: DataTypes.INTEGER,
+      primaryKey: true,
       allowNull: false
     }
   }, {
@@ -33,24 +34,7 @@ module.exports = function (app) {
     // Define associations here
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
 
-    propertySpecificVariables.belongsTo(models.properties, {
-      foreignKey: {
-        name: 'propertyId'
-      }
-    });
 
-    propertySpecificVariables.belongsTo(models.variables, {
-      foreignKey: {
-        name: 'variableId'
-      }
-    });
-
-    propertySpecificVariables.belongsTo(models.properties, {
-      foreignKey: {
-        name: 'propertyReferenceId'
-      }
-
-    });
   };
 
   return propertySpecificVariables;

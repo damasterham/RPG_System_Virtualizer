@@ -53,7 +53,8 @@ module.exports = function (app) {
       foreignKey: {
         unique: 'domainPropertyUnique',
         allowNull: false
-      }
+      },
+      onDelete: 'cascade'
     });
 
 
@@ -105,6 +106,20 @@ module.exports = function (app) {
     // or
 
     // Model inheritance by having a base table that properties and functions
+
+
+
+    // which property is wanted for the variables
+    properties.belongsToMany(models.variables, {
+      through: 'property_specific_variables',
+      otherKey: {
+        name: 'variableId',
+        unique: true
+      },
+      foreignKey: {
+        name: 'propertyReferenceId'
+      }
+    });
 
   };
 
