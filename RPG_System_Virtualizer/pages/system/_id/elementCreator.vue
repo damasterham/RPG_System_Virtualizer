@@ -23,7 +23,7 @@
                   :key="collection.id"
                   :input-value="domainCollection !== null && collection.id === domainCollection.id"
                   color="blue-grey lighten-1"
-                  @click="selectCollection(collection)"
+                  @click="selectConcept(collection)"
                 >
                   <v-tooltip right>
                     <template v-slot:activator="{ on }">
@@ -88,6 +88,8 @@ export default {
   },
   data () {
     return {
+      domainCollection: {},
+      domain: {},
       domainDrawer: true,
       sorting: 'A-Z',
       sorts: [

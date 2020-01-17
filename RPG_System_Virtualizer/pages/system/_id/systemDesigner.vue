@@ -47,13 +47,13 @@
     <v-content>
       <appToolbar :title="system.name ? 'System Designer - ' + system.name : 'System Designer'" @toggleLeftDrawer="domainDrawer = !domainDrawer" />
       <v-container fluid>
-        <v-row dense style="height: 90.6vh">
-          <v-col id="Domain Family Settings" cols="3" style="max-height: 90.5vh; overflow-y: auto">
+        <v-row style="height: 90.6vh">
+          <v-col id="Domain Family Settings" cols="3" style="max-height: 90.6vh; overflow-y: auto">
             <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
-            <domainInheritance v-if="domain !== null" :domain="domain" style="height: 99%" />
+            <domainInheritance v-if="domain !== null" :domain="domain" />
           </v-col>
           <v-divider v-if="domain !== null" vertical />
-          <v-col id="Domain Overview" cols="3" style="max-height: 90.5vh; overflow-y: auto">
+          <v-col id="Domain Overview" cols="3" style="max-height: 90.6vh; overflow-y: auto">
             <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
             <domainOverview
               v-if="domain !== null"
@@ -66,8 +66,8 @@
             />
           </v-col>
           <v-divider v-if="domain !== null" vertical />
-          <v-col id="Property/Function Settings" style="height: 91.2vh; overflow-y: auto">
-            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', property === null ? '0px' : func === null ? '90.4vh' : 90.4 / 2 + 'vh')">
+          <v-col id="Property/Function Settings" style="height: 90.6vh; overflow-y: auto">
+            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', property === null ? '0px' : func === null ? '90.6vh' : 90.6 / 2 + 'vh')">
               <v-col v-if="property !== null" id="Property Settings" cols="12" style="height: 100%">
                 <!-- Property overview & settings -->
                 <propertySettings :domain="domain" :property="property" />

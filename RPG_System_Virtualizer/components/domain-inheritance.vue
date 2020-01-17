@@ -1,5 +1,26 @@
 <template>
-  <div style="height: 100%">
+  <div>
+    <v-row>
+      <p class="title ml-3">
+        {{ domain.name }}
+      </p>
+      <v-spacer />
+      <v-chip class="mr-3" outlined text-color="blue-grey lighten-2">
+        Domain
+      </v-chip>
+    </v-row>
+    <v-divider />
+    <v-tooltip top>
+      <template v-slot:activator="{ on }">
+        <v-checkbox v-model="instantiableDomain" :disabled="!legalInstantiable" hide-details label="Instantiable" v-on="on" />
+      </template>
+      <p class="my-0 py-0">
+        This makes the Domain instantiable on its own.
+      </p>
+      <p class="my-0 py-0">
+        A Domain must have no dependencies, to be able to be flagged as instantiable.
+      </p>
+    </v-tooltip>
     <v-autocomplete
       ref="parentSelect"
       :value="parentDomain"
@@ -67,6 +88,24 @@ export default {
       })
       this.$store.state.domainParentage.forEach(parent => list.splice(list.findIndex(item => item.id === parent.id), 1))
       return list
+    },
+    instantiableDomain: {
+      get () {
+        return this.domain.instantiable
+      },
+      async set (val) {
+        await this.$store.dispatch('domains/patch', [this.domain.id, { instantiable: val }])
+      }
+    },
+    legalInstantiable () {
+      let domain = this.domain
+      while (domain.parentDomainId !== null || domain.id === this.domain.id) {
+        if (this.$store.getters['domain-dependencies/list'].filter(item => item.domainId === domain.id).length !== 0) { return false }
+        if (domain.parentDomainId !== null) {
+          domain = this.$store.getters['domains/get'](domain.parentDomainId)
+        } else { break }
+      }
+      return true
     },
     parentOptions () {
       const list = JSON.parse(JSON.stringify(this.domains))
