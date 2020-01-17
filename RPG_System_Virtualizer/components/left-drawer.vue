@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer v-model="drawer" app>
+  <v-navigation-drawer v-model="drawer" width="320" app>
     <v-card
       class="text-center pa-4"
       width="100%"

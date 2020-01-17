@@ -255,8 +255,6 @@ export default {
       this.fieldNameEdit = list.list + '-' + field.id
     },
     async deleteField (list, field) {
-      // TODO: Allow for deletion of functions (ForeignKey to EquationRounder mess it up)
-      // TODO: Allow for deletion of properties (ForeignKey to raw_values mess it up)
       await this.$store.dispatch(list.list + '/remove', field.id)
     },
     selectField (list, field) {
