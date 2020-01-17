@@ -6,6 +6,10 @@ const DataTypes = Sequelize.DataTypes;
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelize');
   const domainCollectionInstances = sequelizeClient.define('domain_collection_instances', {
+    name: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     version: {
       type: DataTypes.TEXT,
       allowNull: false,
@@ -22,6 +26,7 @@ module.exports = function (app) {
   domainCollectionInstances.associate = function (models) {
     // Define associations here
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
+    domainCollectionInstances.belongsTo(models.domain_collections);
   };
 
   return domainCollectionInstances;
