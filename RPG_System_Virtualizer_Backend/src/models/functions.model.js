@@ -53,7 +53,8 @@ module.exports = function (app) {
       foreignKey: {
         unique: 'domainFunctionUnique',
         allowNull: false
-      }
+      },
+      onDelete: 'cascade'
     });
 
     // Property with reference to a function

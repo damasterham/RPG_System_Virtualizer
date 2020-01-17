@@ -9,7 +9,6 @@ module.exports = function (app) {
     version: {
       type: DataTypes.TEXT,
       allowNull: false,
-      defaultValue: '0.0'
     }
   }, {
     hooks: {
@@ -25,8 +24,9 @@ module.exports = function (app) {
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
 
     // The id of the Domain Definition
-    domainInstances.belongsTo(models.domains);
-
+    domainInstances.belongsTo(models.domains,{
+      onDelete: 'cascade'
+    });
 
     // Domain dependency instances
     domainInstances.belongsToMany(domainInstances, {

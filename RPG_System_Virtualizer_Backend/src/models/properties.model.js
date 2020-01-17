@@ -53,7 +53,8 @@ module.exports = function (app) {
       foreignKey: {
         unique: 'domainPropertyUnique',
         allowNull: false
-      }
+      },
+      onDelete: 'cascade'
     });
 
 
