@@ -4,7 +4,7 @@
       <template v-slot:default>
         <v-tabs v-model="tab" fixed-tabs>
           <v-tab>
-            Collections
+            Domain Collections
           </v-tab>
           <v-divider vertical />
           <v-tooltip top open-delay="1000">
@@ -19,7 +19,7 @@
             <v-divider />
             <v-list shaped>
               <template v-for="collection in domainCollections">
-                <v-list-tile
+                <v-list-item
                   :key="collection.id"
                   :input-value="domainCollection !== null && collection.id === domainCollection.id"
                   color="blue-grey lighten-1"
@@ -33,7 +33,7 @@
                     </template>
                     <span>{{ collection.name }}</span>
                   </v-tooltip>
-                </v-list-tile>
+                </v-list-item>
               </template>
             </v-list>
           </v-tab-item>
