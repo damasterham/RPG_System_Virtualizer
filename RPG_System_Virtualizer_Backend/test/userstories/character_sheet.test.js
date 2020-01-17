@@ -182,7 +182,7 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
           assert.ok(modifiers.calculateModifier.variables[0].id, 'Did not create variable');
         });
         it('Sets CalculateModifiers variable to Attribute domain', async () => {
-          modifiers.calculateModifier.variables[0].reference = await variableService.patch(
+          modifiers.calculateModifier.variables[0] = await variableService.patch(
             modifiers.calculateModifier.variables[0].id, // x
             {
               referenceType: 'domain'
@@ -190,12 +190,13 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
             {
               query: {
                 data: {
-                  referenceId: modifiers.dependencies[0].domainId // attributes
+                  referenceId: modifiers.dependencies[0].domainDependencyId // attributes
                 }
               }
             }
           );
           assert.ok(modifiers.calculateModifier.variables[0].reference.domainId, 'Did not create variable for CalculateMdodifiers function');
+          assert.equal(modifiers.calculateModifier.variables[0].reference.domainId, attributes.id, 'Was not correct variable domain reference');
         });
         // Seemes to display undefined in test log but passes tests?
         it('Sets modifier properties\' function to CalculateModifier', async () => {
