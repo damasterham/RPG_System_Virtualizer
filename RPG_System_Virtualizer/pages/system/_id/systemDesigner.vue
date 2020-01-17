@@ -14,7 +14,12 @@
           </v-list-item>
           <v-divider />
           <template v-for="item in domains">
-            <v-list-item :key="item.id" :input-value="domain && item.id === domain.id" color="blue-grey lighten-1" @click="selectDomain(item)">
+            <v-list-item
+              :key="item.id"
+              :input-value="domain && item.id === domain.id"
+              color="blue-grey lighten-1"
+              @click="selectDomain(item)"
+            >
               <v-tooltip v-if="domainNameEdit !== item.id" right>
                 <template v-slot:activator="{ on }">
                   <v-list-item-title style="cursor: pointer" v-on="on">
@@ -304,15 +309,15 @@ export default {
       this.$store.commit('selectProperty', null)
       this.$store.commit('selectFunction', null)
       if (this.$store.getters['domain-dependencies/list'].length === 0) {
-        await this.$store.dispatch('domain-dependencies/find', { query: { }, clear: true })
+        await this.$store.dispatch('domain-dependencies/find', { query: { domainId: this.$store.getters['domains/list'].map(item => item.id) }, clear: true })
       }
       this.$store.commit('setDomainDependencyIds', this.$store.getters['domain-dependencies/list'].filter(item => item.domainId === domain.id).map(item => item.domainDependencyId))
       await this.$store.dispatch('properties/find', { query: {
-        domainId: { $in: [domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds) }
+        domainId: [domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds)
       },
       $clear: true })
       await this.$store.dispatch('functions/find', { query: {
-        domainId: { $in: [domain.id].concat(this.$store.state.domainParentage) }, $sort: { name: 1 }
+        domainId: [domain.id].concat(this.$store.state.domainParentage), $sort: { name: 1 }
       },
       $clear: true })
       this.$nextTick(() => {

@@ -142,8 +142,8 @@ export default {
       }
       const res = await this.$store.dispatch('domains/patch', [this.domain.id, { parentDomainId: value }])
       this.$store.commit('selectDomain', res)
-      this.$store.dispatch('properties/find', { query: { domainId: { $in: [res.id].concat(this.$store.state.domainParentage).concat(this.dependencies) } }, $clear: true })
-      this.$store.dispatch('functions/find', { query: { domainId: { $in: [res.id].concat(this.$store.state.domainParentage) } }, $clear: true })
+      this.$store.dispatch('properties/find', { query: { domainId: [res.id].concat(this.$store.state.domainParentage).concat(this.dependencies) }, $clear: true })
+      this.$store.dispatch('functions/find', { query: { domainId: [res.id].concat(this.$store.state.domainParentage) }, $clear: true })
       this.$nextTick(() => {
         this.$refs.parentSelect.setValue(res.parentDomainId)
       })

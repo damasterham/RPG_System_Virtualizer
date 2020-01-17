@@ -13,7 +13,7 @@
                 <span>Domains</span>
               </v-tab>
             </template>
-            <span>All domains marked with Instantiable are shown here.</span>
+            <span>All domains marked with 'instantiable' are shown here.</span>
           </v-tooltip>
           <v-tab-item>
             <v-divider />
@@ -23,7 +23,7 @@
                   :key="collection.id"
                   :input-value="domainCollection !== null && collection.id === domainCollection.id"
                   color="blue-grey lighten-1"
-                  @click="selectConcept(collection)"
+                  @click="selectConcept(collection, 'collection')"
                 >
                   <v-tooltip right>
                     <template v-slot:activator="{ on }">
@@ -39,7 +39,25 @@
           </v-tab-item>
           <v-tab-item>
             <v-divider />
-            <v-list shaped />
+            <v-list shaped>
+              <template v-for="instantiableDomain in instantiableDomains">
+                <v-list-item
+                  :key="instantiableDomain.id"
+                  :input-value="domain && domain.id === instantiableDomain.id"
+                  color="blue-grey lighten-1"
+                  @click="selectConcept(instantiableDomain, 'domain')"
+                >
+                  <v-tooltip right>
+                    <template v-slot:activator="{ on }">
+                      <v-list-item-title style="cursor: pointer" v-on="on">
+                        {{ instantiableDomain.name }}
+                      </v-list-item-title>
+                    </template>
+                    <span>{{ instantiableDomain.name }}</span>
+                  </v-tooltip>
+                </v-list-item>
+              </template>
+            </v-list>
           </v-tab-item>
         </v-tabs>
       </template>
@@ -49,17 +67,19 @@
         :title="system.name ? 'Content Creator - ' + system.name : 'Content Creator'"
         @toggleLeftDrawer="domainDrawer = !domainDrawer"
       />
-      <v-row>
-        <v-col
-          v-for="instance in tab === 0 ? domainCollectionInstances : instantiableDomainInstances"
-          :key="instance.id"
-          cols="4"
-        >
-          <v-card raised height="100%" width="100%" @click="selectInstance(instance)">
-            <v-card-title>{{ instance.name }}</v-card-title>
-          </v-card>
-        </v-col>
-      </v-row>
+      <v-container fluid>
+        <v-row>
+          <v-col
+            v-for="instance in tab === 0 ? domainCollectionInstances : instantiableDomainInstances"
+            :key="instance.id"
+            cols="4"
+          >
+            <v-card raised height="100%" width="100%" @click="selectInstance(instance)">
+              <v-card-title>{{ instance.name }}</v-card-title>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
     </v-content>
   </v-app>
 </template>
@@ -79,6 +99,8 @@ export default {
     service('domain-collection-instances')(store)
     service('domains')(store)
     service('domain-instances')(store)
+    service('property-instances')(store)
+    service('raw-value-instances')(store)
     if (store.state.system === null) {
       const system = await store.dispatch('systems/get', params.id)
       store.commit('selectSystem', system)
@@ -88,8 +110,8 @@ export default {
   },
   data () {
     return {
-      domainCollection: {},
-      domain: {},
+      domainCollection: { id: -1 },
+      domain: { id: -1 },
       domainDrawer: true,
       sorting: 'A-Z',
       sorts: [
@@ -106,17 +128,37 @@ export default {
     domainCollections () {
       return this.$store.getters['domain-collections/list']
     },
+    instantiableDomains () {
+      return this.$store.getters['domains/list'].filter(item => item.instantiable)
+    },
     domainCollectionInstances () {
       const list = []
-      return list.concat(this.$store.getters['domain-collection-instances/list']).sort((a, b) => {
-        return this.sortAlphabetically(a, b, this.sorting === 'A-Z' ? 'ascending' : 'descending')
-      })
+      return list
+        .concat(this.$store.getters['domain-collection-instances/list']
+          .filter(item => item.domainCollectionId === this.domainCollection.id)
+        ).sort((a, b) => {
+          return this.sortAlphabetically(a, b, this.sorting === 'A-Z' ? 'ascending' : 'descending')
+        })
     },
     instantiableDomainInstances () {
       const list = []
-      return list.concat(this.$store.getters['domain-instances/list']).sort((a, b) => {
-        return this.sortAlphabetically(a, b, this.sorting === 'A-Z' ? 'ascending' : 'descending')
-      })
+      return list
+        .concat(this.$store.getters['domain-instances/list']
+          .filter(item => item.domainId === this.domain.id)
+        ).sort((a, b) => {
+          return this.sortAlphabetically(a, b, this.sorting === 'A-Z' ? 'ascending' : 'descending')
+        }
+        ).map((domainI) => {
+          const obj = { ...domainI, name: '' }
+          const nameProperty = this.$store.getters['property-instances/list'].find((item) => {
+            return item.name === 'Name'
+          })
+          if (nameProperty) {
+            const value = this.$store.getters['raw-value-instances/get'](nameProperty.id, 'propertyInstanceId')
+            obj.name = value.value
+          }
+          return obj
+        })
     }
   },
   created () {
@@ -125,10 +167,40 @@ export default {
     service('domain-collection-instances')(this.$store)
     service('domains')(this.$store)
     service('domain-instances')(this.$store)
+    service('property-instances')(this.$store)
+    service('raw-value-instances')(this.$store)
   },
   methods: {
-    selectConcept (concept) {
-      console.log(concept)
+    async selectInstance (instance) {
+
+    },
+    async selectConcept (concept, type) {
+      console.log(concept, type)
+      if (type === 'domain') {
+        this.domainCollection = { id: -1 }
+        const domainI = await this.$store.dispatch('domain-instances/find', { query: {
+          domainId: concept.id, domainCollectionId: null
+        } })
+        const properties = await this.$store.dispatch('property-instances/find', { query: {
+          domainInstanceId: domainI.map(item => item.id)
+        },
+        $clear: true })
+        await this.$store.dispatch('raw-value-instances/find', { query: {
+          propertyInstanceId: properties.map(item => item.id)
+        } })
+        this.domain = concept
+      } else {
+        this.domain = { id: -1 }
+        const domainCollections = await this.$store.dispatch('domain-collection-instances/find', { query: {
+          domainCollectionId: concept.id
+        },
+        $clear: true })
+        console.log(domainCollections)
+        await this.$store.dispatch('domain-instances/find', { query: {
+          domainCollectionInstanceId: domainCollections.map(item => item.id)
+        } })
+        this.domainCollection = concept
+      }
     },
     sortAlphabetically (a, b, mode) {
       if (a.name.toLowerCase() < b.name.toLowerCase()) { return mode === 'ascending' ? -1 : 1 }
@@ -146,5 +218,20 @@ export default {
 </script>
 
 <style>
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  border-radius: 10px;
+  background-color: #424242;
+}
 
+::-webkit-scrollbar {
+  width: 12px;
+  background-color: #424242;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+  background-color: #555;
+}
 </style>
