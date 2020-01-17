@@ -5,6 +5,7 @@
         <ListHeaderWithIconButton
           :key="'header-' + subList.order"
           :condition="subList.condition ? subList.condition : oneOrMoreTextFormatters"
+          :disabled="subList.disabled"
           :icon="subList.icon"
           :title="subList.title"
           :tooltip-text="subList.tooltipText"
@@ -110,44 +111,46 @@ export default {
       list: [
         {
           condition: true,
-          order: 1,
-          title: 'Properties',
           icon: 'add',
-          tooltipText: 'Add New Property',
           list: 'properties',
           listValue: true,
+          order: 1,
+          title: 'Properties',
+          tooltipText: 'Add New Property',
           onClick: () => this.toggleNewPropertyDialog()
         },
         {
           condition: true,
+          functionType: 'equation',
+          icon: 'add',
+          list: 'functions',
+          listValue: true,
           order: 2,
           title: 'Equations',
-          icon: 'add',
           tooltipText: 'Add New Equation',
-          list: 'functions',
-          functionType: 'equation',
-          listValue: true,
           onClick: () => this.toggleNewFunctionDialog('equation')
         },
         {
           condition: true,
+          disabled: true,
+          functionType: 'lookup',
+          icon: 'add',
+          list: 'functions',
+          listValue: true,
           order: 3,
           title: 'Table Lookups',
-          icon: 'add',
           tooltipText: 'Add New Table Lookup',
-          list: 'functions',
-          functionType: 'lookup',
-          listValue: true,
           onClick: () => this.toggleNewFunctionDialog('lookup')
         },
         {
+          disabled: true,
+          functionType: 'string_formatter',
+          icon: 'add',
+          list: 'functions',
+          listValue: true,
           order: 4,
           title: 'Text Formatters',
-          icon: 'add',
           tooltipText: 'Add New Text Formatter',
-          list: 'functions',
-          functionType: 'string_formatter',
-          listValue: true,
           onClick: () => this.toggleNewFunctionDialog('string_formatter')
         }
       ]
@@ -252,6 +255,8 @@ export default {
       this.fieldNameEdit = list.list + '-' + field.id
     },
     async deleteField (list, field) {
+      // TODO: Allow for deletion of functions (ForeignKey to EquationRounder mess it up)
+      // TODO: Allow for deletion of properties (ForeignKey to raw_values mess it up)
       await this.$store.dispatch(list.list + '/remove', field.id)
     },
     selectField (list, field) {
