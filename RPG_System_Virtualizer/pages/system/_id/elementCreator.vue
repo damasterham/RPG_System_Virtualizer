@@ -2,7 +2,7 @@
   <v-app>
     <leftDrawer :drawer="domainDrawer">
       <template v-slot:default>
-        <v-tabs fixed-tabs>
+        <v-tabs v-model="tab" fixed-tabs>
           <v-tab>
             Collections
           </v-tab>
@@ -50,9 +50,15 @@
         @toggleLeftDrawer="domainDrawer = !domainDrawer"
       />
       <v-row>
-        <v-col />
-        <v-col />
-        <v-col />
+        <v-col
+          v-for="instance in tab === 0 ? domainCollectionInstances : instantiableDomainInstances"
+          :key="instance.id"
+          cols="4"
+        >
+          <v-card raised height="100%" width="100%" @click="selectInstance(instance)">
+            <v-card-title>{{ instance.name }}</v-card-title>
+          </v-card>
+        </v-col>
       </v-row>
     </v-content>
   </v-app>
@@ -70,11 +76,15 @@ export default {
   async fetch ({ store, params }) {
     service('systems')(store)
     service('domain-collections')(store)
+    service('domain-collection-instances')(store)
+    service('domains')(store)
+    service('domain-instances')(store)
     if (store.state.system === null) {
       const system = await store.dispatch('systems/get', params.id)
       store.commit('selectSystem', system)
     }
-    await store.dispatch('domain-collections/find', { query: { systemId: store.state.system.id } })
+    await store.dispatch('domain-collections/find', { query: { systemId: store.state.system.id }, $clear: true })
+    await store.dispatch('domains/find', { query: { instantiable: true, systemId: store.state.system.id }, $clear: true })
   },
   data () {
     return {
@@ -83,7 +93,8 @@ export default {
       sorts: [
         'A-Z',
         'Z-A'
-      ]
+      ],
+      tab: 0
     }
   },
   computed: {
@@ -94,15 +105,24 @@ export default {
       return this.$store.getters['domain-collections/list']
     },
     domainCollectionInstances () {
-      const list = [...this.$store.getters['domain-collection-instances']].sort((a, b) => {
+      const list = []
+      return list.concat(this.$store.getters['domain-collection-instances/list']).sort((a, b) => {
         return this.sortAlphabetically(a, b, this.sorting === 'A-Z' ? 'ascending' : 'descending')
       })
-      return list
+    },
+    instantiableDomainInstances () {
+      const list = []
+      return list.concat(this.$store.getters['domain-instances/list']).sort((a, b) => {
+        return this.sortAlphabetically(a, b, this.sorting === 'A-Z' ? 'ascending' : 'descending')
+      })
     }
   },
   created () {
     service('systems')(this.$store)
     service('domain-collections')(this.$store)
+    service('domain-collection-instances')(this.$store)
+    service('domains')(this.$store)
+    service('domain-instances')(this.$store)
   },
   methods: {
     selectConcept (concept) {
