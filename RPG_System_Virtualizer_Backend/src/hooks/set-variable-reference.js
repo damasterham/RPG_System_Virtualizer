@@ -22,7 +22,10 @@ module.exports = (options = {}) => {
       context.params.data.referenceId);
 
     // eslint-disable-next-line require-atomic-updates
-    // context.result.reference = res;
+    context.result.reference = res;
+    // do both because result.reference might not be added to client
+    // it is added serverside, whereas dispatch is not added serverside
+
     // eslint-disable-next-line require-atomic-updates
     context.dispatch = { ...context.result, reference: res };
     return context;
