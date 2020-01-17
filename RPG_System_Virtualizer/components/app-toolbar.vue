@@ -9,7 +9,7 @@
       System Designer
     </v-btn>
     <v-divider vertical />
-    <v-btn text class="mx-2" @click="emptySelections(); $router.push({ name: 'system-id-elementCreator', params: { id: $store.state.system.id } })">
+    <v-btn text class="mx-2" @click="emptySelections(); $router.push({ name: 'system-id-contentCreator', params: { id: $store.state.system.id } })">
       Content Creator
     </v-btn>
     <v-divider vertical />
