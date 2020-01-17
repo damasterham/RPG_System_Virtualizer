@@ -251,7 +251,10 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
           assert.ok(true, 'Woop');
         });
         it('Created a Domain Collection of Attributes and Modifiers, to bind them when instanced', async () => {
-          characterSheet = await domainCollectionService.create({});
+          characterSheet = await domainCollectionService.create({
+            systemId: dnd.id,
+            name: 'CharaterSheet'
+          });
           assert.ok(characterSheet, 'Did not create Character Sheet domain collection');
           assert.ok(characterSheet.id, 'Did not create Character Sheet domain collection');
         });

@@ -33,7 +33,8 @@ module.exports = function (app) {
         name: 'propertyId',
         // primaryKey: true,
         // allowNull: false
-      }
+      },
+      onDelete: 'cascade'
     });
   };
 

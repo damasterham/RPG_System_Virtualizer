@@ -106,6 +106,20 @@ module.exports = function (app) {
 
     // Model inheritance by having a base table that properties and functions
 
+
+
+    // which property is wanted for the variables
+    properties.belongsToMany(models.variables, {
+      through: 'property_specific_variables',
+      otherKey: {
+        name: 'variableId',
+        unique: true
+      },
+      foreignKey: {
+        name: 'propertyReferenceId'
+      }
+    });
+
   };
 
   return properties;
