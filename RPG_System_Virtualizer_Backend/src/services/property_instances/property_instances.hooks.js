@@ -1,11 +1,13 @@
 
 
+const getDefinitionVersion = require('../../hooks/get-definition-version');
+
 module.exports = {
   before: {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [getDefinitionVersion()],
     update: [],
     patch: [],
     remove: []
