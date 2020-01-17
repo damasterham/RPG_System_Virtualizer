@@ -44,8 +44,7 @@ export default function createService (namespace, options = {}) {
           index = args[0]
           item = args[1]
         }
-        // state.list = [...state.list, item]
-        state.list = [...state.list.slice(0, index), item, ...state.list.slice(index)]
+        state.list.splice(index, 0, item)
       },
       updateItem (state, item) {
         if (state.current && state.current.id === item.id) {
@@ -53,9 +52,23 @@ export default function createService (namespace, options = {}) {
         }
         const index = state.list.findIndex(element => element.id === item.id)
         if (index > -1) {
-          state.list = [...state.list.slice(0, index), item, ...state.list.slice(index + 1)]
+          state.list.splice(index, 1, item)
         } else {
-          // state.list = [...state.list.slice(0, state.list.length), item]
+          state.list.push(item)
+        }
+      },
+      // Recieves an object with a primaryidentifier:String field and a value:<T>
+      updateItemWithKey (state, item) {
+        const key = item.primaryIdentifier
+        item = item.value
+        if (state.current && state.current[key] === item[key]) {
+          state.current = item
+        }
+        const index = state.list.findIndex(element => element[key] === item[key])
+        if (index > -1) {
+          state.list.splice(index, 1, item)
+        } else {
+          state.list.push(item)
         }
       },
       removeItem (state, id, key = 'id') {

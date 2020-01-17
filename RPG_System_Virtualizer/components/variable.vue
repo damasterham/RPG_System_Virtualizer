@@ -112,6 +112,7 @@ export default {
                 if (res.domainId && res.domainId !== this.domain.id) {
                   res.name = this.$store.getters['domains/get'](res.domainId).name.toUpperCase() + '.' + res.name
                 }
+                console.log('variable variableReference get', res)
                 return res
               }
             }
@@ -136,15 +137,14 @@ export default {
     }
   },
   async mounted () {
+    console.log('Variable mounted()', this.variable)
     if (this.variable.referenceType && this.variable.referenceType !== null) {
-      let namespace = ''
       switch (this.variable.referenceType) {
-        case 'function': namespace = 'variables-functions'; break
-        case 'domain': namespace = 'variables-domains'; break
-        case 'property': namespace = 'variables-properties'; break
+        case 'function': await this.$store.dispatch('variables-functions/find', { query: { variableId: this.variable.id } }); break
+        case 'domain': await this.$store.dispatch('variables-domains/find', { query: { variableId: this.variable.id } }); break
+        case 'property': await this.$store.dispatch('variables-properties/find', { query: { variableId: this.variable.id } }); break
         default: break
       }
-      await this.$store.dispatch(namespace + '/find', { query: { variableId: this.variable.id } })
     }
   },
   methods: {
@@ -164,27 +164,23 @@ export default {
     },
     patchVariableReference (val) {
       variableClient.patch(this.variable.id, { referenceType: val.type.toLowerCase() }, { query: { data: { referenceId: val.id } } }).then((res) => {
-        // Remove existing reference from local store
-        let namespace = ''
-        switch (this.variable.referenceType) {
-          case 'function': namespace = 'variables-functions'; break
-          case 'domain': namespace = 'variables-domains'; break
-          case 'property': namespace = 'variables-properties'; break
+        console.log('patchVariableReference', { ...res }, { ...val })
+        console.log(this.variable)
+        switch (this.variable.referenceType) { // Remove existing reference from local store
+          case 'function': this.$store.commit('variables-functions/removeItem', { id: this.variable.id, key: 'variableId' }); break
+          case 'domain': this.$store.commit('variables-domains/removeItem', { id: this.variable.id, key: 'variableId' }); break
+          case 'property': this.$store.commit('variables-properties/removeItem', { id: this.variable.id, key: 'variableId' }); break
           default: break
         }
-        this.$store.commit(namespace + '/removeItem', { id: this.variable.id, key: 'variableId' })
-        // Create new reference in local store, using res.reference
         if (this.variable.referenceType !== res.referenceType) {
-          switch (res.referenceType) {
-            case 'function': namespace = 'variables-functions'; break
-            case 'domain': namespace = 'variables-domains'; break
-            case 'property': namespace = 'variables-properties'; break
+          switch (res.referenceType) { // Create new reference in local store, using res.reference
+            case 'function': this.$store.commit('variables-functions/addItem', res.reference); break
+            case 'domain': this.$store.commit('variables-domains/addItem', res.reference); break
+            case 'property': this.$store.commit('variables-properties/addItem', res.reference); break
             default: break
           }
         }
-        this.$store.commit(namespace + '/addItem', res.reference)
-        // delete reference & update variable
-        delete res.reference
+        delete res.reference // delete reference & update variable
         this.$store.commit('variables/updateItem', res)
       })
     },

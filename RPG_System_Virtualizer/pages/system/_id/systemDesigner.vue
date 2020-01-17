@@ -66,15 +66,15 @@
             />
           </v-col>
           <v-divider v-if="domain !== null" vertical />
-          <v-col id="Property/Function Settings">
-            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', func === null ? '90.5vh' : 90.4 / 2 + 'vh')">
+          <v-col id="Property/Function Settings" style="height: 91.2vh; overflow-y: auto">
+            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', property === null ? '0px' : func === null ? '90.4vh' : 90.4 / 2 + 'vh')">
               <v-col v-if="property !== null" id="Property Settings" cols="12" style="height: 100%">
                 <!-- Property overview & settings -->
                 <propertySettings :domain="domain" :property="property" />
               </v-col>
             </v-row>
             <v-divider v-if="func !== null && property !== null" />
-            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', property === null ? '90.5vh' : 90.4 / 2 + 'vh')">
+            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', func === null ? '0px' : property === null ? '90.4vh' : 90.4 / 2 + 'vh')">
               <v-col v-if="func !== null" id="Function Settings" cols="12" style="height: 100%">
                 <!-- function overview & settings -->
                 <functionSettings :domain="domain" :func="func" />

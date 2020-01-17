@@ -229,22 +229,6 @@ export default {
     }
   },
   methods: {
-    /*
-    async fetchPropertiesAndFunctions () {
-      console.log({ ...this.$store.state })
-      const domainIds = [this.domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds)
-      console.log(domainIds)
-      const res = await this.$store.dispatch('properties/find', { query: {
-        domainId: { $in: domainIds }, $sort: { name: 1 }
-      },
-      $clear: true })
-      console.log('All properties', res.sort((a, b) => { return a.domainId - b.domainId }))
-      await this.$store.dispatch('functions/find', { query: {
-        domainId: { $in: [this.domain.id].concat(this.$store.state.domainParentage) }, $sort: { name: 1 }
-      },
-      $clear: true })
-    },
-    */
     toggleNewPropertyDialog () {
       this.$emit('newProperty')
     },

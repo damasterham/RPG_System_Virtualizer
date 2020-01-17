@@ -55,7 +55,7 @@ export default {
       set (val) {
         this.setPropertyValue(val)
         this.$store.dispatch('variables/find', { query: { functionId: val.id } })
-        this.$store.dispatch('functions/find', { qurey: { id: val.id } })
+        this.$store.dispatch('functions/find', { query: { id: val.id } })
       }
     },
     func () {
@@ -71,9 +71,10 @@ export default {
     }
   },
   async mounted () {
+    console.log(this.property)
     const res = await this.$store.dispatch('properties-functions/find', { query: { propertyId: this.property.id }, $clear: true })
     if (res && res.length > 0) {
-      console.log(res, this.$store.state.function)
+      console.log('function-reference mounted()', res, this.$store.state.function)
       if (this.$store.state.function !== null && res[0].functionId === this.$store.state.function.id) {
       } else { await this.$store.dispatch('variables/find', { query: { functionId: res[0].functionId } }) }
     }
