@@ -52,10 +52,11 @@ export default {
         if (functionReference) { return this.$store.getters['functions/get'](functionReference.functionId) }
         return null
       },
-      set (val) {
+      async set (val) {
         this.setPropertyValue(val)
-        this.$store.dispatch('variables/find', { query: { functionId: val.id } })
-        this.$store.dispatch('functions/find', { query: { id: val.id } })
+        if (this.$store.getters['variables/list'].filter(item => item.functionId === val.id).length === 0) {
+          await this.$store.dispatch('variables/find', { query: { functionId: val.id } })
+        }
       }
     },
     func () {
@@ -64,7 +65,8 @@ export default {
       } return {}
     },
     functionVariables () {
-      if (this.functionReference !== null) {
+      if (this.functionReference && this.functionReference !== null) {
+        console.log(this.functionReference)
         return this.$store.getters['variables/list'].filter(item => item.functionId === this.functionReference.id)
       }
       return []
@@ -76,13 +78,15 @@ export default {
     if (res && res.length > 0) {
       console.log('function-reference mounted()', res, this.$store.state.function)
       if (this.$store.state.function !== null && res[0].functionId === this.$store.state.function.id) {
-      } else { await this.$store.dispatch('variables/find', { query: { functionId: res[0].functionId } }) }
+      } else if (this.$store.getters['variables/list'].filter(item => item.functionId === res[0].functionId).length === 0) { await this.$store.dispatch('variables/find', { query: { functionId: res[0].functionId } }) }
     }
   },
   methods: {
     setPropertyValue (e) {
       propertiesClient.patch(this.property.id, {}, { query: { data: { referenceId: e.id, referenceType: this.property.referenceType } } }).then((res) => {
-        this.$store.commit('properties-functions/updateItem', res)
+        this.$store.commit('properties-functions/updateItemWithKey',
+          { primaryIdentifier: 'propertyId', value: res }
+        )
       })
     }
   }

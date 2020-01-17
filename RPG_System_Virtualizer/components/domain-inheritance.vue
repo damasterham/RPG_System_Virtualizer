@@ -86,13 +86,11 @@ export default {
     }
   },
   mounted () {
-    // const dependencies = await this.$store.dispatch('domain-dependencies/find', { query: { }, clear: true })
-    // this.$store.commit('setDomainDependencyIds', dependencies.filter(item => item.domainId === this.domain.id).map(item => item.domainDependencyId))
     if (this.domain.parentDomainId) { this.$refs.parentSelect.setValue(this.domain.parentDomainId) }
   },
   methods: {
     handleCircularDependencyError (source) {
-
+      // This is where we would handle circular dependencies
     },
     async setDomainParent (value) {
       if (value !== null) {
@@ -130,8 +128,14 @@ export default {
     checkForCircularDependency (domainId, dependency) {
       console.log('checkForCircularDependency', dependency)
       if (dependency.parentDomainId === domainId) { return true } // check to see if parent is target domain
-      this.$store.getters['domain-dependencies/list'].filter(item => item.domainId === dependency.id).forEach((item) => { if (item === domainId) { return true } }) // check to see if target domain is among dependencies
-      if (dependency.parentDomainId !== null && this.checkForCircularDependency(domainId, this.$store.getters['domains/get'](dependency.parentDomainId))) { return true } // recursively check parent
+      this.$store.getters['domain-dependencies/list']
+        .filter(item => item.domainId === dependency.id)
+        .forEach((item) => { if (item === domainId) { return true } }) // check to see if target domain is among dependencies
+      if (dependency.parentDomainId !== null) {
+        return this.checkForCircularDependency( // recursively check parent
+          domainId,
+          this.$store.getters['domains/get'](dependency.parentDomainId))
+      }
       return false // target domain not found, no circular dependency
     }
   }
