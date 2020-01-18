@@ -102,16 +102,14 @@
     <!-- New Domain Instance -->
     <fillOutDialog :toggle="newDomainInstanceDialog">
       <template v-slot:content>
-        <v-form ref="newDomainForm" v-model="newInstanceValid">
-          <v-text-field />
-        </v-form>
+        <instanceForm v-if="formData.length > 0" ref="newDomainInstanceForm" :data-set="formData" />
       </template>
       <template v-slot:buttons>
         <v-spacer />
         <saveCancelButtons
           cancel-button-text="Cancel"
           commit-button-text="Create"
-          :disable-commit="newInstanceValid"
+          :disable-commit="$refs.newDomainForm && $refs.newDomainForm.valid"
           @cancel="closeNewDomainInstanceDialog()"
           @commit="createNewDomainInstance()"
         />
@@ -121,9 +119,7 @@
     <!-- New DomainCollection Instance -->
     <fillOutDialog :toggle="newDomainCollectionInstanceDialog">
       <template v-slot:content>
-        <v-form ref="newDomainCollectionForm" v-model="newInstanceValid">
-          <v-text-field />
-        </v-form>
+        <instanceForm v-if="formData.length > 0" ref="newDomainCollectionInstanceForm" :data-set="formData" :instance-type="'domainCollection'" />
       </template>
       <template v-slot:buttons>
         <v-spacer />
@@ -142,6 +138,7 @@
 <script>
 import appToolbar from '~/components/app-toolbar.vue'
 import fillOutDialog from '~/components/fill-out-dialog.vue'
+import instanceForm from '~/components/instance-form/instance-form.vue'
 import leftDrawer from '~/components/left-drawer.vue'
 import saveCancelButtons from '~/components/save-cancel-buttons.vue'
 import service from '~/plugins/feathers-service.js'
@@ -149,6 +146,7 @@ export default {
   components: {
     appToolbar,
     fillOutDialog,
+    instanceForm,
     leftDrawer,
     saveCancelButtons
   },
@@ -173,6 +171,7 @@ export default {
   data () {
     return {
       domainDrawer: true,
+      formData: [],
       newDomainInstanceDialog: false,
       newDomainCollectionInstanceDialog: false,
       newInstanceValid: true,
@@ -196,9 +195,11 @@ export default {
       set (val) {
         this.$store.commit('selectDomain', val)
         const parentage = []
-        while (val.parentDomainId !== null) {
-          parentage.push(val.parentDomainId)
-          val = this.$store.getters['domains/get'](val.parentDomainId)
+        if (val !== null) {
+          while (val.parentDomainId !== null) {
+            parentage.push(val.parentDomainId)
+            val = this.$store.getters['domains/get'](val.parentDomainId)
+          }
         }
         this.$store.commit('setDomainParentage', parentage)
       }
@@ -246,6 +247,7 @@ export default {
           const nameProperty = this.$store.getters['property-instances/list'].find((item) => {
             return item.name === 'Name'
           })
+          console.log(obj, nameProperty)
           if (nameProperty) {
             const value = this.$store.getters['raw-value-instances/get'](nameProperty.id, 'propertyInstanceId')
             obj.name = value.value
@@ -267,30 +269,93 @@ export default {
     service('raw-value-instances')(this.$store)
   },
   methods: {
+    closeNewDomainInstanceDialog () {
+      this.newDomainInstanceDialog = false
+    },
+    async createNewDomainInstance () {
+      const domainI = await this.$store.dispatch('domain-instances/create', {
+        domainId: this.domain.id
+      })
+      this.formData.forEach(async (prop) => {
+        const propI = await this.$store.dispatch('property-instances/create', {
+          domainInstanceId: domainI.id,
+          propertyId: prop.id
+        })
+        if (prop.editable) {
+          this.$store.dispatch('raw-value-instances/create', {
+            propertyInstanceId: propI.id,
+            value: this.$refs.newDomainInstanceForm.$refs['property_' + prop.id].value
+          })
+        }
+      })
+      this.closeNewDomainInstanceDialog()
+    },
     async openNewDomainInstanceDialog () {
       this.waitingForDataFetch = true
-      const properties = await this.$store.dispatch('properties/find', { query: {
-        domainId: [this.domain.id].concat(this.$store.state.domainParentage)
+      this.formData.splice(0)
+      const properties = this.$store.getters['properties/list']
+      await this.$store.dispatch('raw-values/find', { query: {
+        propertyId: properties
+          .filter(item => item.referenceType === 'raw_value')
+          .map(item => item.id)
       },
       $clear: true })
-      console.log('domain properties', properties)
-      await this.$store.dispatch('raw_values/find', { query: {
-        propertyId: properties.filter(item => item.referenceType === 'raw-value').map(item => item.id)
-      },
-      $clear: true })
+      properties.forEach((property) => {
+        const data = {}
+        data.id = property.id
+        data.label = property.name
+        data.dataType = property.dataType
+        if (property.referenceType === 'raw_value') {
+          data.editable = true
+          data.default = this.$store.getters['raw-values/get'](property.id, 'propertyId').defaultValue
+        }
+        this.formData.push(data)
+      })
+      console.log('formData', this.formData)
       this.waitingForDataFetch = false
+      this.newDomainInstanceDialog = true
     },
     async openNewDomainCollectionInstanceDialog () {
       this.waitingForDataFetch = true
-      const domainIds = await this.$store.disaptch('domain-collections-domains/find', { query: {
+      this.formData.splice(0)
+      const domainIds = await this.$store.dispatch('domain-collections-domains/find', { query: {
         domainCollectionId: this.domainCollection.id
       },
       $clear: true })
-      await this.$store.dispatch('domains/find', { query: {
-        id: domainIds
+      console.log(domainIds)
+      const domains = await this.$store.dispatch('domains/find', { query: {
+        id: domainIds.map(item => item.domainId)
       },
       $clear: true })
+      const props = await this.$store.dispatch('properties/find', { query: {
+        domainId: domains.map(item => item.id)
+      },
+      $clear: true })
+      await this.$store.dispatch('raw-values/find', { query: {
+        propertyId: props.map(item => item.id)
+      },
+      $clear: true })
+      domains.forEach((domain) => {
+        const obj = {}
+        obj.id = domain.id
+        obj.name = domain.name
+        obj.props = []
+        props.filter(item => item.domainId === domain.id).forEach((prop) => {
+          const data = {}
+          data.id = prop.id
+          data.label = prop.name
+          data.dataType = prop.dataType
+          if (prop.referenceType === 'raw_value') {
+            data.editable = true
+            data.default = this.$store.getters['raw-values/get'](prop.id, 'propertyId').defaultValue
+          }
+          obj.props.push(data)
+        })
+        this.formData.push(obj)
+      })
+      console.log(this.formData)
       this.waitingForDataFetch = false
+      this.newDomainCollectionInstanceDialog = true
     },
     async selectInstance (instance) {
       await console.log(instance)
@@ -303,13 +368,22 @@ export default {
         const domainI = await this.$store.dispatch('domain-instances/find', { query: {
           domainId: concept.id, domainCollectionId: null
         } })
+        // Get property instances for all the domain instances
+        await this.$store.dispatch('properties/find', { query: { domainId: concept.id }, $clear: true })
         const properties = await this.$store.dispatch('property-instances/find', { query: {
           domainInstanceId: domainI.map(item => item.id)
         },
         $clear: true })
-        await this.$store.dispatch('raw-value-instances/find', { query: {
+        // Get values of properties for all the domain instances
+        const rawVals = await this.$store.dispatch('raw-value-instances/find', { query: {
           propertyInstanceId: properties.map(item => item.id)
         } })
+        rawVals.forEach((rawValProp) => {
+          const obj = {}
+          obj.val = rawValProp.value
+          obj.name = properties.find(item => item.id === rawValProp.propertyInstanceId)
+          console.log(obj.name, obj.val)
+        })
         this.domain = concept
       } else {
         this.domain = null
