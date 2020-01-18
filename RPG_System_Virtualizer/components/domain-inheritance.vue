@@ -33,6 +33,7 @@
     />
     <v-autocomplete
       v-model="dependencies"
+      :disabled="instantiableDomain"
       label="Add Dependency..."
       name="something not triggering autofill"
       :items="domains"
@@ -110,6 +111,7 @@ export default {
     parentOptions () {
       const list = JSON.parse(JSON.stringify(this.domains))
       if (this.domain.parentDomainId) { list.push(this.$store.getters['domains/get'](this.domain.parentDomainId)) }
+      if (this.instantiableDomain) { return list.filter((item) => { return !this.$store.getters['domain-dependencies/list'].some(dep => dep.domainId === item.id) }) }
       return list
     },
     parentDomain: {

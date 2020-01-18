@@ -69,6 +69,22 @@
       />
       <v-container fluid>
         <v-row>
+          <v-btn
+            v-if="domain !== null || domainCollection !== null"
+            color="accent"
+            fab
+            fixed
+            outlined
+            right
+            style="margin-top: 64px"
+            top
+            @click="domain.id > 0 ? openNewDomainInstanceDialog() : openNewDomainCollectionInstanceDialog()"
+          >
+            <v-icon v-if="!waitingForDataFetch" large>
+              add
+            </v-icon>
+            <v-progress-circular v-else indeterminate color="accent" />
+          </v-btn>
           <v-col
             v-for="instance in tab === 0 ? domainCollectionInstances : instantiableDomainInstances"
             :key="instance.id"
@@ -81,25 +97,71 @@
         </v-row>
       </v-container>
     </v-content>
+
+    <!-------------------------------------------------------------- Dialogs -->
+    <!-- New Domain Instance -->
+    <fillOutDialog :toggle="newDomainInstanceDialog">
+      <template v-slot:content>
+        <v-form ref="newDomainForm" v-model="newInstanceValid">
+          <v-text-field />
+        </v-form>
+      </template>
+      <template v-slot:buttons>
+        <v-spacer />
+        <saveCancelButtons
+          cancel-button-text="Cancel"
+          commit-button-text="Create"
+          :disable-commit="newInstanceValid"
+          @cancel="closeNewDomainInstanceDialog()"
+          @commit="createNewDomainInstance()"
+        />
+      </template>
+    </fillOutDialog>
+
+    <!-- New DomainCollection Instance -->
+    <fillOutDialog :toggle="newDomainCollectionInstanceDialog">
+      <template v-slot:content>
+        <v-form ref="newDomainCollectionForm" v-model="newInstanceValid">
+          <v-text-field />
+        </v-form>
+      </template>
+      <template v-slot:buttons>
+        <v-spacer />
+        <saveCancelButtons
+          cancel-button-text="Cancel"
+          commit-button-text="Create"
+          :disable-commit="newInstanceValid"
+          @cancel="closeNewDomainCollectionInstanceDialog()"
+          @commit="createNewDomainCollectionInstance()"
+        />
+      </template>
+    </fillOutDialog>
   </v-app>
 </template>
 
 <script>
-import leftDrawer from '~/components/left-drawer.vue'
 import appToolbar from '~/components/app-toolbar.vue'
+import fillOutDialog from '~/components/fill-out-dialog.vue'
+import leftDrawer from '~/components/left-drawer.vue'
+import saveCancelButtons from '~/components/save-cancel-buttons.vue'
 import service from '~/plugins/feathers-service.js'
 export default {
   components: {
+    appToolbar,
+    fillOutDialog,
     leftDrawer,
-    appToolbar
+    saveCancelButtons
   },
   async fetch ({ store, params }) {
     service('systems')(store)
     service('domain-collections')(store)
+    service('domain-collections-domains')(store)
     service('domain-collection-instances')(store)
     service('domains')(store)
     service('domain-instances')(store)
+    service('properties')(store)
     service('property-instances')(store)
+    service('raw-values')(store)
     service('raw-value-instances')(store)
     if (store.state.system === null) {
       const system = await store.dispatch('systems/get', params.id)
@@ -110,20 +172,45 @@ export default {
   },
   data () {
     return {
-      domainCollection: { id: -1 },
-      domain: { id: -1 },
       domainDrawer: true,
+      newDomainInstanceDialog: false,
+      newDomainCollectionInstanceDialog: false,
+      newInstanceValid: true,
       sorting: 'A-Z',
       sorts: [
         'A-Z',
         'Z-A'
       ],
-      tab: 0
+      tab: 0,
+      waitingForDataFetch: false
     }
   },
   computed: {
     system () {
       return this.$store.state.system
+    },
+    domain: {
+      get () {
+        return this.$store.state.domain
+      },
+      set (val) {
+        let dom = val
+        const parentage = [dom.id]
+        while (dom.parentDomainId !== null) {
+          parentage.push(dom.parentDomainId)
+          dom = this.$store.getters['domains/get'](dom.parentDomainId)
+        }
+        this.$store.commit('setDomainParentage', parentage)
+        this.$store.commit('selectDomain', val)
+      }
+    },
+    domainCollection: {
+      get () {
+        return this.$store.state.domainCollection
+      },
+      set (val) {
+        this.$store.commit('selectDomainCollection', val)
+      }
     },
     domainCollections () {
       return this.$store.getters['domain-collections/list']
@@ -164,20 +251,51 @@ export default {
   created () {
     service('systems')(this.$store)
     service('domain-collections')(this.$store)
+    service('domain-collections-domains')(this.$store)
     service('domain-collection-instances')(this.$store)
     service('domains')(this.$store)
     service('domain-instances')(this.$store)
+    service('properties')(this.$store)
     service('property-instances')(this.$store)
+    service('raw-values')(this.$store)
     service('raw-value-instances')(this.$store)
   },
   methods: {
+    async openNewDomainInstanceDialog () {
+      this.waitingForDataFetch = true
+      const parentage = [this.domain.id]
+      let dom = this.domain
+      while (dom.parentDomainId !== null) {
+        parentage.push(dom.parentDomainId)
+        dom = await this.$store.dispatch('domains/get', dom.parentDomainId)
+      }
+      const properties = await this.$store.dispatch('properties/find', { query: {
+        domainId: parentage
+      },
+      $clear: true })
+      console.log('domain properties', properties)
+      this.waitingForDataFetch = false
+    },
+    async openNewDomainCollectionInstanceDialog () {
+      this.waitingForDataFetch = true
+      const domainIds = await this.$store.disaptch('domain-collections-domains/find', { query: {
+        domainCollectionId: this.domainCollection.id
+      },
+      $clear: true })
+      await this.$store.dispatch('domains/find', { query: {
+        id: domainIds
+      },
+      $clear: true })
+      this.waitingForDataFetch = false
+    },
     async selectInstance (instance) {
-
+      await console.log(instance)
     },
     async selectConcept (concept, type) {
       console.log(concept, type)
       if (type === 'domain') {
-        this.domainCollection = { id: -1 }
+        this.domainCollection = null // Clear selected domainCollection
+        // Get Instances of selected Domain
         const domainI = await this.$store.dispatch('domain-instances/find', { query: {
           domainId: concept.id, domainCollectionId: null
         } })
@@ -190,12 +308,11 @@ export default {
         } })
         this.domain = concept
       } else {
-        this.domain = { id: -1 }
+        this.domain = null
         const domainCollections = await this.$store.dispatch('domain-collection-instances/find', { query: {
           domainCollectionId: concept.id
         },
         $clear: true })
-        console.log(domainCollections)
         await this.$store.dispatch('domain-instances/find', { query: {
           domainCollectionInstanceId: domainCollections.map(item => item.id)
         } })

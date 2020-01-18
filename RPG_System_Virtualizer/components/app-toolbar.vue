@@ -32,7 +32,7 @@ export default {
       this.$store.commit('selectDomain', null)
       this.$store.commit('selectProperty', null)
       this.$store.commit('selectFunction', null)
-      this.$store.commit('selectCollection', null)
+      this.$store.commit('selectDomainCollection', null)
     }
   }
 }

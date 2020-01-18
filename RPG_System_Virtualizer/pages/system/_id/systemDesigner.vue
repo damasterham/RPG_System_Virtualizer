@@ -88,50 +88,50 @@
           </v-col>
         </v-row>
       </v-container>
-
-      <!-------------------------------------------------------------- Dialogs -->
-      <!-- New property Dialog -->
-      <fillOutDialog :toggle="newPropDialog">
-        <template v-slot:content>
-          <v-form ref="newPropForm" v-model="newPropValid">
-            <v-text-field v-model="newPropName" :rules="rules" label="Property Name" @change="logIt(newPropName)" />
-            <v-autocomplete v-model="newPropType" :rules="rules" :items="dataTypes" label="Property Data Type" @change="logIt(newPropType)" />
-            <v-autocomplete v-model="newPropValue" :rules="rules" :items="valueTypes" label="Property Value Source" @change="logIt(newPropValue)" />
-          </v-form>
-        </template>
-        <template v-slot:buttons>
-          <v-spacer />
-          <SaveCancelButtons
-            cancel-button-text="Cancel"
-            commit-button-text="Create"
-            :disable-commit="!newPropValid"
-            @cancel="closeNewPropDialog()"
-            @commit="createNewProperty()"
-          />
-        </template>
-      </fillOutDialog>
-
-      <!-- New Function Dialog -->
-      <fillOutDialog :toggle="newFuncDialog">
-        <template v-slot:content>
-          <v-form ref="newFuncForm" v-model="newFuncValid">
-            <v-text-field v-model="newFuncName" :rules="rules" label="Function Name" />
-            <v-text-field readonly :value="newFuncType | capitalizeFirstLetter" />
-            <v-autocomplete v-model="newFuncDataType" :rules="rules" :items="selectableDataTypes" label="Function Data Type" />
-          </v-form>
-        </template>
-        <template v-slot:buttons>
-          <v-spacer />
-          <SaveCancelButtons
-            cancel-button-text="Cancel"
-            commit-button-text="Create"
-            :disable-commit="!newFuncValid"
-            @cancel="closeNewFuncDialog()"
-            @commit="createNewFunction()"
-          />
-        </template>
-      </fillOutDialog>
     </v-content>
+
+    <!-------------------------------------------------------------- Dialogs -->
+    <!-- New property Dialog -->
+    <fillOutDialog :toggle="newPropDialog">
+      <template v-slot:content>
+        <v-form ref="newPropForm" v-model="newPropValid">
+          <v-text-field v-model="newPropName" :rules="rules" label="Property Name" @change="logIt(newPropName)" />
+          <v-autocomplete v-model="newPropType" :rules="rules" :items="dataTypes" label="Property Data Type" @change="logIt(newPropType)" />
+          <v-autocomplete v-model="newPropValue" :rules="rules" :items="valueTypes" label="Property Value Source" @change="logIt(newPropValue)" />
+        </v-form>
+      </template>
+      <template v-slot:buttons>
+        <v-spacer />
+        <SaveCancelButtons
+          cancel-button-text="Cancel"
+          commit-button-text="Create"
+          :disable-commit="!newPropValid"
+          @cancel="closeNewPropDialog()"
+          @commit="createNewProperty()"
+        />
+      </template>
+    </fillOutDialog>
+
+    <!-- New Function Dialog -->
+    <fillOutDialog :toggle="newFuncDialog">
+      <template v-slot:content>
+        <v-form ref="newFuncForm" v-model="newFuncValid">
+          <v-text-field v-model="newFuncName" :rules="rules" label="Function Name" />
+          <v-text-field readonly :value="newFuncType | capitalizeFirstLetter" />
+          <v-autocomplete v-model="newFuncDataType" :rules="rules" :items="selectableDataTypes" label="Function Data Type" />
+        </v-form>
+      </template>
+      <template v-slot:buttons>
+        <v-spacer />
+        <SaveCancelButtons
+          cancel-button-text="Cancel"
+          commit-button-text="Create"
+          :disable-commit="!newFuncValid"
+          @cancel="closeNewFuncDialog()"
+          @commit="createNewFunction()"
+        />
+      </template>
+    </fillOutDialog>
   </v-app>
 </template>
 
