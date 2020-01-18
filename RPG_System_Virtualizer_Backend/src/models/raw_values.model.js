@@ -4,7 +4,7 @@ const Sequelize = require('sequelize');
 const DataTypes = Sequelize.DataTypes;
 
 module.exports = function (app) {
-  const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
+  const sequelizeClient = app.get('sequelize');
   const rawValues = sequelizeClient.define('raw_values', {
     propertyId: {
       type: DataTypes.INTEGER,
@@ -12,7 +12,7 @@ module.exports = function (app) {
       primaryKey: true
     },
     defaultValue: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true
     }
   }, {
@@ -30,10 +30,11 @@ module.exports = function (app) {
     // See http://docs.sequelizejs.com/en/latest/docs/associations/
     rawValues.belongsTo(models.properties, {
       foreignkey:{
-        name: 'property_id',
+        name: 'propertyId',
         // primaryKey: true,
         // allowNull: false
-      }
+      },
+      onDelete: 'cascade'
     });
   };
 

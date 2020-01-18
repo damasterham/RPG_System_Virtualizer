@@ -1,11 +1,13 @@
 
 
+const addDefaultRawValue = require('../../hooks/add-default-raw-value');
+
 module.exports = {
   before: {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [addDefaultRawValue()],
     update: [],
     patch: [],
     remove: []

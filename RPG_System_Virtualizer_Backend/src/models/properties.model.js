@@ -5,11 +5,12 @@ const DataTypes = Sequelize.DataTypes;
 const Primitives = require('./primitives');
 
 module.exports = function (app) {
-  const sequelizeClient = app.get('sequelizeClient-rpgsv_db_test');
+  const sequelizeClient = app.get('sequelize');
   const properties = sequelizeClient.define('properties', {
     name: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
+      unique: 'domainPropertyUnique'
     },
     shorthand: {
       type: DataTypes.TEXT,
@@ -20,7 +21,7 @@ module.exports = function (app) {
       allowNull: false
     },
     referenceType: {
-      type: DataTypes.ENUM('function', 'property', 'raw_value'),
+      type: DataTypes.ENUM('function', 'property', 'raw_value', 'domain'),
       allowNull: false
     },
     version: {
@@ -48,7 +49,13 @@ module.exports = function (app) {
 
     // Domain owner of properties
     // Properties.domain_id => Domains.id
-    properties.belongsTo(models.domains);
+    properties.belongsTo(models.domains,{
+      foreignKey: {
+        unique: 'domainPropertyUnique',
+        allowNull: false
+      },
+      onDelete: 'cascade'
+    });
 
 
     // Reference belongsTo eithers a raw value (itself) (null), properties or funtions
@@ -62,21 +69,27 @@ module.exports = function (app) {
 
     // Property with reference to another property
     properties.belongsToMany(models.properties, {
-      as: 'PropertyReference',
+      // Sets otherkey name to propertyReferenceId
+      as: {
+        singular: 'propertyReference',
+        plural: 'propertyReferences'
+      },
+      //'propertyReference',
       through: 'properties_properties',
+      // modelname: 'propertyReference',
       // unique on property_id
       foreignKey: {
-        name: 'property_id',
+        name: 'propertyId',
         unique: true,
       }
     });
 
     // Variable with reference to a function
     properties.belongsToMany(models.variables, {
-      as: 'VariableProperty',
+      as: 'variableProperty',
       through: 'variables_properties',
       otherKey: {
-        name: 'variable_id',
+        name: 'variableId',
         unique: true,
       }
     });
@@ -93,6 +106,20 @@ module.exports = function (app) {
     // or
 
     // Model inheritance by having a base table that properties and functions
+
+
+
+    // which property is wanted for the variables
+    properties.belongsToMany(models.variables, {
+      through: 'property_specific_variables',
+      otherKey: {
+        name: 'variableId',
+        unique: true
+      },
+      foreignKey: {
+        name: 'propertyReferenceId'
+      }
+    });
 
   };
 

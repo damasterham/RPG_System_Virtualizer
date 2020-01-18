@@ -4,6 +4,8 @@ const incrementMinor = require('../../hooks/increment-minor');
 
 const incrementMajor = require('../../hooks/increment-major');
 
+const createPropertNameForDomain = require('../../hooks/create-property-name-for-domain');
+
 module.exports = {
   before: {
     all: [],
@@ -19,7 +21,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [createPropertNameForDomain()],
     update: [],
     patch: [],
     remove: [incrementMajor()]
