@@ -3,59 +3,133 @@
     <leftDrawer :drawer="domainDrawer">
       <template v-slot:default>
         <!-- List of all domains, add new / rename / delete domain functionality -->
+        <v-tabs v-model="tab" fixed-tabs>
+          <v-tab>
+            Domain Collections
+          </v-tab>
+          <v-divider vertical />
+          <v-tab>
+            Domains
+          </v-tab>
+          <!-- Domain Collections -->
+          <v-tab-item>
+            <v-divider />
+            <v-list dense shaped>
+              <v-list-item @click="newDomainCollection()">
+                <v-list-item-title>
+                  Add Domain Collection
+                </v-list-item-title>
+                <v-list-item-action>
+                  <v-icon>add</v-icon>
+                </v-list-item-action>
+              </v-list-item>
+              <v-divider />
+              <template v-for="item in domainCollections">
+                <v-list-item :key="item.id" :input-value="domainCollection && item.id === domainCollection.id" color="blue-grey lighten-1" @click="selectDomainCollection(item)">
+                  <v-tooltip v-if="domainCollectionNameEdit !== item.id" right>
+                    <template v-slot:activator="{ on }">
+                      <v-list-item-title style="cursor: pointer" v-on="on">
+                        {{ item.name }}
+                      </v-list-item-title>
+                    </template>
+                    <span>{{ item.name }}</span>
+                  </v-tooltip>
+                  <v-text-field
+                    v-else
+                    autofocus
+                    :value="domainCollectionNameEditValue"
+                    label="Domain Collection Name"
+                    @change="domainCollectionNameEditValue = $event"
+                    @blur="domainCollectionNameEdit = 0"
+                  />
+                  <v-spacer />
+                  <v-btn icon @click.stop="editDomainCollectionName(item.id)">
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                  <v-btn icon @click.stop="deleteDomainCollection(item)">
+                    <v-icon>delete</v-icon>
+                  </v-btn>
+                </v-list-item>
+                <v-divider :key="'divider' + item.id" />
+              </template>
+            </v-list>
+          </v-tab-item>
+          <!-- Domains -->
+          <v-tab-item>
+            <v-divider />
+            <v-list dense shaped>
+              <v-list-item @click="newDomain()">
+                <v-list-item-title>
+                  Add Domain
+                </v-list-item-title>
+                <v-list-item-action>
+                  <v-icon>add</v-icon>
+                </v-list-item-action>
+              </v-list-item>
+              <v-divider />
+              <template v-for="item in domains">
+                <v-list-item :key="item.id" :input-value="domain && item.id === domain.id" color="blue-grey lighten-1" @click="selectDomain(item)">
+                  <v-tooltip v-if="domainNameEdit !== item.id" right>
+                    <template v-slot:activator="{ on }">
+                      <v-list-item-title style="cursor: pointer" v-on="on">
+                        {{ item.name }}
+                      </v-list-item-title>
+                    </template>
+                    <span>{{ item.name }}</span>
+                  </v-tooltip>
+                  <v-text-field
+                    v-else
+                    autofocus
+                    :value="domainNameEditValue"
+                    label="Domain Name"
+                    @change="domainNameEditValue = $event"
+                    @blur="domainNameEdit = 0"
+                  />
+                  <v-spacer />
+                  <v-btn icon @click.stop="editDomainName(item.id)">
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                  <v-btn icon @click.stop="deleteDomain(item)">
+                    <v-icon>delete</v-icon>
+                  </v-btn>
+                </v-list-item>
+                <v-divider :key="'divider' + item.id" />
+              </template>
+            </v-list>
+          </v-tab-item>
+        </v-tabs>
+        <!--
         <v-list dense shaped>
-          <v-list-item @click="newDomain()">
+          <v-list-item>
             <v-list-item-title>
-              Add Domain
+              Add Domain Collection
+              <v-list-item-action>
+                <v-icon>add</v-icon>
+              </v-list-item-action>
             </v-list-item-title>
-            <v-list-item-action>
-              <v-icon>add</v-icon>
-            </v-list-item-action>
+            <ListHeaderWithIconButton
+            :key="">
           </v-list-item>
-          <v-divider />
-          <template v-for="item in domains">
-            <v-list-item
-              :key="item.id"
-              :input-value="domain && item.id === domain.id"
-              color="blue-grey lighten-1"
-              @click="selectDomain(item)"
-            >
-              <v-tooltip v-if="domainNameEdit !== item.id" right>
-                <template v-slot:activator="{ on }">
-                  <v-list-item-title style="cursor: pointer" v-on="on">
-                    {{ item.name }}
-                  </v-list-item-title>
-                </template>
-                <span>{{ item.name }}</span>
-              </v-tooltip>
-              <v-text-field
-                v-else
-                autofocus
-                :value="domainNameEditValue"
-                label="Domain Name"
-                @change="domainNameEditValue = $event"
-                @blur="domainNameEdit = 0"
-              />
-              <v-spacer />
-              <v-btn icon @click.stop="editDomainName(item.id)">
-                <v-icon>edit</v-icon>
-              </v-btn>
-              <v-btn icon @click.stop="deleteDomain(item)">
-                <v-icon>delete</v-icon>
-              </v-btn>
-            </v-list-item>
-            <v-divider :key="'divider' + item.id" />
-          </template>
+          <v-divider /> g
         </v-list>
+        -->
       </template>
     </leftDrawer>
     <v-content>
       <appToolbar :title="system.name ? 'System Designer - ' + system.name : 'System Designer'" @toggleLeftDrawer="domainDrawer = !domainDrawer" />
       <v-container fluid>
-        <v-row style="height: 90.6vh">
-          <v-col id="Domain Family Settings" cols="3" style="max-height: 90.6vh; overflow-y: auto">
+        <!-- Domain Collection -->
+        <v-row v-if="domainCollection !== null" dense style="height: 90.6vh">
+          <v-col cols="3" style="max-height: 90.5vh; overflow-y: auto">
+            <h2>Woop!</h2>
+            <domainCollection :domain-collection="domainCollection" style="height: 99%" />
+          </v-col>
+        </v-row>
+        <!-- Domain -->
+        <v-row v-if="domain !== null" dense style="height: 90.6vh">
+          <v-col id="Domain Family Settings" cols="3" style="max-height: 90.5vh; overflow-y: auto">
             <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
-            <domainInheritance v-if="domain !== null" :domain="domain" />
+            <domainInheritance :domain="domain" style="height: 99%" />
           </v-col>
           <v-divider v-if="domain !== null" vertical />
           <v-col id="Domain Overview" cols="3" style="max-height: 90.6vh; overflow-y: auto">
@@ -138,6 +212,7 @@
 <script>
 import domainInheritance from '~/components/domain-inheritance.vue'
 import domainOverview from '~/components/domain-overview.vue'
+import domainCollection from '~/components/domain-collection.vue'
 import propertySettings from '~/components/property-settings.vue'
 import functionSettings from '~/components/function-settings.vue'
 import fillOutDialog from '~/components/fill-out-dialog.vue'
@@ -152,6 +227,7 @@ export default {
     appToolbar,
     domainInheritance,
     domainOverview,
+    domainCollection,
     fillOutDialog,
     functionSettings,
     leftDrawer,
@@ -166,6 +242,8 @@ export default {
   async fetch ({ store, params }) {
     service('domains')(store)
     service('domain-dependencies')(store)
+    service('domain-collections')(store)
+    service('domain-collections-domains')(store)
     service('properties')(store)
     service('properties-domains')(store)
     service('properties-functions')(store)
@@ -183,15 +261,28 @@ export default {
       const system = await store.dispatch('systems/get', params.id)
       store.commit('selectSystem', system)
     }
-    await store.dispatch('domains/find', { query: {
-      systemId: store.state.system.id, $sort: { name: 1 }
-    },
-    $clear: true })
+    await store.dispatch('domains/find', {
+      query: {
+        systemId: store.state.system.id,
+        $sort: { name: 1 }
+      },
+      $clear: true
+    })
+    await store.dispatch('domain-collections/find', {
+      query: {
+        systemId: store.state.system.id,
+        $sort: { name: 1 }
+      },
+      $clear: true
+    })
   },
   data () {
     return {
       domainDrawer: true,
       domainNameEdit: 0,
+      domainCollectionNameEdit: 0,
+      tab: 1,
+
       dataTypes: [
         { text: 'Decimal', value: 'float' },
         { text: 'Number', value: 'int' },
@@ -243,6 +334,9 @@ export default {
     domain () {
       return this.$store.getters.getDomain()
     },
+    domainCollection () {
+      return this.$store.getters.getDomainCollection()
+    },
     property () {
       return this.$store.getters.getProperty()
     },
@@ -251,6 +345,9 @@ export default {
     },
     domains () {
       return this.$store.getters['domains/list']
+    },
+    domainCollections () {
+      return this.$store.getters['domain-collections/list']
     },
     propertyMinFill () {
       return this.newPropName && this.newPropName !== null && this.newPropName !== '' &&
@@ -271,6 +368,17 @@ export default {
         this.$store.dispatch('domains/patch', [this.domainNameEdit, { name: value }])
         this.domainNameEdit = 0
       }
+    },
+    domainCollectionNameEditValue: {
+      get () {
+        const obj = this.domainCollections.find(item => item.id === this.domainCollectionNameEdit)
+        if (obj) { return obj.name }
+        return ''
+      },
+      set (value) {
+        this.$store.dispatch('domain-collections/patch', [this.domainCollectionNameEdit, { name: value }])
+        this.domainCollectionNameEdit = 0
+      }
     }
   },
   created () {
@@ -278,6 +386,8 @@ export default {
     // console.log(this.$router)
     service('domains')(this.$store)
     service('domain-dependencies')(this.$store)
+    service('domain-collections')(this.$store)
+    service('domain-collections-domains')(this.$store)
     service('properties')(this.$store)
     service('properties-domains')(this.$store)
     service('properties-functions')(this.$store)
@@ -293,6 +403,13 @@ export default {
     service('systems')(this.$store)
   },
   methods: {
+    clearCurrent () {
+      // Empty to rerender
+      this.$store.commit('selectDomain', null)
+      this.$store.commit('selectProperty', null)
+      this.$store.commit('selectFunction', null)
+      this.$store.commit('selectDomainCollection', null)
+    },
     // Domains
     async newDomain () {
       const res = await this.$store.dispatch('domains/create', {
@@ -305,9 +422,7 @@ export default {
       this.domainNameEdit = domainId
     },
     async selectDomain (domain) {
-      this.$store.commit('selectDomain', null)
-      this.$store.commit('selectProperty', null)
-      this.$store.commit('selectFunction', null)
+      this.clearCurrent()
       if (this.$store.getters['domain-dependencies/list'].length === 0) {
         await this.$store.dispatch('domain-dependencies/find', { query: { domainId: this.$store.getters['domains/list'].map(item => item.id) }, clear: true })
       }
@@ -327,7 +442,33 @@ export default {
     deleteDomain (domain) {
       this.$store.dispatch('domains/remove', domain.id)
     },
-
+    // Domain Collections
+    async newDomainCollection () {
+      const res = await this.$store.dispatch('domain-collections/create', {
+        name: 'Domain Collection ' + (this.domainCollections.length + 1),
+        systemId: this.system.id
+      })
+      this.$nextTick(() => this.editDomainCollectionName(res.id))
+    },
+    editDomainCollectionName (domainCollectionId) {
+      this.domainCollectionNameEdit = domainCollectionId
+    },
+    selectDomainCollection (domainCollection) {
+      this.clearCurrent()
+      this.$nextTick(() => this.$store.commit('selectDomainCollection', domainCollection))
+      // if (this.$store.getters['domain-collections-domains/list'].length === 0) {
+      //   this.$store.commit('selectDomainCollection', )
+      //   await this.$store.dispatch('domain-collections-domains/find', {
+      //     query: {
+      //       domainCollectionId: domainCollection.id
+      //     },
+      //     $clear: true
+      //   })
+      // }
+    },
+    deleteDomainCollection (domainCollection) {
+      this.$store.dispatch('domain-collections/remove', domainCollection.id)
+    },
     // Properties
     newProperty () {
       this.newProp.systemId = this.system.id
