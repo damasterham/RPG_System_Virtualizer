@@ -4,6 +4,7 @@ export const state = () => ({
   modules: {},
   system: null,
   domain: null,
+  domainCollection: null,
   domainParentage: [],
   domainDependencyIds: [],
   property: null,

@@ -43,7 +43,7 @@
               <template v-for="instantiableDomain in instantiableDomains">
                 <v-list-item
                   :key="instantiableDomain.id"
-                  :input-value="domain && domain.id === instantiableDomain.id"
+                  :input-value="domain !== null && domain.id === instantiableDomain.id"
                   color="blue-grey lighten-1"
                   @click="selectConcept(instantiableDomain, 'domain')"
                 >
@@ -78,7 +78,7 @@
             right
             style="margin-top: 64px"
             top
-            @click="domain.id > 0 ? openNewDomainInstanceDialog() : openNewDomainCollectionInstanceDialog()"
+            @click="domain !== null ? openNewDomainInstanceDialog() : openNewDomainCollectionInstanceDialog()"
           >
             <v-icon v-if="!waitingForDataFetch" large>
               add
@@ -86,7 +86,7 @@
             <v-progress-circular v-else indeterminate color="accent" />
           </v-btn>
           <v-col
-            v-for="instance in tab === 0 ? domainCollectionInstances : instantiableDomainInstances"
+            v-for="instance in instanceList"
             :key="instance.id"
             cols="4"
           >
@@ -194,14 +194,13 @@ export default {
         return this.$store.state.domain
       },
       set (val) {
-        let dom = val
-        const parentage = [dom.id]
-        while (dom.parentDomainId !== null) {
-          parentage.push(dom.parentDomainId)
-          dom = this.$store.getters['domains/get'](dom.parentDomainId)
+        this.$store.commit('selectDomain', val)
+        const parentage = []
+        while (val.parentDomainId !== null) {
+          parentage.push(val.parentDomainId)
+          val = this.$store.getters['domains/get'](val.parentDomainId)
         }
         this.$store.commit('setDomainParentage', parentage)
-        this.$store.commit('selectDomain', val)
       }
     },
     domainCollection: {
@@ -218,7 +217,13 @@ export default {
     instantiableDomains () {
       return this.$store.getters['domains/list'].filter(item => item.instantiable)
     },
+    instanceList () {
+      return this.tab === 0
+        ? this.domainCollectionInstances
+        : this.instantiableDomainInstances
+    },
     domainCollectionInstances () {
+      if (this.domainCollection === null) { return [] }
       const list = []
       return list
         .concat(this.$store.getters['domain-collection-instances/list']
@@ -228,6 +233,7 @@ export default {
         })
     },
     instantiableDomainInstances () {
+      if (this.domain === null) { return [] }
       const list = []
       return list
         .concat(this.$store.getters['domain-instances/list']
@@ -263,17 +269,15 @@ export default {
   methods: {
     async openNewDomainInstanceDialog () {
       this.waitingForDataFetch = true
-      const parentage = [this.domain.id]
-      let dom = this.domain
-      while (dom.parentDomainId !== null) {
-        parentage.push(dom.parentDomainId)
-        dom = await this.$store.dispatch('domains/get', dom.parentDomainId)
-      }
       const properties = await this.$store.dispatch('properties/find', { query: {
-        domainId: parentage
+        domainId: [this.domain.id].concat(this.$store.state.domainParentage)
       },
       $clear: true })
       console.log('domain properties', properties)
+      await this.$store.dispatch('raw_values/find', { query: {
+        propertyId: properties.filter(item => item.referenceType === 'raw-value').map(item => item.id)
+      },
+      $clear: true })
       this.waitingForDataFetch = false
     },
     async openNewDomainCollectionInstanceDialog () {
