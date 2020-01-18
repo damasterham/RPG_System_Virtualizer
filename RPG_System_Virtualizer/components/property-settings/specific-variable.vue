@@ -42,41 +42,38 @@ export default {
   },
   computed: {
     references () {
-      let reference = {}
       let res = []
-      if (this.variable.referenceType === 'domain') {
-        reference = this.$store.getters['variables-domains/get'](this.variable.id, 'variableId')
-        if (reference && reference !== null) {
-          const props = this.$store.getters['properties/list'].filter((item) => {
-            return item.domainId === reference.domainId && item.dataType === this.dataType
-          })
-          const domain = this.$store.getters['domains/get'](props[0].domainId)
-          res = res.concat(props.map((item) => {
-            return {
-              name: domain.name.toUpperCase() + '.' + item.name,
-              id: item.id,
-              type: 'Property',
-              domainId: item.domainId
-            }
-          }))
-        }
+      const reference = this.$store.getters['variables-domains/get'](this.variable.id, 'variableId')
+      if (reference && reference !== null) {
+        const props = this.$store.getters['properties/list'].filter((item) => {
+          return item.domainId === reference.domainId && item.dataType === this.dataType
+        })
+        const domain = this.$store.getters['domains/get'](reference.domainId)
+        res = res.concat(props.map((item) => {
+          return {
+            name: domain.name.toUpperCase() + '.' + item.name,
+            id: item.id,
+            type: 'Property',
+            domainId: item.domainId
+          }
+        }))
       }
       return res
     }
   },
   async mounted () {
+    console.log('specific-variable mounted()', this.variable, this.property)
     await this.$store.dispatch('variables-domains/find', { query: { variableId: this.variable.id } })
     await this.$store.dispatch('property-specific-variables/find', { query: {
       variableId: this.variable.id, propertyId: this.property.id
-    },
-    $clear: true })
+    } })
   },
   methods: {
     updateSpecificVariable (e) {
       console.log('updateSpecificVariable e', e)
       let reference = this.$store.getters['property-specific-variables/get'](this.variable.id, 'variableId')
       if (reference && reference !== null) {
-        this.$store.dispatch('property-specific-variables/patch', [null, { propertyReferenceId: e.id }, { query: { variableId: reference.variableId } }])
+        this.$store.dispatch('property-specific-variables/patch', [null, { propertyReferenceId: e.id }, { query: { variableId: this.variable.id, propertyId: this.property.id } }])
       } else {
         reference = { variableId: this.variable.id, propertyId: this.property.id, propertyReferenceId: e.id }
         this.$store.dispatch('property-specific-variables/create', reference)

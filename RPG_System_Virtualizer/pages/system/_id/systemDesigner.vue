@@ -110,7 +110,7 @@
             <ListHeaderWithIconButton
             :key="">
           </v-list-item>
-          <v-divider />
+          <v-divider /> g
         </v-list>
         -->
       </template>
@@ -132,7 +132,7 @@
             <domainInheritance :domain="domain" style="height: 99%" />
           </v-col>
           <v-divider v-if="domain !== null" vertical />
-          <v-col id="Domain Overview" cols="3" style="max-height: 90.5vh; overflow-y: auto">
+          <v-col id="Domain Overview" cols="3" style="max-height: 90.6vh; overflow-y: auto">
             <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
             <domainOverview
               v-if="domain !== null"
@@ -145,15 +145,15 @@
             />
           </v-col>
           <v-divider v-if="domain !== null" vertical />
-          <v-col id="Property/Function Settings">
-            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', func === null ? '90.5vh' : 90.4 / 2 + 'vh')">
+          <v-col id="Property/Function Settings" style="height: 90.6vh; overflow-y: auto">
+            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', property === null ? '0px' : func === null ? '90.6vh' : 90.6 / 2 + 'vh')">
               <v-col v-if="property !== null" id="Property Settings" cols="12" style="height: 100%">
                 <!-- Property overview & settings -->
                 <propertySettings :domain="domain" :property="property" />
               </v-col>
             </v-row>
             <v-divider v-if="func !== null && property !== null" />
-            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', property === null ? '90.5vh' : 90.4 / 2 + 'vh')">
+            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', func === null ? '0px' : property === null ? '90.4vh' : 90.4 / 2 + 'vh')">
               <v-col v-if="func !== null" id="Function Settings" cols="12" style="height: 100%">
                 <!-- function overview & settings -->
                 <functionSettings :domain="domain" :func="func" />
@@ -162,50 +162,50 @@
           </v-col>
         </v-row>
       </v-container>
-
-      <!-------------------------------------------------------------- Dialogs -->
-      <!-- New property Dialog -->
-      <fillOutDialog :toggle="newPropDialog">
-        <template v-slot:content>
-          <v-form ref="newPropForm" v-model="newPropValid">
-            <v-text-field v-model="newPropName" :rules="rules" label="Property Name" @change="logIt(newPropName)" />
-            <v-autocomplete v-model="newPropType" :rules="rules" :items="dataTypes" label="Property Data Type" @change="logIt(newPropType)" />
-            <v-autocomplete v-model="newPropValue" :rules="rules" :items="valueTypes" label="Property Value Source" @change="logIt(newPropValue)" />
-          </v-form>
-        </template>
-        <template v-slot:buttons>
-          <v-spacer />
-          <SaveCancelButtons
-            cancel-button-text="Cancel"
-            commit-button-text="Create"
-            :disable-commit="!newPropValid"
-            @cancel="closeNewPropDialog()"
-            @commit="createNewProperty()"
-          />
-        </template>
-      </fillOutDialog>
-
-      <!-- New Function Dialog -->
-      <fillOutDialog :toggle="newFuncDialog">
-        <template v-slot:content>
-          <v-form ref="newFuncForm" v-model="newFuncValid">
-            <v-text-field v-model="newFuncName" :rules="rules" label="Function Name" />
-            <v-text-field readonly :value="newFuncType | capitalizeFirstLetter" />
-            <v-autocomplete v-model="newFuncDataType" :rules="rules" :items="selectableDataTypes" label="Function Data Type" />
-          </v-form>
-        </template>
-        <template v-slot:buttons>
-          <v-spacer />
-          <SaveCancelButtons
-            cancel-button-text="Cancel"
-            commit-button-text="Create"
-            :disable-commit="!newFuncValid"
-            @cancel="closeNewFuncDialog()"
-            @commit="createNewFunction()"
-          />
-        </template>
-      </fillOutDialog>
     </v-content>
+
+    <!-------------------------------------------------------------- Dialogs -->
+    <!-- New property Dialog -->
+    <fillOutDialog :toggle="newPropDialog">
+      <template v-slot:content>
+        <v-form ref="newPropForm" v-model="newPropValid">
+          <v-text-field v-model="newPropName" :rules="rules" label="Property Name" @change="logIt(newPropName)" />
+          <v-autocomplete v-model="newPropType" :rules="rules" :items="dataTypes" label="Property Data Type" @change="logIt(newPropType)" />
+          <v-autocomplete v-model="newPropValue" :rules="rules" :items="valueTypes" label="Property Value Source" @change="logIt(newPropValue)" />
+        </v-form>
+      </template>
+      <template v-slot:buttons>
+        <v-spacer />
+        <SaveCancelButtons
+          cancel-button-text="Cancel"
+          commit-button-text="Create"
+          :disable-commit="!newPropValid"
+          @cancel="closeNewPropDialog()"
+          @commit="createNewProperty()"
+        />
+      </template>
+    </fillOutDialog>
+
+    <!-- New Function Dialog -->
+    <fillOutDialog :toggle="newFuncDialog">
+      <template v-slot:content>
+        <v-form ref="newFuncForm" v-model="newFuncValid">
+          <v-text-field v-model="newFuncName" :rules="rules" label="Function Name" />
+          <v-text-field readonly :value="newFuncType | capitalizeFirstLetter" />
+          <v-autocomplete v-model="newFuncDataType" :rules="rules" :items="selectableDataTypes" label="Function Data Type" />
+        </v-form>
+      </template>
+      <template v-slot:buttons>
+        <v-spacer />
+        <SaveCancelButtons
+          cancel-button-text="Cancel"
+          commit-button-text="Create"
+          :disable-commit="!newFuncValid"
+          @cancel="closeNewFuncDialog()"
+          @commit="createNewFunction()"
+        />
+      </template>
+    </fillOutDialog>
   </v-app>
 </template>
 
@@ -424,15 +424,15 @@ export default {
     async selectDomain (domain) {
       this.clearCurrent()
       if (this.$store.getters['domain-dependencies/list'].length === 0) {
-        await this.$store.dispatch('domain-dependencies/find', { query: { } })
+        await this.$store.dispatch('domain-dependencies/find', { query: { domainId: this.$store.getters['domains/list'].map(item => item.id) }, clear: true })
       }
       this.$store.commit('setDomainDependencyIds', this.$store.getters['domain-dependencies/list'].filter(item => item.domainId === domain.id).map(item => item.domainDependencyId))
       await this.$store.dispatch('properties/find', { query: {
-        domainId: { $in: [domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds) }
+        domainId: [domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds)
       },
       $clear: true })
       await this.$store.dispatch('functions/find', { query: {
-        domainId: { $in: [domain.id].concat(this.$store.state.domainParentage) }, $sort: { name: 1 }
+        domainId: [domain.id].concat(this.$store.state.domainParentage), $sort: { name: 1 }
       },
       $clear: true })
       this.$nextTick(() => {

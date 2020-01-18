@@ -65,6 +65,9 @@ export const mutations = {
   selectFunction (state, data) {
     state.function = data
   },
+  setDomainParentage (state, data) {
+    state.domainParentage = data
+  },
   setDomainDependencyIds (state, data) {
     state.domainDependencyIds = data
   },

@@ -47,7 +47,9 @@ export default {
       console.log('setPropertyValue | ', e)
       propertiesClient.patch(this.property.id, {}, { query: { data: { referenceId: e.id, referenceType: this.property.referenceType } } }).then((res) => {
         console.log('propertiesClient result:', res)
-        this.$store.commit('properties-functions/updateItem', res)
+        this.$store.commit('properties-functions/updateItemWithKey',
+          { primaryIdentifier: 'propertyId', value: res }
+        )
       })
     }
   }

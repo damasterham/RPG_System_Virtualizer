@@ -1,13 +1,13 @@
 <template>
   <div style="margin-top: 10px; margin-left: 5px">
     <v-row no-gutters>
-      <v-chip outlined text-color="blue-grey lighten-2">
-        Function
-      </v-chip>
-      &nbsp;
       <span class="headline">
         {{ func.name }}
       </span>
+      <v-spacer />
+      <v-chip outlined text-color="blue-grey lighten-2">
+        Function
+      </v-chip>
     </v-row>
     <v-row no-gutters>
       <v-col style="margin-right: 4px">

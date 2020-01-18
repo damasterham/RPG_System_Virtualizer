@@ -169,7 +169,7 @@ export default {
     },
     openElementCreator () {
       this.$store.commit('selectSystem', this.system)
-      this.$router.push({ name: 'system-id-elementCreator', params: { id: this.system.id } })
+      this.$router.push({ name: 'system-id-contentCreator', params: { id: this.system.id } })
     },
     create () {
       this.$store.dispatch('systems/create', {
