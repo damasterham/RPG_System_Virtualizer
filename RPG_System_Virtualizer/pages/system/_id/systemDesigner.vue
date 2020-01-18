@@ -118,10 +118,18 @@
     <v-content>
       <appToolbar :title="system.name ? 'System Designer - ' + system.name : 'System Designer'" @toggleLeftDrawer="domainDrawer = !domainDrawer" />
       <v-container fluid>
-        <v-row dense style="height: 90.6vh">
+        <!-- Domain Collection -->
+        <v-row v-if="domainCollection !== null" dense style="height: 90.6vh">
+          <v-col cols="3" style="max-height: 90.5vh; overflow-y: auto">
+            <h2>Woop!</h2>
+            <domainCollection :domain-collection="domainCollection" style="height: 99%" />
+          </v-col>
+        </v-row>
+        <!-- Domain -->
+        <v-row v-if="domain !== null" dense style="height: 90.6vh">
           <v-col id="Domain Family Settings" cols="3" style="max-height: 90.5vh; overflow-y: auto">
             <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
-            <domainInheritance v-if="domain !== null" :domain="domain" style="height: 99%" />
+            <domainInheritance :domain="domain" style="height: 99%" />
           </v-col>
           <v-divider v-if="domain !== null" vertical />
           <v-col id="Domain Overview" cols="3" style="max-height: 90.5vh; overflow-y: auto">
@@ -204,6 +212,7 @@
 <script>
 import domainInheritance from '~/components/domain-inheritance.vue'
 import domainOverview from '~/components/domain-overview.vue'
+import domainCollection from '~/components/domain-collection.vue'
 import propertySettings from '~/components/property-settings.vue'
 import functionSettings from '~/components/function-settings.vue'
 import fillOutDialog from '~/components/fill-out-dialog.vue'
@@ -218,6 +227,7 @@ export default {
     appToolbar,
     domainInheritance,
     domainOverview,
+    domainCollection,
     fillOutDialog,
     functionSettings,
     leftDrawer,
@@ -324,6 +334,9 @@ export default {
     domain () {
       return this.$store.getters.getDomain()
     },
+    domainCollection () {
+      return this.$store.getters.getDomainCollection()
+    },
     property () {
       return this.$store.getters.getProperty()
     },
@@ -390,6 +403,13 @@ export default {
     service('systems')(this.$store)
   },
   methods: {
+    clearCurrent () {
+      // Empty to rerender
+      this.$store.commit('selectDomain', null)
+      this.$store.commit('selectProperty', null)
+      this.$store.commit('selectFunction', null)
+      this.$store.commit('selectDomainCollection', null)
+    },
     // Domains
     async newDomain () {
       const res = await this.$store.dispatch('domains/create', {
@@ -402,10 +422,7 @@ export default {
       this.domainNameEdit = domainId
     },
     async selectDomain (domain) {
-      // Empty to rerender
-      this.$store.commit('selectDomain', null)
-      this.$store.commit('selectProperty', null)
-      this.$store.commit('selectFunction', null)
+      this.clearCurrent()
       if (this.$store.getters['domain-dependencies/list'].length === 0) {
         await this.$store.dispatch('domain-dependencies/find', { query: { } })
       }
@@ -425,7 +442,6 @@ export default {
     deleteDomain (domain) {
       this.$store.dispatch('domains/remove', domain.id)
     },
-
     // Domain Collections
     async newDomainCollection () {
       const res = await this.$store.dispatch('domain-collections/create', {
@@ -437,15 +453,18 @@ export default {
     editDomainCollectionName (domainCollectionId) {
       this.domainCollectionNameEdit = domainCollectionId
     },
-    async selectDomainCollection (domainCollection) {
-      if (this.$store.getters['domain-collections-domains/list'].length === 0) {
-        await this.$store.dispatch('domain-collections-domains/find', {
-          query: {
-            domainCollectionId: domainCollection.id
-          },
-          $clear: true
-        })
-      }
+    selectDomainCollection (domainCollection) {
+      this.clearCurrent()
+      this.$nextTick(() => this.$store.commit('selectDomainCollection', domainCollection))
+      // if (this.$store.getters['domain-collections-domains/list'].length === 0) {
+      //   this.$store.commit('selectDomainCollection', )
+      //   await this.$store.dispatch('domain-collections-domains/find', {
+      //     query: {
+      //       domainCollectionId: domainCollection.id
+      //     },
+      //     $clear: true
+      //   })
+      // }
     },
     deleteDomainCollection (domainCollection) {
       this.$store.dispatch('domain-collections/remove', domainCollection.id)

@@ -4,6 +4,7 @@ export const state = () => ({
   modules: {},
   system: null,
   domain: null,
+  domainCollection: null,
   domainParentage: [],
   domainDependencyIds: [],
   property: null,
@@ -30,6 +31,9 @@ export const getters = {
   },
   getDomainDependencyIds: state => () => {
     return state.domainDependencyIds
+  },
+  getDomainCollection: state => () => {
+    return state.domainCollection
   }
 }
 export const mutations = {
@@ -41,6 +45,7 @@ export const mutations = {
   },
   selectDomain (state, data) {
     state.domain = data
+    // TODO: should be moved to methods in sepcific component
     if (data !== null && state.modules.domains) {
       let dom = data
       const parentage = []
@@ -50,6 +55,9 @@ export const mutations = {
       }
       state.domainParentage = parentage
     }
+  },
+  selectDomainCollection (state, data) {
+    state.domainCollection = data
   },
   selectProperty (state, data) {
     state.property = data
