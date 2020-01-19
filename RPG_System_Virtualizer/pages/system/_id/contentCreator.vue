@@ -329,8 +329,10 @@ export default {
         id: domainIds.map(item => item.domainId)
       },
       $clear: true })
+      const domainsIdMap = domains.map(domain => domain.id)
+      await this.$store.dispatch('domain-dependencies/find', { query: { domainId: domainsIdMap } })
       const props = await this.$store.dispatch('properties/find', { query: {
-        domainId: domains.map(item => item.id)
+        domainId: domainsIdMap
       },
       $clear: true })
       await this.$store.dispatch('raw-values/find', { query: {
@@ -410,7 +412,9 @@ export default {
         case 'Z-A': return this.sortAlphabetically(a, b, 'descending')
       }
     },
+    // Sorts domains of domainCollection in order of dependencies, so a domain's dependencies should all have come before it.
     sortDomainsOfCollection (collectionDomains = []) {
+      console.log('sortDomainOfCollection unordered', [...collectionDomains])
       const orderedList = []
       while (collectionDomains.length > 0) {
         const tempList = [ ...collectionDomains ]
@@ -421,6 +425,7 @@ export default {
           }
         })
       }
+      console.log('sortDomainOfCollection ordered', [...orderedList])
       return orderedList
     }
   }
