@@ -5,6 +5,7 @@ export const state = () => ({
   system: null,
   domain: null,
   domainCollection: null,
+  domainCollectionDomainIds: [],
   domainParentage: [],
   domainDependencyIds: [],
   property: null,
@@ -34,6 +35,9 @@ export const getters = {
   },
   getDomainCollection: state => () => {
     return state.domainCollection
+  },
+  getDomainCollectionDomainIds: state => () => {
+    return state.domainCollectionDomainIds
   }
 }
 export const mutations = {
@@ -45,19 +49,20 @@ export const mutations = {
   },
   selectDomain (state, data) {
     state.domain = data
-    // TODO: should be moved to methods in sepcific component
-    if (data !== null && state.modules.domains) {
-      let dom = data
-      const parentage = []
-      while (dom.parentDomainId !== null) {
-        parentage.push(dom.parentDomainId)
-        dom = this.getters['domains/get'](dom.parentDomainId)
-      }
-      state.domainParentage = parentage
-    }
   },
   selectDomainCollection (state, data) {
     state.domainCollection = data
+  },
+  setDomainCollectionDomainIds (state, data) {
+    state.domainCollectionDomainIds = data
+  },
+  addDomainCollectionDomainId (state, data) {
+    const index = state.domainCollectionDomainIds.findIndex(item => item === data)
+    if (index === -1) { state.domainCollectionDomainIds.push(data) }
+  },
+  removeDomainCollectionDomainId (state, data) {
+    const index = state.domainCollectionDomainIds.findIndex(item => item === data)
+    if (index > -1) { state.domainCollectionDomainIds.splice(index, 1) }
   },
   selectProperty (state, data) {
     state.property = data

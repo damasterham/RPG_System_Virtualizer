@@ -121,7 +121,6 @@
         <!-- Domain Collection -->
         <v-row v-if="domainCollection !== null" dense style="height: 90.6vh">
           <v-col cols="3" style="max-height: 90.5vh; overflow-y: auto">
-            <h2>Woop!</h2>
             <domainCollection :domain-collection="domainCollection" style="height: 99%" />
           </v-col>
         </v-row>
@@ -423,13 +422,24 @@ export default {
     },
     async selectDomain (domain) {
       this.clearCurrent()
+      // Heritage
+      let domainContext = domain
+      const parentage = []
+      while (domainContext.parentDomainId !== null) {
+        parentage.push(domainContext.parentDomainId)
+        domainContext = this.$store.getters['domains/get'](domainContext.parentDomainId)
+      }
+      this.$store.commit('setDomainParentage', parentage)
+      // Dependencies
       if (this.$store.getters['domain-dependencies/list'].length === 0) {
-        await this.$store.dispatch('domain-dependencies/find', { query: { domainId: this.$store.getters['domains/list'].map(item => item.id) }, clear: true })
+        await this.$store.dispatch('domain-dependencies/find', { query: { domainId: this.$store.getters['domains/list'].map(item => item.id) } })
       }
       this.$store.commit('setDomainDependencyIds', this.$store.getters['domain-dependencies/list'].filter(item => item.domainId === domain.id).map(item => item.domainDependencyId))
+      // Properties
       await this.$store.dispatch('properties/find', { query: {
         domainId: [domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds)
       },
+      // Functions
       $clear: true })
       await this.$store.dispatch('functions/find', { query: {
         domainId: [domain.id].concat(this.$store.state.domainParentage), $sort: { name: 1 }
@@ -441,6 +451,10 @@ export default {
     },
     deleteDomain (domain) {
       this.$store.dispatch('domains/remove', domain.id)
+      const d = this.$store.getters.getDomain()
+      if (d && d.id === domain.id) {
+        this.clearCurrent()
+      }
     },
     // Domain Collections
     async newDomainCollection () {
@@ -453,21 +467,24 @@ export default {
     editDomainCollectionName (domainCollectionId) {
       this.domainCollectionNameEdit = domainCollectionId
     },
-    selectDomainCollection (domainCollection) {
+    async selectDomainCollection (domainCollection) {
       this.clearCurrent()
+      const res = await this.$store.dispatch('domain-collections-domains/find', {
+        query: {
+          domainCollectionId: domainCollection.id
+        },
+        $clear: true
+      })
+      this.$store.commit('setDomainCollectionDomainIds', res.map(item => item.domainId))
+      // this.$store.commit('setDomainCollectionDomainIds',.map(item => item.domainId))
       this.$nextTick(() => this.$store.commit('selectDomainCollection', domainCollection))
-      // if (this.$store.getters['domain-collections-domains/list'].length === 0) {
-      //   this.$store.commit('selectDomainCollection', )
-      //   await this.$store.dispatch('domain-collections-domains/find', {
-      //     query: {
-      //       domainCollectionId: domainCollection.id
-      //     },
-      //     $clear: true
-      //   })
-      // }
     },
     deleteDomainCollection (domainCollection) {
       this.$store.dispatch('domain-collections/remove', domainCollection.id)
+      const dc = this.$store.getters.getDomainCollection()
+      if (dc && dc.id === domainCollection.id) {
+        this.clearCurrent()
+      }
     },
     // Properties
     newProperty () {

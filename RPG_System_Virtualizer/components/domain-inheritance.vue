@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-row>
+    <v-row no-gutters>
       <p class="title ml-3">
         {{ domain.name }}
       </p>
