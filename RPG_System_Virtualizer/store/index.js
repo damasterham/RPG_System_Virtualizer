@@ -74,7 +74,7 @@ export const mutations = {
     state.domainParentage = data
   },
   setDomainDependencyIds (state, data) {
-    state.domainDependencyIds = data
+    state.domainDependencyIds.splice(0, state.domainDependencyIds.length, ...data)
   },
   addDomainDependencyId (state, data) {
     const index = state.domainDependencyIds.findIndex(item => item === data)
