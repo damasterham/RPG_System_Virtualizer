@@ -156,6 +156,7 @@ export default {
     service('domain-collections-domains')(store)
     service('domain-collection-instances')(store)
     service('domains')(store)
+    service('domain-dependencies')(store)
     service('domain-instances')(store)
     service('properties')(store)
     service('property-instances')(store)
@@ -262,6 +263,7 @@ export default {
     service('domain-collections-domains')(this.$store)
     service('domain-collection-instances')(this.$store)
     service('domains')(this.$store)
+    service('domain-dependencies')(this.$store)
     service('domain-instances')(this.$store)
     service('properties')(this.$store)
     service('property-instances')(this.$store)
@@ -335,7 +337,7 @@ export default {
         propertyId: props.map(item => item.id)
       },
       $clear: true })
-      domains.forEach((domain) => {
+      this.sortDomainsOfCollection(domains).forEach((domain) => {
         const obj = {}
         obj.id = domain.id
         obj.name = domain.name
@@ -407,6 +409,19 @@ export default {
         case 'A-Z': return this.sortAlphabetically(a, b, 'ascending')
         case 'Z-A': return this.sortAlphabetically(a, b, 'descending')
       }
+    },
+    sortDomainsOfCollection (collectionDomains = []) {
+      const orderedList = []
+      while (collectionDomains.length > 0) {
+        const tempList = [ ...collectionDomains ]
+        tempList.forEach((item, index) => {
+          const itemDependencies = this.$store.getters['domain-dependencies/list'].filter(dep => dep.domainId === item.id)
+          if (itemDependencies.every(dep => orderedList.some(domain => domain.id === dep.domainDependencyId))) {
+            orderedList.push(...collectionDomains.splice(index, 1))
+          }
+        })
+      }
+      return orderedList
     }
   }
 }
