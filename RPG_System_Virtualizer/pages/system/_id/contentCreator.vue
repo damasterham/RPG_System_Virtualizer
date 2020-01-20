@@ -330,7 +330,7 @@ export default {
       },
       $clear: true })
       const domainsIdMap = domains.map(domain => domain.id)
-      await this.$store.dispatch('domain-dependencies/find', { query: { domainId: domainsIdMap } })
+      await this.$store.dispatch('domain-dependencies/find', { query: { domainId: domainsIdMap }, $clear: true })
       const props = await this.$store.dispatch('properties/find', { query: {
         domainId: domainsIdMap
       },
@@ -414,18 +414,17 @@ export default {
     },
     // Sorts domains of domainCollection in order of dependencies, so a domain's dependencies should all have come before it.
     sortDomainsOfCollection (collectionDomains = []) {
-      console.log('sortDomainOfCollection unordered', [...collectionDomains])
+      const collectionDependencies = this.$store.getters['domain-dependencies/list'].filter(dep => collectionDomains.some(item => item.id === dep.domainId))
       const orderedList = []
       while (collectionDomains.length > 0) {
         const tempList = [ ...collectionDomains ]
         tempList.forEach((item, index) => {
-          const itemDependencies = this.$store.getters['domain-dependencies/list'].filter(dep => dep.domainId === item.id)
+          const itemDependencies = collectionDependencies.filter(dep => dep.domainId === item.id)
           if (itemDependencies.every(dep => orderedList.some(domain => domain.id === dep.domainDependencyId))) {
             orderedList.push(...collectionDomains.splice(index, 1))
           }
         })
       }
-      console.log('sortDomainOfCollection ordered', [...orderedList])
       return orderedList
     }
   }
