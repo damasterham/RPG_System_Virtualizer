@@ -1,13 +1,13 @@
 <template>
   <div style="margin-left: 5px">
     <v-row no-gutters>
-      <v-chip outlined text-color="blue-grey lighten-2">
-        Property
-      </v-chip>
-      &nbsp;
       <span class="headline">
         {{ property.name }}
       </span>
+      <v-spacer />
+      <v-chip outlined text-color="blue-grey lighten-2">
+        Property
+      </v-chip>
     </v-row>
     <v-row no-gutters style="margin-top: 12px">
       <v-col style="margin-right: 4px">

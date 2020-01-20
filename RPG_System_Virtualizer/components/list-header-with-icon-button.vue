@@ -7,7 +7,7 @@
       <v-spacer />
       <v-tooltip right>
         <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on" @click="$emit('clicked')">
+          <v-btn :disabled="disabled" icon v-on="on" @click="$emit('clicked')">
             <v-icon>{{ icon }}</v-icon>
           </v-btn>
         </template>
@@ -25,6 +25,10 @@ export default {
     condition: {
       type: Boolean,
       default: true
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     },
     icon: {
       type: String,

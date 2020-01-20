@@ -14,7 +14,8 @@ module.exports = function (app) {
     // 0-1
     value: {
       type: DataTypes.FLOAT,
-      allowNull: false
+      allowNull: false,
+      defaultValue: 0.5
     }
   }, {
     hooks: {
@@ -32,7 +33,8 @@ module.exports = function (app) {
     equationRounder.belongsTo(models.functions, {
       foreignKey: {
         name: 'functionId'
-      }
+      },
+      onDelete: 'cascade'
     });
 
   };

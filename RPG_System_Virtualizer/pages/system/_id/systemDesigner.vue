@@ -1,62 +1,137 @@
 <template>
   <v-app>
-    <v-navigation-drawer v-model="domainDrawer" app>
-      <!-- List of all domains, add new / rename / delete domain functionality -->
-      <v-list dense shaped>
-        <v-list-item @click="newDomain()">
-          <v-list-item-title>
-            Add Domain
-          </v-list-item-title>
-          <v-list-item-action>
-            <v-icon>add</v-icon>
-          </v-list-item-action>
-        </v-list-item>
-        <v-divider />
-        <template v-for="item in domains">
-          <v-list-item :key="item.id" :input-value="domain && item.id === domain.id" color="blue-grey lighten-1" @click="selectDomain(item)">
-            <v-tooltip v-if="domainNameEdit !== item.id" right>
-              <template v-slot:activator="{ on }">
-                <v-list-item-title style="cursor: pointer" v-on="on">
-                  {{ item.name }}
-                </v-list-item-title>
-              </template>
-              <span>{{ item.name }}</span>
-            </v-tooltip>
-            <v-text-field
-              v-else
-              autofocus
-              :value="domainNameEditValue"
-              label="Domain Name"
-              @change="domainNameEditValue = $event"
-              @blur="domainNameEdit = 0"
-            />
-            <v-spacer />
-            <v-btn icon @click.stop="editDomainName(item.id)">
-              <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn icon @click.stop="deleteDomain(item)">
-              <v-icon>delete</v-icon>
-            </v-btn>
-          </v-list-item>
-          <v-divider :key="'divider' + item.id" />
-        </template>
-      </v-list>
-    </v-navigation-drawer>
-    <v-content>
-      <v-app-bar>
-        <v-app-bar-nav-icon clipped-left @click="domainDrawer = !domainDrawer">
-          <v-icon>menu</v-icon>
-        </v-app-bar-nav-icon>
-        <v-toolbar-title>System Designer{{ system.name ? ' - ' : '' }}{{ system.name }}</v-toolbar-title>
-      </v-app-bar>
-      <v-container fluid>
-        <v-row dense style="height: 90.6vh">
-          <v-col id="Domain Family Settings" cols="3">
-            <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
-            <domainInheritance v-if="domain !== null" :domain="domain" />
-          </v-col>
+    <leftDrawer :drawer="domainDrawer">
+      <template v-slot:default>
+        <!-- List of all domains, add new / rename / delete domain functionality -->
+        <v-tabs v-model="tab" fixed-tabs>
+          <v-tab>
+            Domain Collections
+          </v-tab>
           <v-divider vertical />
-          <v-col id="Domain Overview" cols="3">
+          <v-tab>
+            Domains
+          </v-tab>
+          <!-- Domain Collections -->
+          <v-tab-item>
+            <v-divider />
+            <v-list dense shaped>
+              <v-list-item @click="newDomainCollection()">
+                <v-list-item-title>
+                  Add Domain Collection
+                </v-list-item-title>
+                <v-list-item-action>
+                  <v-icon>add</v-icon>
+                </v-list-item-action>
+              </v-list-item>
+              <v-divider />
+              <template v-for="item in domainCollections">
+                <v-list-item :key="item.id" :input-value="domainCollection && item.id === domainCollection.id" color="blue-grey lighten-1" @click="selectDomainCollection(item)">
+                  <v-tooltip v-if="domainCollectionNameEdit !== item.id" right>
+                    <template v-slot:activator="{ on }">
+                      <v-list-item-title style="cursor: pointer" v-on="on">
+                        {{ item.name }}
+                      </v-list-item-title>
+                    </template>
+                    <span>{{ item.name }}</span>
+                  </v-tooltip>
+                  <v-text-field
+                    v-else
+                    autofocus
+                    :value="domainCollectionNameEditValue"
+                    label="Domain Collection Name"
+                    @change="domainCollectionNameEditValue = $event"
+                    @blur="domainCollectionNameEdit = 0"
+                  />
+                  <v-spacer />
+                  <v-btn icon @click.stop="editDomainCollectionName(item.id)">
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                  <v-btn icon @click.stop="deleteDomainCollection(item)">
+                    <v-icon>delete</v-icon>
+                  </v-btn>
+                </v-list-item>
+                <v-divider :key="'divider' + item.id" />
+              </template>
+            </v-list>
+          </v-tab-item>
+          <!-- Domains -->
+          <v-tab-item>
+            <v-divider />
+            <v-list dense shaped>
+              <v-list-item @click="newDomain()">
+                <v-list-item-title>
+                  Add Domain
+                </v-list-item-title>
+                <v-list-item-action>
+                  <v-icon>add</v-icon>
+                </v-list-item-action>
+              </v-list-item>
+              <v-divider />
+              <template v-for="item in domains">
+                <v-list-item :key="item.id" :input-value="domain && item.id === domain.id" color="blue-grey lighten-1" @click="selectDomain(item)">
+                  <v-tooltip v-if="domainNameEdit !== item.id" right>
+                    <template v-slot:activator="{ on }">
+                      <v-list-item-title style="cursor: pointer" v-on="on">
+                        {{ item.name }}
+                      </v-list-item-title>
+                    </template>
+                    <span>{{ item.name }}</span>
+                  </v-tooltip>
+                  <v-text-field
+                    v-else
+                    autofocus
+                    :value="domainNameEditValue"
+                    label="Domain Name"
+                    @change="domainNameEditValue = $event"
+                    @blur="domainNameEdit = 0"
+                  />
+                  <v-spacer />
+                  <v-btn icon @click.stop="editDomainName(item.id)">
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                  <v-btn icon @click.stop="deleteDomain(item)">
+                    <v-icon>delete</v-icon>
+                  </v-btn>
+                </v-list-item>
+                <v-divider :key="'divider' + item.id" />
+              </template>
+            </v-list>
+          </v-tab-item>
+        </v-tabs>
+        <!--
+        <v-list dense shaped>
+          <v-list-item>
+            <v-list-item-title>
+              Add Domain Collection
+              <v-list-item-action>
+                <v-icon>add</v-icon>
+              </v-list-item-action>
+            </v-list-item-title>
+            <ListHeaderWithIconButton
+            :key="">
+          </v-list-item>
+          <v-divider /> g
+        </v-list>
+        -->
+      </template>
+    </leftDrawer>
+    <v-content>
+      <appToolbar :title="system.name ? 'System Designer - ' + system.name : 'System Designer'" @toggleLeftDrawer="domainDrawer = !domainDrawer" />
+      <v-container fluid>
+        <!-- Domain Collection -->
+        <v-row v-if="domainCollection !== null" dense style="height: 90.6vh">
+          <v-col cols="5" style="max-height: 90.5vh; overflow-y: auto">
+            <domainCollection ref="domainCollection" :domain-collection="domainCollection" style="height: 99%" />
+          </v-col>
+        </v-row>
+        <!-- Domain -->
+        <v-row v-if="domain !== null" dense style="height: 90.6vh">
+          <v-col id="Domain Family Settings" cols="3" style="overflow-y: auto; max-height: 90.6vh">
+            <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
+            <domainInheritance :domain="domain" style="height: 99%" @circularDependencyError="triggerAlert('error', $event)" />
+          </v-col>
+          <v-divider v-if="domain !== null" vertical />
+          <v-col id="Domain Overview" cols="3" style="overflow-y: auto; max-height: 90.6vh">
             <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
             <domainOverview
               v-if="domain !== null"
@@ -68,87 +143,99 @@
               @newFunction="newFunction($event)"
             />
           </v-col>
-          <v-divider vertical />
-          <v-col id="Property/Function Settings">
-            <v-row no-gutters>
-              <v-col v-if="property !== null" id="Property Settings" cols="12">
+          <v-divider v-if="domain !== null" vertical />
+          <v-col id="Property/Function Settings" style="overflow-y: auto; height: 90.6vh">
+            <v-row no-gutters style="height: |x|; overflow-y: auto'.replace('|x|', property === null ? '0px' : func === null ? '90.6vh' : 90.6 / 2 + 'vh')">
+              <v-col v-if="property !== null" id="Property Settings" cols="12" style="height: 100%">
                 <!-- Property overview & settings -->
                 <propertySettings :domain="domain" :property="property" />
               </v-col>
             </v-row>
             <v-divider v-if="func !== null && property !== null" />
-            <v-row no-gutters>
-              <v-col v-if="func !== null" id="Function Settings" cols="12">
+            <v-row no-gutters style="height: |x|; overflow-y: auto'.replace('|x|', func === null ? '0px' : property === null ? '90.4vh' : 90.4 / 2 + 'vh')">
+              <v-col v-if="func !== null" id="Function Settings" cols="12" style="height: 100%">
                 <!-- function overview & settings -->
                 <functionSettings :domain="domain" :func="func" />
               </v-col>
             </v-row>
           </v-col>
         </v-row>
+        <v-alert v-model="alert" :type="alertType" text dismissible style="position: absolute; bottom: -10px; z-index: 10; width: 98.5%">
+          {{ alertText }}
+        </v-alert>
       </v-container>
-
-      <!-------------------------------------------------------------- Dialogs -->
-      <!-- New property Dialog -->
-      <fillOutDialog :toggle="newPropDialog">
-        <template v-slot:content>
-          <v-form ref="newPropForm" v-model="newPropValid">
-            <v-text-field v-model="newPropName" :rules="rules" label="Property Name" @change="logIt(newPropName)" />
-            <v-autocomplete v-model="newPropType" :rules="rules" :items="dataTypes" label="Property Data Type" @change="logIt(newPropType)" />
-            <v-autocomplete v-model="newPropValue" :rules="rules" :items="valueTypes" label="Property Value Source" @change="logIt(newPropValue)" />
-          </v-form>
-        </template>
-        <template v-slot:buttons>
-          <v-spacer />
-          <SaveCancelButtons
-            cancel-button-text="Cancel"
-            commit-button-text="Create"
-            :disable-commit="!newPropValid"
-            @cancel="closeNewPropDialog()"
-            @commit="createNewProperty()"
-          />
-        </template>
-      </fillOutDialog>
-
-      <!-- New Function Dialog -->
-      <fillOutDialog :toggle="newFuncDialog">
-        <template v-slot:content>
-          <v-form ref="newFuncForm" v-model="newFuncValid">
-            <v-text-field v-model="newFuncName" :rules="rules" label="Function Name" />
-            <v-text-field readonly :value="newFuncType | capitalizeFirstLetter" />
-            <v-autocomplete v-model="newFuncDataType" :rules="rules" :items="selectableDataTypes" label="Function Data Type" />
-          </v-form>
-        </template>
-        <template v-slot:buttons>
-          <v-spacer />
-          <SaveCancelButtons
-            cancel-button-text="Cancel"
-            commit-button-text="Create"
-            :disable-commit="!newFuncValid"
-            @cancel="closeNewFuncDialog()"
-            @commit="createNewFunction()"
-          />
-        </template>
-      </fillOutDialog>
     </v-content>
+
+    <!-------------------------------------------------------------- Dialogs -->
+    <!-- New property Dialog -->
+    <fillOutDialog :toggle="newPropDialog">
+      <template v-slot:content>
+        <v-form ref="newPropForm" v-model="newPropValid">
+          <v-text-field v-model="newPropName" :rules="rules" label="Property Name" @change="logIt(newPropName)" />
+          <v-autocomplete v-model="newPropType" :rules="rules" :items="dataTypes" label="Property Data Type" @change="logIt(newPropType)" />
+          <v-autocomplete v-model="newPropValue" :rules="rules" :items="valueTypes" label="Property Value Source" @change="logIt(newPropValue)" />
+        </v-form>
+      </template>
+      <template v-slot:buttons>
+        <v-spacer />
+        <SaveCancelButtons
+          cancel-button-text="Cancel"
+          commit-button-text="Create"
+          :disable-commit="!newPropValid"
+          @cancel="closeNewPropDialog()"
+          @commit="createNewProperty()"
+        />
+      </template>
+    </fillOutDialog>
+
+    <!-- New Function Dialog -->
+    <fillOutDialog :toggle="newFuncDialog">
+      <template v-slot:content>
+        <v-form ref="newFuncForm" v-model="newFuncValid">
+          <v-text-field v-model="newFuncName" :rules="rules" label="Function Name" />
+          <v-text-field readonly :value="newFuncType | capitalizeFirstLetter" />
+          <v-autocomplete v-model="newFuncDataType" :rules="rules" :items="selectableDataTypes" label="Function Data Type" />
+        </v-form>
+      </template>
+      <template v-slot:buttons>
+        <v-spacer />
+        <SaveCancelButtons
+          cancel-button-text="Cancel"
+          commit-button-text="Create"
+          :disable-commit="!newFuncValid"
+          @cancel="closeNewFuncDialog()"
+          @commit="createNewFunction()"
+        />
+      </template>
+    </fillOutDialog>
   </v-app>
 </template>
 
 <script>
 import domainInheritance from '~/components/domain-inheritance.vue'
 import domainOverview from '~/components/domain-overview.vue'
+import domainCollection from '~/components/domain-collection.vue'
 import propertySettings from '~/components/property-settings.vue'
 import functionSettings from '~/components/function-settings.vue'
 import fillOutDialog from '~/components/fill-out-dialog.vue'
 import SaveCancelButtons from '~/components/save-cancel-buttons.vue'
+import leftDrawer from '~/components/left-drawer.vue'
+import appToolbar from '~/components/app-toolbar.vue'
 
 import service from '~/plugins/feathers-service.js'
 
+import mHeritage from '~/components/mixins/heritage.js'
+import domainCollectionAddition from '~/components/mixins/domainCollectionAddition.js'
+
 export default {
   components: {
+    appToolbar,
     domainInheritance,
     domainOverview,
+    domainCollection,
     fillOutDialog,
     functionSettings,
+    leftDrawer,
     propertySettings,
     SaveCancelButtons
   },
@@ -157,10 +244,51 @@ export default {
       return val.charAt(0).toUpperCase() + val.substring(1)
     }
   },
+  mixins: [mHeritage, domainCollectionAddition],
+  async fetch ({ store, params }) {
+    service('domains')(store)
+    service('domain-dependencies')(store)
+    service('domain-collections')(store)
+    service('domain-collections-domains')(store)
+    service('properties')(store)
+    service('properties-domains')(store)
+    service('properties-functions')(store)
+    service('properties-properties')(store)
+    service('property-specific-variables')(store)
+    service('raw-values')(store)
+    service('functions')(store)
+    service('equation-rounder')(store)
+    service('variables')(store)
+    service('variables-domains')(store)
+    service('variables-functions')(store)
+    service('variables-properties')(store)
+    service('systems')(store)
+    if (store.state.system === null) {
+      const system = await store.dispatch('systems/get', params.id)
+      store.commit('selectSystem', system)
+    }
+    await store.dispatch('domains/find', {
+      query: {
+        systemId: store.state.system.id,
+        $sort: { name: 1 }
+      },
+      $clear: true
+    })
+    await store.dispatch('domain-collections/find', {
+      query: {
+        systemId: store.state.system.id,
+        $sort: { name: 1 }
+      },
+      $clear: true
+    })
+  },
   data () {
     return {
       domainDrawer: true,
       domainNameEdit: 0,
+      domainCollectionNameEdit: 0,
+      tab: 1,
+
       dataTypes: [
         { text: 'Decimal', value: 'float' },
         { text: 'Number', value: 'int' },
@@ -178,6 +306,11 @@ export default {
       rules: [
         v => !!v || 'Field is Required'
       ],
+
+      // Alert
+      showAlert: false,
+      alertType: undefined,
+      alertText: '',
 
       // New property
       newPropDialog: false,
@@ -197,6 +330,18 @@ export default {
     }
   },
   computed: {
+    alert: {
+      get () {
+        return this.showAlert
+      },
+      set (val) {
+        this.showAlert = val
+        if (!val) {
+          this.alertType = undefined
+          this.alertText = ''
+        }
+      }
+    },
     selectableDataTypes () {
       switch (this.newFuncType) {
         case 'equation': return this.dataTypes.filter(item => item.value !== 'string' && item.value !== 'boolean')
@@ -212,6 +357,9 @@ export default {
     domain () {
       return this.$store.getters.getDomain()
     },
+    domainCollection () {
+      return this.$store.getters.getDomainCollection()
+    },
     property () {
       return this.$store.getters.getProperty()
     },
@@ -220,6 +368,9 @@ export default {
     },
     domains () {
       return this.$store.getters['domains/list']
+    },
+    domainCollections () {
+      return this.$store.getters['domain-collections/list']
     },
     propertyMinFill () {
       return this.newPropName && this.newPropName !== null && this.newPropName !== '' &&
@@ -240,15 +391,31 @@ export default {
         this.$store.dispatch('domains/patch', [this.domainNameEdit, { name: value }])
         this.domainNameEdit = 0
       }
+    },
+    domainCollectionNameEditValue: {
+      get () {
+        const obj = this.domainCollections.find(item => item.id === this.domainCollectionNameEdit)
+        if (obj) { return obj.name }
+        return ''
+      },
+      set (value) {
+        this.$store.dispatch('domain-collections/patch', [this.domainCollectionNameEdit, { name: value }])
+        this.domainCollectionNameEdit = 0
+      }
     }
   },
   created () {
+    // console.log(this.$route)
+    // console.log(this.$router)
     service('domains')(this.$store)
     service('domain-dependencies')(this.$store)
+    service('domain-collections')(this.$store)
+    service('domain-collections-domains')(this.$store)
     service('properties')(this.$store)
     service('properties-domains')(this.$store)
     service('properties-functions')(this.$store)
     service('properties-properties')(this.$store)
+    service('property-specific-variables')(this.$store)
     service('raw-values')(this.$store)
     service('functions')(this.$store)
     service('equation-rounder')(this.$store)
@@ -258,19 +425,14 @@ export default {
     service('variables-properties')(this.$store)
     service('systems')(this.$store)
   },
-  async mounted () {
-    if (this.$store.state.system === null) {
-      const system = await this.$store.dispatch('systems/get', this.$route.params.id)
-      this.$store.commit('selectSystem', system)
-    }
-    this.$nextTick(async () => {
-      await this.$store.dispatch('domains/find', { query: {
-        systemId: this.system.id, $sort: { name: 1 }
-      },
-      $clear: true })
-    })
-  },
   methods: {
+    clearCurrent () {
+      // Empty to rerender
+      this.$store.commit('selectDomain', null)
+      this.$store.commit('selectProperty', null)
+      this.$store.commit('selectFunction', null)
+      this.$store.commit('selectDomainCollection', null)
+    },
     // Domains
     async newDomain () {
       const res = await this.$store.dispatch('domains/create', {
@@ -283,19 +445,30 @@ export default {
       this.domainNameEdit = domainId
     },
     async selectDomain (domain) {
-      this.$store.commit('selectDomain', null)
-      this.$store.commit('selectProperty', null)
-      this.$store.commit('selectFunction', null)
-      if (this.$store.getters['domain-dependencies/list'].length === 0) {
-        await this.$store.dispatch('domain-dependencies/find', { query: { }, clear: true })
+      this.clearCurrent()
+      // Heritage
+      let domainContext = domain
+      const parentage = []
+      while (domainContext.parentDomainId !== null) {
+        parentage.push(domainContext.parentDomainId)
+        domainContext = this.$store.getters['domains/get'](domainContext.parentDomainId)
       }
-      this.$store.commit('setDomainDependencyIds', this.$store.getters['domain-dependencies/list'].filter(item => item.domainId === domain.id).map(item => item.domainDependencyId))
+      this.$store.commit('setDomainParentage', parentage)
+      // Dependencies
+      if (this.$store.getters['domain-dependencies/list'].length === 0) {
+        await this.$store.dispatch('domain-dependencies/find', { query: { domainId: this.$store.getters['domains/list'].map(item => item.id) } })
+      }
+      this.$store.commit('setDomainDependencyIds', this.$store.getters['domain-dependencies/list']
+        .filter(item => item.domainId === domain.id)
+        .map(item => item.domainDependencyId))
+      // Properties
       await this.$store.dispatch('properties/find', { query: {
-        domainId: { $in: [domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds) }
+        domainId: [domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds)
       },
+      // Functions
       $clear: true })
       await this.$store.dispatch('functions/find', { query: {
-        domainId: { $in: [domain.id].concat(this.$store.state.domainParentage) }, $sort: { name: 1 }
+        domainId: [domain.id].concat(this.$store.state.domainParentage), $sort: { name: 1 }
       },
       $clear: true })
       this.$nextTick(() => {
@@ -304,8 +477,92 @@ export default {
     },
     deleteDomain (domain) {
       this.$store.dispatch('domains/remove', domain.id)
+      const d = this.$store.getters.getDomain()
+      if (d && d.id === domain.id) {
+        this.clearCurrent()
+      }
     },
+    // Domain Collections
+    async newDomainCollection () {
+      const res = await this.$store.dispatch('domain-collections/create', {
+        name: 'Domain Collection ' + (this.domainCollections.length + 1),
+        systemId: this.system.id
+      })
+      this.$nextTick(() => this.editDomainCollectionName(res.id))
+    },
+    editDomainCollectionName (domainCollectionId) {
+      this.domainCollectionNameEdit = domainCollectionId
+    },
+    async selectDomainCollection (domainCollection) {
+      this.clearCurrent()
 
+      // Gets domain collections domains for current domain collection
+      const res = await this.$store.dispatch('domain-collections-domains/find', {
+        query: {
+          domainCollectionId: domainCollection.id
+        },
+        $clear: true
+      })
+
+      // Component not loaded wont work
+      // res.forEach((dd) => {
+      //   this.$refs.domainCollection.addDomainToCollection({ id: dd.domainId })
+      // })
+
+      // res.forEach((dd) => {
+      //   this.m_addDomainToCollection({ id: dd.domainId })
+      // })
+
+      console.log('ADSADFSDHD', res)
+      // Don't commmit but add one at a time to ensure everything is there
+      // this.$store.commit('setPotentialDomainCollectionDomainIds', res.map(item => item.domainId))
+      this.$store.commit('setDomainCollectionDomainIds', res.map(item => item.domainId))
+
+      const domainIds = this.$store.getters.getDomainCollectionDomainIds()
+      const domains = this.$store.getters['domains/list'].filter(domain => domainIds.some(id => id === domain.id))
+      console.log('SD-DC-heri-d', [ ...domains ])
+      // const heritages = []
+      const heritages = await Promise.all(domains.map(domain => this.m_getHeritage(domain)))
+      // domains.forEach((domain) => {
+      //   heritages.push(this.m_getHeritage(domain))
+      // })
+
+      console.log('SD-DC-heri', [ ...heritages ])
+
+      const lotsOfLineage = heritages.flat() // heritages.map(heritage => heritage.map(id => id))
+      // const lotsOfLineage = new Set()
+      // heritages.forEach((heritage) => {
+      //   console.log('H', heritage)
+      //   heritage.forEach((id) => {
+      //     console.log('Hid', id)
+      //     lotsOfLineage.add(id)
+      //   })
+      // })
+
+      console.log('SD-DC-lineage', lotsOfLineage)
+      // Gets the dependencies of said domains
+      await this.$store.dispatch('domain-dependencies/find', {
+        query: {
+          domainId: lotsOfLineage
+        },
+        $clear: true
+      })
+
+      // TODO make a check premptive if the dependencies are fulfullied and either prompt user that they will be made
+      // or automatically make them and inform them with alert
+
+      // console.log('SD-DC-depen', resSet)
+
+      // this.$store.commit('setDomainCollectionDomainIds',.map(item => item.domainId))
+      this.$nextTick(() => this.$store.commit('selectDomainCollection', domainCollection))
+    },
+    deleteDomainCollection (domainCollection) {
+      this.$store.dispatch('domain-collections/remove', domainCollection.id)
+      const dc = this.$store.getters.getDomainCollection()
+      if (dc && dc.id === domainCollection.id) {
+        this.clearCurrent()
+      }
+    },
     // Properties
     newProperty () {
       this.newProp.systemId = this.system.id
@@ -347,6 +604,11 @@ export default {
       this.$store.commit('selectFunction', null)
       this.$nextTick(() => this.$store.commit('selectFunction', res))
       this.closeNewFuncDialog()
+    },
+    triggerAlert (type, text) {
+      this.alertText = text
+      this.alertType = type
+      this.showAlert = true
     },
 
     // Utility

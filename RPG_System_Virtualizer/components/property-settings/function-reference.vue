@@ -1,22 +1,40 @@
 <template>
   <v-row no-gutters>
-    <v-autocomplete
-      :value="functionReference"
-      label="Function Reference"
-      :items="propertyValues"
-      item-text="name"
-      return-object
-      @change="functionReference = $event"
-    />
+    <v-col>
+      <v-autocomplete
+        :value="functionReference"
+        label="Function Reference"
+        :items="propertyValues"
+        item-text="name"
+        return-object
+        @change="functionReference = $event"
+      />
+      <v-divider inset style="margin-right: 72px; margin-bottom: 10px" />
+      <template v-for="variable in functionVariables">
+        <specificVariable
+          v-if="variable.referenceType === 'domain'"
+          :key="variable.id"
+          :domain="$store.state.domain"
+          :function="func"
+          :variable="variable"
+          :property="property"
+          :data-type="property.dataType"
+        />
+      </template>
+    </v-col>
   </v-row>
 </template>
 
 <script>
+import specificVariable from '~/components/property-settings/specific-variable.vue'
 import client from '~/plugins/feathers-client.js'
 
 const propertiesClient = client.service('properties')
 
 export default {
+  components: {
+    specificVariable
+  },
   props: {
     propertyValues: {
       type: Array,
@@ -34,20 +52,41 @@ export default {
         if (functionReference) { return this.$store.getters['functions/get'](functionReference.functionId) }
         return null
       },
-      set (val) {
+      async set (val) {
         this.setPropertyValue(val)
+        if (this.$store.getters['variables/list'].filter(item => item.functionId === val.id).length === 0) {
+          await this.$store.dispatch('variables/find', { query: { functionId: val.id } })
+        }
       }
+    },
+    func () {
+      if (this.functionReference !== null) {
+        return this.$store.getters['functions/get'](this.functionReference.id)
+      } return {}
+    },
+    functionVariables () {
+      if (this.functionReference && this.functionReference !== null) {
+        console.log(this.functionReference)
+        return this.$store.getters['variables/list'].filter(item => item.functionId === this.functionReference.id)
+      }
+      return []
     }
   },
   async mounted () {
-    await this.$store.dispatch('properties-functions/find', { query: { propertyId: this.property.id }, $clear: true })
+    console.log(this.property)
+    const res = await this.$store.dispatch('properties-functions/find', { query: { propertyId: this.property.id }, $clear: true })
+    if (res && res.length > 0) {
+      console.log('function-reference mounted()', res, this.$store.state.function)
+      if (this.$store.state.function !== null && res[0].functionId === this.$store.state.function.id) {
+      } else if (this.$store.getters['variables/list'].filter(item => item.functionId === res[0].functionId).length === 0) { await this.$store.dispatch('variables/find', { query: { functionId: res[0].functionId } }) }
+    }
   },
   methods: {
     setPropertyValue (e) {
-      console.log('setPropertyValue | ', e)
       propertiesClient.patch(this.property.id, {}, { query: { data: { referenceId: e.id, referenceType: this.property.referenceType } } }).then((res) => {
-        console.log('propertiesClient result:', res)
-        this.$store.commit('properties-functions/updateItem', res)
+        this.$store.commit('properties-functions/updateItemWithKey',
+          { primaryIdentifier: 'propertyId', value: res }
+        )
       })
     }
   }

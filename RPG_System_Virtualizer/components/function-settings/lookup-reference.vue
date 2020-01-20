@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import Variable from '~/components/function-settings/variable.vue'
+import Variable from '~/components/variable.vue'
 export default {
   components: {
     Variable
