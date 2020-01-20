@@ -155,13 +155,23 @@ export default {
     service('domain-collections')(store)
     service('domain-collections-domains')(store)
     service('domain-collection-instances')(store)
-    service('domains')(store)
     service('domain-dependencies')(store)
     service('domain-instances')(store)
+    service('domains')(store)
+    service('equation-rounder')(store)
+    service('functions')(store)
     service('properties')(store)
+    service('properties-properties')(store)
+    service('properties-functions')(store)
+    service('properties-domains')(store)
     service('property-instances')(store)
+    service('property-specific-variables')(store)
     service('raw-values')(store)
     service('raw-value-instances')(store)
+    service('variables')(store)
+    service('variables-properties')(store)
+    service('variables-functions')(store)
+    service('variables-domains')(store)
     if (store.state.system === null) {
       const system = await store.dispatch('systems/get', params.id)
       store.commit('selectSystem', system)
@@ -237,6 +247,7 @@ export default {
     instantiableDomainInstances () {
       if (this.domain === null) { return [] }
       const list = []
+      // console.log(this.domain, this.$store.getters['domain-instances/list'].filter(item => item.domainId === this.domain.id))
       return list
         .concat(this.$store.getters['domain-instances/list']
           .filter(item => item.domainId === this.domain.id)
@@ -248,7 +259,7 @@ export default {
           const nameProperty = this.$store.getters['property-instances/list'].find((item) => {
             return item.name === 'Name'
           })
-          console.log(obj, nameProperty)
+          // console.log(obj, nameProperty)
           if (nameProperty) {
             const value = this.$store.getters['raw-value-instances/get'](nameProperty.id, 'propertyInstanceId')
             obj.name = value.value
@@ -262,17 +273,29 @@ export default {
     service('domain-collections')(this.$store)
     service('domain-collections-domains')(this.$store)
     service('domain-collection-instances')(this.$store)
-    service('domains')(this.$store)
     service('domain-dependencies')(this.$store)
     service('domain-instances')(this.$store)
+    service('domains')(this.$store)
+    service('equation-rounder')(this.$store)
+    service('functions')(this.$store)
     service('properties')(this.$store)
+    service('properties-properties')(this.$store)
+    service('properties-functions')(this.$store)
+    service('properties-domains')(this.$store)
     service('property-instances')(this.$store)
+    service('property-specific-variables')(this.$store)
     service('raw-values')(this.$store)
     service('raw-value-instances')(this.$store)
+    service('variables')(this.$store)
+    service('variables-properties')(this.$store)
+    service('variables-functions')(this.$store)
+    service('variables-domains')(this.$store)
   },
   methods: {
     closeNewDomainInstanceDialog () {
       this.newDomainInstanceDialog = false
+      this.formData.splice(0)
+      this.$store.commit('resetNewInstance')
     },
     async createNewDomainInstance () {
       const domainI = await this.$store.dispatch('domain-instances/create', {
@@ -296,12 +319,63 @@ export default {
       this.waitingForDataFetch = true
       this.formData.splice(0)
       const properties = this.$store.getters['properties/list']
+      const functions = await this.$store.dispatch('functions/find', { query: {
+        domainId: properties[0].domainId
+      },
+      $clear: true })
+      const functionIds = functions.map(func => func.id)
+      await this.$store.dispatch('equation-rounder/find', { query: {
+        functionId: functionIds
+      },
+      $clear: true })
+      const variables = await this.$store.dispatch('variables/find', { query: {
+        functionId: functionIds
+      },
+      $clear: true })
+      await this.$store.dispatch('variables-properties/find', {
+        variableId: variables
+          .filter(variable => variable.referenceType === 'property')
+          .map(variable => variable.id)
+      })
+      await this.$store.dispatch('variables-functions/find', { query: {
+        variableId: variables
+          .filter(variable => variable.referenceType === 'function')
+          .map(variable => variable.id)
+      } })
+      await this.$store.dispatch('variables-domains/find', { query: {
+        variableId: variables
+          .filter(variable => variable.referenceType === 'domain')
+          .map(variable => variable.id)
+      } })
+      await this.$store.dispatch('property-specific-variables/find', { query: {
+        variableId: variables
+          .map(item => item.id),
+        propertyId: properties
+          .filter(item => item.referenceType === 'function')
+          .map(item => item.id)
+      },
+      $clear: true })
       await this.$store.dispatch('raw-values/find', { query: {
         propertyId: properties
           .filter(item => item.referenceType === 'raw_value')
           .map(item => item.id)
       },
       $clear: true })
+      await this.$store.dispatch('properties-properties/find', { query: {
+        propertyId: properties
+          .filter(item => item.referenceType === 'property')
+          .map(item => item.id)
+      } })
+      await this.$store.dispatch('properties-functions/find', { query: {
+        propertyId: properties
+          .filter(item => item.referenceType === 'function')
+          .map(item => item.id)
+      } })
+      await this.$store.dispatch('properties-domains/find', { query: {
+        propertyId: properties
+          .filter(item => item.referenceType === 'domain')
+          .map(item => item.id)
+      } })
       properties.forEach((property) => {
         const data = {}
         data.id = property.id
@@ -313,32 +387,82 @@ export default {
         }
         this.formData.push(data)
       })
-      console.log('formData', this.formData)
+      // console.log('formData', this.formData)
+      this.$store.commit('scaffoldNewInstanceFields', this.formData)
       this.waitingForDataFetch = false
       this.newDomainInstanceDialog = true
     },
     async openNewDomainCollectionInstanceDialog () {
       this.waitingForDataFetch = true
       this.formData.splice(0)
-      const domainIds = await this.$store.dispatch('domain-collections-domains/find', { query: {
+      const domainReferences = await this.$store.dispatch('domain-collections-domains/find', { query: {
         domainCollectionId: this.domainCollection.id
       },
       $clear: true })
-      console.log(domainIds)
+      // console.log(domainReferences)
+      const domainReferencesMap = domainReferences.map(domainRef => domainRef.domainId)
       const domains = await this.$store.dispatch('domains/find', { query: {
-        id: domainIds.map(item => item.domainId)
+        id: domainReferencesMap
       },
       $clear: true })
-      const domainsIdMap = domains.map(domain => domain.id)
-      await this.$store.dispatch('domain-dependencies/find', { query: { domainId: domainsIdMap }, $clear: true })
+      await this.$store.dispatch('domain-dependencies/find', { query: {
+        domainId: domainReferencesMap
+      },
+      $clear: true })
       const props = await this.$store.dispatch('properties/find', { query: {
-        domainId: domainsIdMap
+        domainId: domainReferencesMap
+      },
+      $clear: true })
+      const functions = await this.$store.dispatch('functions/find', { query: {
+        domainId: domainReferencesMap
+      },
+      $clear: true })
+      const functionIds = functions.map(func => func.id)
+      await this.$store.dispatch('equation-rounder/find', { query: {
+        functionId: functionIds
+      },
+      $clear: true })
+      const variables = await this.$store.dispatch('variables/find', { query: {
+        functionId: functionIds
+      },
+      $clear: true })
+      await this.$store.dispatch('variables-properties/find', {
+        variableId: variables
+          .filter(variable => variable.referenceType === 'property')
+          .map(variable => variable.id)
+      })
+      await this.$store.dispatch('variables-functions/find', { query: {
+        variableId: variables
+          .filter(variable => variable.referenceType === 'function')
+          .map(variable => variable.id)
+      } })
+      await this.$store.dispatch('variables-domains/find', { query: {
+        variableId: variables
+          .filter(variable => variable.referenceType === 'domain')
+          .map(variable => variable.id)
+      } })
+      await this.$store.dispatch('property-specific-variables/find', { query: {
+        variableId: variables
+          .map(variable => variable.id),
+        propertyId: props
+          .filter(prop => prop.referenceType === 'function')
+          .map(prop => prop.id)
       },
       $clear: true })
       await this.$store.dispatch('raw-values/find', { query: {
-        propertyId: props.map(item => item.id)
+        propertyId: props.map(prop => prop.id)
       },
       $clear: true })
+      await this.$store.dispatch('properties-properties/find', { query: {
+        propertyId: props
+          .filter(prop => prop.referenceType === 'property')
+          .map(prop => prop.id)
+      } })
+      await this.$store.dispatch('properties-functions/find', { query: {
+        propertyId: props
+          .filter(prop => prop.referenceType === 'function')
+          .map(prop => prop.id)
+      } })
       this.sortDomainsOfCollection(domains).forEach((domain) => {
         const obj = {}
         obj.id = domain.id
@@ -349,7 +473,8 @@ export default {
           data.id = prop.id
           data.label = prop.name
           data.dataType = prop.dataType
-          if (prop.referenceType === 'raw_value') {
+          data.referenceType = prop.referenceType
+          if (data.referenceType === 'raw_value') {
             data.editable = true
             data.default = this.$store.getters['raw-values/get'](prop.id, 'propertyId').defaultValue
           }
@@ -357,7 +482,8 @@ export default {
         })
         this.formData.push(obj)
       })
-      console.log(this.formData)
+      // console.log('formData', this.formData)
+      this.$store.commit('scaffoldNewInstanceFields', this.formData)
       this.waitingForDataFetch = false
       this.newDomainCollectionInstanceDialog = true
     },
@@ -365,13 +491,14 @@ export default {
       await console.log(instance)
     },
     async selectConcept (concept, type) {
-      console.log(concept, type)
+      // console.log(concept, type)
       if (type === 'domain') {
         this.domainCollection = null // Clear selected domainCollection
         // Get Instances of selected Domain
         const domainI = await this.$store.dispatch('domain-instances/find', { query: {
           domainId: concept.id, domainCollectionId: null
-        } })
+        },
+        $clear: true })
         // Get property instances for all the domain instances
         await this.$store.dispatch('properties/find', { query: { domainId: concept.id }, $clear: true })
         const properties = await this.$store.dispatch('property-instances/find', { query: {
@@ -386,7 +513,7 @@ export default {
           const obj = {}
           obj.val = rawValProp.value
           obj.name = properties.find(item => item.id === rawValProp.propertyInstanceId)
-          console.log(obj.name, obj.val)
+          // console.log(obj.name, obj.val)
         })
         this.domain = concept
       } else {
@@ -397,11 +524,14 @@ export default {
         $clear: true })
         await this.$store.dispatch('domain-instances/find', { query: {
           domainCollectionInstanceId: domainCollections.map(item => item.id)
-        } })
+        },
+        $clear: true })
         this.domainCollection = concept
       }
     },
     sortAlphabetically (a, b, mode) {
+      if (!a.name) { a.name = '' }
+      if (!b.name) { b.name = '' }
       if (a.name.toLowerCase() < b.name.toLowerCase()) { return mode === 'ascending' ? -1 : 1 }
       if (a.name.toLowerCase() > b.name.toLowerCase()) { return mode === 'ascending' ? 1 : -1 }
       return 0

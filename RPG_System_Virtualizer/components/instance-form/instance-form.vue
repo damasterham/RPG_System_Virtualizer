@@ -1,8 +1,8 @@
 <template>
   <!-- Domain Instance -->
   <div v-if="instanceType === 'domain'" style="border: 2px solid #546E7A; border-radius: 10px; padding-left: 10px; padding-right: 10px">
-    <p class="title mb-2 mt-2">
-      New {{ this.$store.state.domain.name }} Instance
+    <p v-if="$store.state.domain" class="title mb-2 mt-2">
+      New {{ $store.state.domain.name }} Instance
     </p>
     <v-divider />
     <v-form>
@@ -40,7 +40,14 @@
               <div style="border: 2px solid #546E7A; border-radius: 10px; padding-left: 10px; padding-right: 10px">
                 <v-form>
                   <template v-for="(prop, propIndex) in step.props">
-                    <components :is="prop.component" :key="prop.id" :ref="'property_' + prop.id" :data="prop" @change="validityUpdate($event, propIndex)" />
+                    <components
+                      :is="prop.component"
+                      :key="prop.id"
+                      :ref="'property_' + prop.id"
+                      :references="$refs"
+                      :data="prop"
+                      @change="validityUpdate($event, propIndex)"
+                    />
                   </template>
                 </v-form>
               </div>
@@ -85,21 +92,15 @@ export default {
   data () {
     return {
       currentStep: 1,
-      mounted: false,
       validity: []
     }
   },
   computed: {
     valid () {
-      Object.keys(this.$refs).forEach((key) => {
-        if (!this.$refs[key].valid) { return false }
-      })
-      return true
+      return Object.keys(this.$refs).every(key => this.$refs[key].valid)
     },
     currentStepValid () {
-      return this.validity.every((item) => {
-        return item
-      })
+      return this.validity.every(item => item)
     },
     dataset () {
       // modify Dataset to include things such as rules, etc.
@@ -139,16 +140,17 @@ export default {
     }
   },
   mounted () {
-    console.log(this.dataset)
-    this.dataset[this.currentStep - 1].props.forEach(item => this.validity.push(item.default !== undefined && item.default !== null))
-    this.mounted = true
+    // console.log(this.dataset)
+    if (this.dataset[0].props) {
+      this.dataset[this.currentStep - 1].props.forEach(item => this.validity.push(item.default !== undefined && item.default !== null))
+    }
   },
   methods: {
     validityUpdate (e, index) {
       this.validity.splice(index, 1, e)
     },
     changeScreen (mod) {
-      console.log(this.currentStep, mod, this.currentStep + mod)
+      // console.log(this.currentStep, mod, this.currentStep + mod)
       this.validity.splice(0)
       this.dataset[this.currentStep - 1 + mod].props.forEach((item, index) => {
         if (this.$refs['property_' + item.id] && this.$refs['property_' + item.id][0].value) {
@@ -156,10 +158,10 @@ export default {
         } else { this.validity.push(item.default !== undefined && item.default !== null) }
       })
       this.currentStep += mod
-      console.log(this.validity)
+      // console.log(this.validity)
     },
     isNotUndefined (v) {
-      return !!v || 'Must not be empty!'
+      return (v === 0 || !!v) || 'Must not be empty!'
     },
     isNotNull (v) {
       return v !== null || 'Must not be empty'
