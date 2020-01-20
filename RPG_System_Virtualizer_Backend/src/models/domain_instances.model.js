@@ -6,10 +6,6 @@ const DataTypes = Sequelize.DataTypes;
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelize');
   const domainInstances = sequelizeClient.define('domain_instances', {
-    domainCollectionId: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
     version: {
       type: DataTypes.TEXT,
       allowNull: false,

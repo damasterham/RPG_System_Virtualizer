@@ -120,19 +120,18 @@
       <v-container fluid>
         <!-- Domain Collection -->
         <v-row v-if="domainCollection !== null" dense style="height: 90.6vh">
-          <v-col cols="3" style="max-height: 90.5vh; overflow-y: auto">
-            <h2>Woop!</h2>
-            <domainCollection :domain-collection="domainCollection" style="height: 99%" />
+          <v-col cols="5" style="max-height: 90.5vh; overflow-y: auto">
+            <domainCollection ref="domainCollection" :domain-collection="domainCollection" style="height: 99%" />
           </v-col>
         </v-row>
         <!-- Domain -->
         <v-row v-if="domain !== null" dense style="height: 90.6vh">
-          <v-col id="Domain Family Settings" cols="3" style="max-height: 90.5vh; overflow-y: auto">
+          <v-col id="Domain Family Settings" cols="3" style="overflow-y: auto; max-height: 90.6vh">
             <!-- Add domain parent and dependencies, as well as overview and removal of dependencies -->
-            <domainInheritance :domain="domain" style="height: 99%" />
+            <domainInheritance :domain="domain" style="height: 99%" @circularDependencyError="triggerAlert('error', $event)" />
           </v-col>
           <v-divider v-if="domain !== null" vertical />
-          <v-col id="Domain Overview" cols="3" style="max-height: 90.6vh; overflow-y: auto">
+          <v-col id="Domain Overview" cols="3" style="overflow-y: auto; max-height: 90.6vh">
             <!-- Overview of properties and functions in the domain, add new / rename / delete properties/functions functionality -->
             <domainOverview
               v-if="domain !== null"
@@ -145,15 +144,15 @@
             />
           </v-col>
           <v-divider v-if="domain !== null" vertical />
-          <v-col id="Property/Function Settings" style="height: 90.6vh; overflow-y: auto">
-            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', property === null ? '0px' : func === null ? '90.6vh' : 90.6 / 2 + 'vh')">
+          <v-col id="Property/Function Settings" style="overflow-y: auto; height: 90.6vh">
+            <v-row no-gutters style="height: |x|; overflow-y: auto'.replace('|x|', property === null ? '0px' : func === null ? '90.6vh' : 90.6 / 2 + 'vh')">
               <v-col v-if="property !== null" id="Property Settings" cols="12" style="height: 100%">
                 <!-- Property overview & settings -->
                 <propertySettings :domain="domain" :property="property" />
               </v-col>
             </v-row>
             <v-divider v-if="func !== null && property !== null" />
-            <v-row no-gutters :style="'height: |x|; overflow-y: auto'.replace('|x|', func === null ? '0px' : property === null ? '90.4vh' : 90.4 / 2 + 'vh')">
+            <v-row no-gutters style="height: |x|; overflow-y: auto'.replace('|x|', func === null ? '0px' : property === null ? '90.4vh' : 90.4 / 2 + 'vh')">
               <v-col v-if="func !== null" id="Function Settings" cols="12" style="height: 100%">
                 <!-- function overview & settings -->
                 <functionSettings :domain="domain" :func="func" />
@@ -161,6 +160,9 @@
             </v-row>
           </v-col>
         </v-row>
+        <v-alert v-model="alert" :type="alertType" text dismissible style="position: absolute; bottom: -10px; z-index: 10; width: 98.5%">
+          {{ alertText }}
+        </v-alert>
       </v-container>
     </v-content>
 
@@ -222,6 +224,9 @@ import appToolbar from '~/components/app-toolbar.vue'
 
 import service from '~/plugins/feathers-service.js'
 
+import mHeritage from '~/components/mixins/heritage.js'
+import domainCollectionAddition from '~/components/mixins/domainCollectionAddition.js'
+
 export default {
   components: {
     appToolbar,
@@ -239,6 +244,7 @@ export default {
       return val.charAt(0).toUpperCase() + val.substring(1)
     }
   },
+  mixins: [mHeritage, domainCollectionAddition],
   async fetch ({ store, params }) {
     service('domains')(store)
     service('domain-dependencies')(store)
@@ -301,6 +307,11 @@ export default {
         v => !!v || 'Field is Required'
       ],
 
+      // Alert
+      showAlert: false,
+      alertType: undefined,
+      alertText: '',
+
       // New property
       newPropDialog: false,
       newPropValid: false,
@@ -319,6 +330,18 @@ export default {
     }
   },
   computed: {
+    alert: {
+      get () {
+        return this.showAlert
+      },
+      set (val) {
+        this.showAlert = val
+        if (!val) {
+          this.alertType = undefined
+          this.alertText = ''
+        }
+      }
+    },
     selectableDataTypes () {
       switch (this.newFuncType) {
         case 'equation': return this.dataTypes.filter(item => item.value !== 'string' && item.value !== 'boolean')
@@ -423,13 +446,26 @@ export default {
     },
     async selectDomain (domain) {
       this.clearCurrent()
-      if (this.$store.getters['domain-dependencies/list'].length === 0) {
-        await this.$store.dispatch('domain-dependencies/find', { query: { domainId: this.$store.getters['domains/list'].map(item => item.id) }, clear: true })
+      // Heritage
+      let domainContext = domain
+      const parentage = []
+      while (domainContext.parentDomainId !== null) {
+        parentage.push(domainContext.parentDomainId)
+        domainContext = this.$store.getters['domains/get'](domainContext.parentDomainId)
       }
-      this.$store.commit('setDomainDependencyIds', this.$store.getters['domain-dependencies/list'].filter(item => item.domainId === domain.id).map(item => item.domainDependencyId))
+      this.$store.commit('setDomainParentage', parentage)
+      // Dependencies
+      if (this.$store.getters['domain-dependencies/list'].length === 0) {
+        await this.$store.dispatch('domain-dependencies/find', { query: { domainId: this.$store.getters['domains/list'].map(item => item.id) } })
+      }
+      this.$store.commit('setDomainDependencyIds', this.$store.getters['domain-dependencies/list']
+        .filter(item => item.domainId === domain.id)
+        .map(item => item.domainDependencyId))
+      // Properties
       await this.$store.dispatch('properties/find', { query: {
         domainId: [domain.id].concat(this.$store.state.domainParentage).concat(this.$store.state.domainDependencyIds)
       },
+      // Functions
       $clear: true })
       await this.$store.dispatch('functions/find', { query: {
         domainId: [domain.id].concat(this.$store.state.domainParentage), $sort: { name: 1 }
@@ -441,6 +477,10 @@ export default {
     },
     deleteDomain (domain) {
       this.$store.dispatch('domains/remove', domain.id)
+      const d = this.$store.getters.getDomain()
+      if (d && d.id === domain.id) {
+        this.clearCurrent()
+      }
     },
     // Domain Collections
     async newDomainCollection () {
@@ -453,21 +493,75 @@ export default {
     editDomainCollectionName (domainCollectionId) {
       this.domainCollectionNameEdit = domainCollectionId
     },
-    selectDomainCollection (domainCollection) {
+    async selectDomainCollection (domainCollection) {
       this.clearCurrent()
-      this.$nextTick(() => this.$store.commit('selectDomainCollection', domainCollection))
-      // if (this.$store.getters['domain-collections-domains/list'].length === 0) {
-      //   this.$store.commit('selectDomainCollection', )
-      //   await this.$store.dispatch('domain-collections-domains/find', {
-      //     query: {
-      //       domainCollectionId: domainCollection.id
-      //     },
-      //     $clear: true
+
+      // Gets domain collections domains for current domain collection
+      const res = await this.$store.dispatch('domain-collections-domains/find', {
+        query: {
+          domainCollectionId: domainCollection.id
+        },
+        $clear: true
+      })
+
+      // Component not loaded wont work
+      // res.forEach((dd) => {
+      //   this.$refs.domainCollection.addDomainToCollection({ id: dd.domainId })
+      // })
+
+      // res.forEach((dd) => {
+      //   this.m_addDomainToCollection({ id: dd.domainId })
+      // })
+
+      console.log('ADSADFSDHD', res)
+      // Don't commmit but add one at a time to ensure everything is there
+      // this.$store.commit('setPotentialDomainCollectionDomainIds', res.map(item => item.domainId))
+      this.$store.commit('setDomainCollectionDomainIds', res.map(item => item.domainId))
+
+      const domainIds = this.$store.getters.getDomainCollectionDomainIds()
+      const domains = this.$store.getters['domains/list'].filter(domain => domainIds.some(id => id === domain.id))
+      console.log('SD-DC-heri-d', [ ...domains ])
+      // const heritages = []
+      const heritages = await Promise.all(domains.map(domain => this.m_getHeritage(domain)))
+      // domains.forEach((domain) => {
+      //   heritages.push(this.m_getHeritage(domain))
+      // })
+
+      console.log('SD-DC-heri', [ ...heritages ])
+
+      const lotsOfLineage = heritages.flat() // heritages.map(heritage => heritage.map(id => id))
+      // const lotsOfLineage = new Set()
+      // heritages.forEach((heritage) => {
+      //   console.log('H', heritage)
+      //   heritage.forEach((id) => {
+      //     console.log('Hid', id)
+      //     lotsOfLineage.add(id)
       //   })
-      // }
+      // })
+
+      console.log('SD-DC-lineage', lotsOfLineage)
+      // Gets the dependencies of said domains
+      await this.$store.dispatch('domain-dependencies/find', {
+        query: {
+          domainId: lotsOfLineage
+        },
+        $clear: true
+      })
+
+      // TODO make a check premptive if the dependencies are fulfullied and either prompt user that they will be made
+      // or automatically make them and inform them with alert
+
+      // console.log('SD-DC-depen', resSet)
+
+      // this.$store.commit('setDomainCollectionDomainIds',.map(item => item.domainId))
+      this.$nextTick(() => this.$store.commit('selectDomainCollection', domainCollection))
     },
     deleteDomainCollection (domainCollection) {
       this.$store.dispatch('domain-collections/remove', domainCollection.id)
+      const dc = this.$store.getters.getDomainCollection()
+      if (dc && dc.id === domainCollection.id) {
+        this.clearCurrent()
+      }
     },
     // Properties
     newProperty () {
@@ -510,6 +604,11 @@ export default {
       this.$store.commit('selectFunction', null)
       this.$nextTick(() => this.$store.commit('selectFunction', res))
       this.closeNewFuncDialog()
+    },
+    triggerAlert (type, text) {
+      this.alertText = text
+      this.alertType = type
+      this.showAlert = true
     },
 
     // Utility

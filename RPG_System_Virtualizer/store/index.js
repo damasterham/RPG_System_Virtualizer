@@ -2,10 +2,14 @@ import Vue from 'vue'
 // eslint-disable-next-line
 import feathersClient from '~/plugins/feathers-client.js'
 export const state = () => ({
+  // Generic service modules
   modules: {},
+  // Specific selected services
   system: null,
   domain: null,
   domainCollection: null,
+  potentialDomainCollectionDomainIds: [],
+  domainCollectionDomainIds: [],
   domainParentage: [],
   domainDependencyIds: [],
   property: null,
@@ -37,6 +41,12 @@ export const getters = {
   getDomainCollection: state => () => {
     return state.domainCollection
   },
+  getPotentialDomainCollectionDomainIds: state => () => {
+    return state.potentialDomainCollectionDomainIds
+  },
+  getDomainCollectionDomainIds: state => () => {
+    return state.domainCollectionDomainIds
+  },
   getNewInstance: state => () => {
     return state.newInstance
   },
@@ -62,19 +72,23 @@ export const mutations = {
   },
   selectDomain (state, data) {
     state.domain = data
-    // TODO: should be moved to methods in specific component
-    if (data !== null && state.modules.domains) {
-      let dom = data
-      const parentage = []
-      while (dom.parentDomainId !== null) {
-        parentage.push(dom.parentDomainId)
-        dom = this.getters['domains/get'](dom.parentDomainId)
-      }
-      state.domainParentage = parentage
-    }
   },
   selectDomainCollection (state, data) {
     state.domainCollection = data
+  },
+  setDomainCollectionDomainIds (state, data) {
+    state.domainCollectionDomainIds = data
+  },
+  // setPotentialDomainCollectionDomainIds (state, data) {
+  //   state.potentialDomainCollectionDomainIds = data
+  // },
+  addDomainCollectionDomainId (state, data) {
+    const index = state.domainCollectionDomainIds.findIndex(item => item === data)
+    if (index === -1) { state.domainCollectionDomainIds.push(data) }
+  },
+  removeDomainCollectionDomainId (state, data) {
+    const index = state.domainCollectionDomainIds.findIndex(item => item === data)
+    if (index > -1) { state.domainCollectionDomainIds.splice(index, 1) }
   },
   selectProperty (state, data) {
     state.property = data
@@ -86,7 +100,7 @@ export const mutations = {
     state.domainParentage = data
   },
   setDomainDependencyIds (state, data) {
-    state.domainDependencyIds = data
+    state.domainDependencyIds.splice(0, state.domainDependencyIds.length, ...data)
   },
   addDomainDependencyId (state, data) {
     const index = state.domainDependencyIds.findIndex(item => item === data)

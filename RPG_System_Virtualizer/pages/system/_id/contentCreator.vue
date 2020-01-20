@@ -142,6 +142,7 @@ import instanceForm from '~/components/instance-form/instance-form.vue'
 import leftDrawer from '~/components/left-drawer.vue'
 import saveCancelButtons from '~/components/save-cancel-buttons.vue'
 import service from '~/plugins/feathers-service.js'
+import mHeritage from '~/components/mixins/heritage.js'
 export default {
   components: {
     appToolbar,
@@ -150,6 +151,7 @@ export default {
     leftDrawer,
     saveCancelButtons
   },
+  mixins: [mHeritage],
   async fetch ({ store, params }) {
     service('systems')(store)
     service('domain-collections')(store)
@@ -500,7 +502,10 @@ export default {
         },
         $clear: true })
         // Get property instances for all the domain instances
-        await this.$store.dispatch('properties/find', { query: { domainId: concept.id }, $clear: true })
+        await this.$store.dispatch('properties/find', { query: {
+          domainId: concept.id
+        },
+        $clear: true })
         const properties = await this.$store.dispatch('property-instances/find', { query: {
           domainInstanceId: domainI.map(item => item.id)
         },

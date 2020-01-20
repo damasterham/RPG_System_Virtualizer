@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-row>
+    <v-row no-gutters>
       <p class="title ml-3">
         {{ domain.name }}
       </p>
@@ -32,6 +32,7 @@
       @change="parentDomain = $event"
     />
     <v-autocomplete
+      ref="dependencySelect"
       v-model="dependencies"
       :disabled="instantiableDomain"
       label="Add Dependency..."
@@ -70,7 +71,9 @@ export default {
   },
   data () {
     return {
-      parent: { name: '' }
+      parent: { name: '' },
+      circularDependencyAlert: false,
+      errorMessage: ''
     }
   },
   computed: {
@@ -83,11 +86,13 @@ export default {
       }
     },
     domains () {
-      const list = this.$store.getters['domains/list'].filter((item) => {
-        return item.id !== this.domain.id &&
-          !this.dependencies.some(dependency => dependency === item.id)
-      })
-      this.$store.state.domainParentage.forEach(parent => list.splice(list.findIndex(item => item.id === parent.id), 1))
+      const list = this.$store.getters['domains/list']
+        .filter((item) => {
+          return item.id !== this.domain.id &&
+            !this.dependencies.some(dependency => dependency === item.id)
+        })
+      console.log(this.$store.state.domainParentage)
+      this.$store.state.domainParentage.forEach(parent => list.splice(list.findIndex(item => item.id === parent), 1))
       return list
     },
     instantiableDomain: {
@@ -117,7 +122,7 @@ export default {
     parentDomain: {
       get () {
         if (this.domain.parentDomainId === null) { return '' }
-        const res = this.$store.getters['domains/get'](this.domain.parentDomainId).name
+        const res = this.$store.getters['domains/get'](this.domain.parentDomainId)
         return res
       },
       set (value) {
@@ -130,19 +135,32 @@ export default {
     if (this.domain.parentDomainId) { this.$refs.parentSelect.setValue(this.domain.parentDomainId) }
   },
   methods: {
-    handleCircularDependencyError (source) {
+    handleCircularDependencyError (source, selectedDomain, containingDomain) {
       // This is where we would handle circular dependencies
+      switch (source) {
+        case 'parent': this.$refs.parentSelect.setValue(this.domain.parentDomainId); break
+        case 'dependency': this.$refs.dependencySelect.setValue(null); break
+      }
+      this.$emit('circularDependencyError', `You cannot select ${containingDomain.name} as a ${source}, because it lists ${this.domain.name} as a dependency or as part of its parentage`)
     },
     async setDomainParent (value) {
+      console.log('setDomainParent', value)
       if (value !== null) {
         const circularDependency = this.checkForCircularDependency(this.domain.id, this.$store.getters['domains/get'](value))
         if (circularDependency) {
           // handle circular dependency error
-          this.handleCircularDependencyError('parent')
+          this.handleCircularDependencyError('parent', this.$store.getters['domains/get'](value), circularDependency)
           return
         }
       }
       const res = await this.$store.dispatch('domains/patch', [this.domain.id, { parentDomainId: value }])
+      const parentage = []
+      let domainContext = res
+      while (domainContext.parentDomainId !== null) {
+        parentage.push(domainContext.parentDomainId)
+        domainContext = this.$store.getters['domains/get'](domainContext.parentDomainId)
+      }
+      this.$store.commit('setDomainParentage', parentage)
       this.$store.commit('selectDomain', res)
       this.$store.dispatch('properties/find', { query: { domainId: [res.id].concat(this.$store.state.domainParentage).concat(this.dependencies) }, $clear: true })
       this.$store.dispatch('functions/find', { query: { domainId: [res.id].concat(this.$store.state.domainParentage) }, $clear: true })
@@ -151,10 +169,11 @@ export default {
       })
     },
     addDomainDependency (value) {
+      if (value === null) { return }
       const circularDependency = this.checkForCircularDependency(this.domain.id, this.$store.getters['domains/get'](value))
       if (circularDependency) {
         // handle circular dependency error
-        this.handleCircularDependencyError('dependency')
+        this.handleCircularDependencyError('dependency', this.$store.getters['domains/get'](value), circularDependency)
       } else {
         this.$store.dispatch('domain-dependencies/create', { domainId: this.domain.id, domainDependencyId: value })
         this.$store.commit('addDomainDependencyId', value)
@@ -166,13 +185,16 @@ export default {
       this.$store.commit('removeDomainDependencyId', dependency)
       this.$store.commit('properties/removeItem', dependency, 'domainId')
     },
+    // domainId: The domain currently selected, dependency: The domain that is added as dependency/parent
     checkForCircularDependency (domainId, dependency) {
-      console.log('checkForCircularDependency', dependency)
-      if (dependency.parentDomainId === domainId) { return true } // check to see if parent is target domain
-      this.$store.getters['domain-dependencies/list']
+      console.log('checkForCircularDependency', dependency, domainId)
+      if (dependency.parentDomainId === domainId) { return dependency } // check to see if parent is target domain
+      const dependencies = this.$store.getters['domain-dependencies/list']
         .filter(item => item.domainId === dependency.id)
-        .forEach((item) => { if (item === domainId) { return true } }) // check to see if target domain is among dependencies
+      console.log('dependencies:', dependencies)
+      if (dependencies.some(item => item.domainDependencyId === domainId)) { return dependency } // check to see if target domain is among dependencies
       if (dependency.parentDomainId !== null) {
+        console.log(dependency, 'has parent')
         return this.checkForCircularDependency( // recursively check parent
           domainId,
           this.$store.getters['domains/get'](dependency.parentDomainId))
