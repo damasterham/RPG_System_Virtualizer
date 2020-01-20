@@ -120,8 +120,8 @@
       <v-container fluid>
         <!-- Domain Collection -->
         <v-row v-if="domainCollection !== null" dense style="height: 90.6vh">
-          <v-col cols="3" style="overflow-y: auto; max-height: 90.6vh">
-            <domainCollection :domain-collection="domainCollection" style="height: 99%" />
+          <v-col cols="5" style="max-height: 90.5vh; overflow-y: auto">
+            <domainCollection ref="domainCollection" :domain-collection="domainCollection" style="height: 99%" />
           </v-col>
         </v-row>
         <!-- Domain -->
@@ -224,6 +224,9 @@ import appToolbar from '~/components/app-toolbar.vue'
 
 import service from '~/plugins/feathers-service.js'
 
+import mHeritage from '~/components/mixins/heritage.js'
+import domainCollectionAddition from '~/components/mixins/domainCollectionAddition.js'
+
 export default {
   components: {
     appToolbar,
@@ -241,6 +244,7 @@ export default {
       return val.charAt(0).toUpperCase() + val.substring(1)
     }
   },
+  mixins: [mHeritage, domainCollectionAddition],
   async fetch ({ store, params }) {
     service('domains')(store)
     service('domain-dependencies')(store)
@@ -491,13 +495,64 @@ export default {
     },
     async selectDomainCollection (domainCollection) {
       this.clearCurrent()
+
+      // Gets domain collections domains for current domain collection
       const res = await this.$store.dispatch('domain-collections-domains/find', {
         query: {
           domainCollectionId: domainCollection.id
         },
         $clear: true
       })
+
+      // Component not loaded wont work
+      // res.forEach((dd) => {
+      //   this.$refs.domainCollection.addDomainToCollection({ id: dd.domainId })
+      // })
+
+      // res.forEach((dd) => {
+      //   this.m_addDomainToCollection({ id: dd.domainId })
+      // })
+
+      console.log('ADSADFSDHD', res)
+      // Don't commmit but add one at a time to ensure everything is there
+      // this.$store.commit('setPotentialDomainCollectionDomainIds', res.map(item => item.domainId))
       this.$store.commit('setDomainCollectionDomainIds', res.map(item => item.domainId))
+
+      const domainIds = this.$store.getters.getDomainCollectionDomainIds()
+      const domains = this.$store.getters['domains/list'].filter(domain => domainIds.some(id => id === domain.id))
+      console.log('SD-DC-heri-d', [ ...domains ])
+      // const heritages = []
+      const heritages = await Promise.all(domains.map(domain => this.m_getHeritage(domain)))
+      // domains.forEach((domain) => {
+      //   heritages.push(this.m_getHeritage(domain))
+      // })
+
+      console.log('SD-DC-heri', [ ...heritages ])
+
+      const lotsOfLineage = heritages.flat() // heritages.map(heritage => heritage.map(id => id))
+      // const lotsOfLineage = new Set()
+      // heritages.forEach((heritage) => {
+      //   console.log('H', heritage)
+      //   heritage.forEach((id) => {
+      //     console.log('Hid', id)
+      //     lotsOfLineage.add(id)
+      //   })
+      // })
+
+      console.log('SD-DC-lineage', lotsOfLineage)
+      // Gets the dependencies of said domains
+      await this.$store.dispatch('domain-dependencies/find', {
+        query: {
+          domainId: lotsOfLineage
+        },
+        $clear: true
+      })
+
+      // TODO make a check premptive if the dependencies are fulfullied and either prompt user that they will be made
+      // or automatically make them and inform them with alert
+
+      // console.log('SD-DC-depen', resSet)
+
       // this.$store.commit('setDomainCollectionDomainIds',.map(item => item.domainId))
       this.$nextTick(() => this.$store.commit('selectDomainCollection', domainCollection))
     },

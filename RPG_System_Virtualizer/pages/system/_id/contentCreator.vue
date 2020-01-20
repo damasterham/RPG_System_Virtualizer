@@ -145,6 +145,7 @@ import fillOutDialog from '~/components/fill-out-dialog.vue'
 import leftDrawer from '~/components/left-drawer.vue'
 import saveCancelButtons from '~/components/save-cancel-buttons.vue'
 import service from '~/plugins/feathers-service.js'
+import mHeritage from '~/components/mixins/heritage.js'
 export default {
   components: {
     appToolbar,
@@ -152,6 +153,7 @@ export default {
     leftDrawer,
     saveCancelButtons
   },
+  mixins: [mHeritage],
   async fetch ({ store, params }) {
     service('systems')(store)
     service('domain-collections')(store)
@@ -263,12 +265,13 @@ export default {
   methods: {
     async openNewDomainInstanceDialog () {
       this.waitingForDataFetch = true
-      const parentage = [this.domain.id]
-      let dom = this.domain
-      while (dom.parentDomainId !== null) {
-        parentage.push(dom.parentDomainId)
-        dom = await this.$store.dispatch('domains/get', dom.parentDomainId)
-      }
+      // const parentage = [this.domain.id]
+      // let dom = this.domain
+      // while (dom.parentDomainId !== null) {
+      //   parentage.push(dom.parentDomainId)
+      //   dom = await this.$store.dispatch('domains/get', dom.parentDomainId)
+      // }
+      const parentage = await this.m_getHeritage(this.domain)
       const properties = await this.$store.dispatch('properties/find', { query: {
         domainId: parentage
       },

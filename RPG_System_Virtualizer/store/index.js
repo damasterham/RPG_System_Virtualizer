@@ -1,10 +1,13 @@
 // eslint-disable-next-line
 import feathersClient from '~/plugins/feathers-client.js'
 export const state = () => ({
+  // Generic service modules
   modules: {},
+  // Specific selected services
   system: null,
   domain: null,
   domainCollection: null,
+  potentialDomainCollectionDomainIds: [],
   domainCollectionDomainIds: [],
   domainParentage: [],
   domainDependencyIds: [],
@@ -36,6 +39,9 @@ export const getters = {
   getDomainCollection: state => () => {
     return state.domainCollection
   },
+  getPotentialDomainCollectionDomainIds: state => () => {
+    return state.potentialDomainCollectionDomainIds
+  },
   getDomainCollectionDomainIds: state => () => {
     return state.domainCollectionDomainIds
   }
@@ -56,6 +62,9 @@ export const mutations = {
   setDomainCollectionDomainIds (state, data) {
     state.domainCollectionDomainIds = data
   },
+  // setPotentialDomainCollectionDomainIds (state, data) {
+  //   state.potentialDomainCollectionDomainIds = data
+  // },
   addDomainCollectionDomainId (state, data) {
     const index = state.domainCollectionDomainIds.findIndex(item => item === data)
     if (index === -1) { state.domainCollectionDomainIds.push(data) }
