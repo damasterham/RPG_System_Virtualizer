@@ -497,6 +497,7 @@ export default {
       if (type === 'domain') {
         this.domainCollection = null // Clear selected domainCollection
         // Get Instances of selected Domain
+        // TODO: Should also get the properties of parents
         const domainI = await this.$store.dispatch('domain-instances/find', { query: {
           domainId: concept.id, domainCollectionId: null
         },
