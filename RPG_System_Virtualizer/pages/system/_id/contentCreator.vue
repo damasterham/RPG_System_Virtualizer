@@ -499,7 +499,7 @@ export default {
         // Get Instances of selected Domain
         // TODO: Should also get the properties of parents
         const domainI = await this.$store.dispatch('domain-instances/find', { query: {
-          domainId: concept.id, domainCollectionId: null
+          domainId: concept.id, domainCollectionInstanceId: null
         },
         $clear: true })
         // Get property instances for all the domain instances
