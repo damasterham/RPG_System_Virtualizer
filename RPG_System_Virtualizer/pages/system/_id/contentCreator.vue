@@ -294,6 +294,11 @@ export default {
     service('variables-domains')(this.$store)
   },
   methods: {
+    closeNewDomainCollectionInstanceDialog () {
+    },
+    createNewDomainCollectionInstance () {
+      console.log('create collection instance not implemented')
+    },
     closeNewDomainInstanceDialog () {
       this.newDomainInstanceDialog = false
       this.formData.splice(0)
