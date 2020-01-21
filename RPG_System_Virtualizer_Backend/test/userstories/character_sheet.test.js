@@ -336,7 +336,7 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
             // Attributes
             bobsAttributes = await domainInstanceService.create({
               domainId: attributes.id,
-              domainCollectionId: bobsCharacterSheet.id // can be ommitted for domains flagged instatiable
+              domainCollectionInstanceId: bobsCharacterSheet.id // can be ommitted for domains flagged instatiable
               // TODO: should to hook check if the domain has instatiable flag
             //}
             // If domain collection instance domains should be store in a junction table
@@ -349,7 +349,7 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
             });
             assert.ok(bobsAttributes, 'Did not create an instance of Attributes');
             assert.ok(bobsAttributes.domainId, 'Did not create an instance of Attributes');
-            assert.ok(bobsAttributes.domainCollectionId, 'Did not create an instance of Attributes');
+            assert.ok(bobsAttributes.domainCollectionInstanceId, 'Did not create an instance of Attributes');
             assert.equal(bobsAttributes.version, '0.0', 'Version expected from definition was not correct');
           });
           // Get the properties of the domain and create a new properties for bob
@@ -408,11 +408,11 @@ describe('User Story [1.1.1 - 1.1.3] D&D Character Sheet', () => {
           it('Created instance of AttributeModifiers', async () =>{
             bobsModifiers = await domainInstanceService.create({
               domainId: modifiers.id,
-              domainCollectionId: bobsCharacterSheet.id
+              domainCollectionInstanceId: bobsCharacterSheet.id
             });
             assert.ok(bobsModifiers, 'Did not create an instance of AttributeModifiers');
             assert.ok(bobsModifiers.domainId, 'Did not create an instance of AttributeModifiers');
-            assert.ok(bobsModifiers.domainCollectionId, 'Did not create an instance of AttributeModifiers');
+            assert.ok(bobsModifiers.domainCollectionInstanceId, 'Did not create an instance of AttributeModifiers');
             assert.equal(bobsModifiers.version, '0.0', 'Version expected from definition was not correct');
           });
           it('Created instanced properties for AttributeModifier', async () => {
