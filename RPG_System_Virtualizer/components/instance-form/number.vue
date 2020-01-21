@@ -60,6 +60,7 @@ export default {
   },
   mounted () {
     if (this.data.default) { this.value = this.data.default } else {
+      console.log(this.data.label, this.data)
       switch (this.data.referenceType) {
         case 'property': this.getValueFromProperty(); break
         case 'function': this.getValueFromFunction(); break
@@ -95,7 +96,7 @@ export default {
     },
     handleVariableReferencingProperty (variable) {
       const reference = this.$store.getters['variables-properties/get'](variable.id, 'variableId')
-      console.log(variable.name, variable, this.data)
+      console.log('handleVariableReferencingProperty', variable.name, variable, this.data)
       this.$store.commit('addVariableListenerInNewInstance', { from: { propId: this.data.id, varId: variable.id }, to: reference.propertyId, functionId: variable.functionId })
     },
     handleVariableReferencingFunction (variable) {

@@ -383,6 +383,7 @@ export default {
         data.id = property.id
         data.label = property.name
         data.dataType = property.dataType
+        data.referenceType = property.referenceType
         if (property.referenceType === 'raw_value') {
           data.editable = true
           data.default = this.$store.getters['raw-values/get'](property.id, 'propertyId').defaultValue
